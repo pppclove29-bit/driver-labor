@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-assets/
+dev-dist/
+.wrangler/
+
+# 손으로 맞춘 한국어 표와 기획 문서. prettier가 열 정렬을 흐트러뜨린다.
+*.md
+mockups/
+
+# 생성물
+pnpm-lock.yaml
