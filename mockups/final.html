@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>운전 노동 정산기 최종 기획서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Gothic+Coding:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sign:#0E6B47; --sign-ink:#FFFFFF; --lane:#F2B705; --asphalt:#2B2E33;
+  --bg:#F3F4F2; --paper:#FFFFFF; --ink:#1E2124; --muted:#5E646B; --line:#D5D9D6;
+  --angry:#C8322A; --angry-bg:#FBEDEC; --good:#0E6B47; --good-bg:#E7F2EC;
+  --receipt:#FFFFFF; --code-bg:#ECEFEC;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --sign:#0F7A51; --bg:#1B1D20; --paper:#24272B; --ink:#E9ECEA; --muted:#A3AAA6; --line:#3A3F44;
+    --angry:#FF7B72; --angry-bg:#3A2322; --good:#6FD3A4; --good-bg:#1F3329; --receipt:#2C3034; --code-bg:#2C3034;
+  }
+}
+:root[data-theme="dark"]{
+  --sign:#0F7A51; --bg:#1B1D20; --paper:#24272B; --ink:#E9ECEA; --muted:#A3AAA6; --line:#3A3F44;
+  --angry:#FF7B72; --angry-bg:#3A2322; --good:#6FD3A4; --good-bg:#1F3329; --receipt:#2C3034; --code-bg:#2C3034;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:1rem;line-height:1.75;word-break:keep-all}
+img{max-width:100%}
+a{color:var(--sign)}
+:focus-visible{outline:3px solid var(--lane);outline-offset:2px}
+
+/* hero: highway sign */
+.road{background:var(--asphalt);padding:3rem 1.25rem 0;position:relative;overflow:hidden}
+.sign{max-width:1040px;margin:0 auto;background:var(--sign);color:var(--sign-ink);border:4px solid #fff;border-radius:14px;box-shadow:0 0 0 4px var(--sign);padding:1.75rem 1.75rem 1.5rem}
+.sign .exit{display:inline-block;background:#fff;color:var(--sign);font-weight:700;font-size:.85rem;padding:.1rem .6rem;border-radius:4px;margin-bottom:.9rem}
+.sign h1{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:clamp(2.2rem,7vw,3.6rem);line-height:1.1;margin:0 0 .6rem;letter-spacing:-.01em}
+.sign p{margin:0;font-size:1.05rem;opacity:.95;max-width:34em}
+.sign .dirs{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;margin-top:1.25rem;padding-top:1rem;border-top:2px solid rgba(255,255,255,.35);font-weight:500}
+.sign .dirs span::before{content:"";display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:var(--lane);margin-right:.45rem;vertical-align:.1em}
+.lanes{height:64px;margin-top:2.5rem;background:repeating-linear-gradient(90deg,var(--lane) 0 56px,transparent 56px 104px) center/100% 6px no-repeat}
+.docmeta{max-width:1040px;margin:0 auto;color:#BFC4C1;font-size:.85rem;padding:.25rem 0 1.25rem}
+
+main{max-width:1040px;margin:0 auto;padding:2.5rem 1.25rem 5rem}
+h2{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:1.75rem;line-height:1.25;margin:3.5rem 0 1rem;padding-left:.9rem;border-left:8px solid var(--lane)}
+h3{font-size:1.15rem;margin:2rem 0 .5rem}
+p{margin:.6rem 0}
+ul,ol{padding-left:1.3rem;margin:.6rem 0}
+li{margin:.25rem 0}
+.lead{font-size:1.1rem}
+.muted{color:var(--muted)}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem;margin:1rem 0}
+.formula{background:var(--code-bg);border-radius:8px;padding:.85rem 1rem;margin:.8rem 0;font-family:"Nanum Gothic Coding",ui-monospace,monospace;font-size:.95rem;line-height:1.7;overflow-x:auto;white-space:pre}
+.scroll{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.93rem}
+th,td{text-align:left;padding:.6rem .8rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;background:var(--code-bg)}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:.78rem;font-weight:700;padding:0 .45rem;border-radius:4px;white-space:nowrap}
+.p0{background:var(--sign);color:#fff}.p1{background:var(--lane);color:#2B2E33}.p2{background:var(--line);color:var(--ink)}
+.plus{color:var(--angry);font-weight:700}.minus{color:var(--good);font-weight:700}
+
+/* 괘씸 section treatment */
+.angry-zone{background:var(--angry-bg);border:2px dashed var(--angry);border-radius:12px;padding:1.25rem 1.25rem .75rem;margin:1rem 0}
+.angry-zone h3{margin-top:.5rem;color:var(--angry)}
+
+/* receipt */
+.receipt{background:var(--receipt);max-width:420px;margin:1.5rem auto;padding:1.5rem 1.4rem 2rem;font-family:"Nanum Gothic Coding",ui-monospace,monospace;font-size:.9rem;line-height:1.6;box-shadow:0 1px 0 var(--line);border:1px solid var(--line);position:relative;
+  -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%}
+.receipt h4{text-align:center;margin:0 0 .25rem;font-size:1rem}
+.receipt .c{text-align:center;color:var(--muted);margin:0 0 .75rem}
+.receipt hr{border:0;border-top:1px dashed var(--muted);margin:.7rem 0}
+.row{display:flex;justify-content:space-between;gap:1rem}
+.row span:last-child{white-space:nowrap}
+.receipt .big{font-weight:700;font-size:1rem}
+.receipt .sub{color:var(--muted);padding-left:.8rem}
+
+.flow{list-style:none;padding:0;counter-reset:s}
+.flow li{counter-increment:s;position:relative;padding:.2rem 0 .9rem 2.6rem;margin:0}
+.flow li::before{content:counter(s);position:absolute;left:0;top:.15rem;width:1.8rem;height:1.8rem;border-radius:50%;background:var(--sign);color:#fff;font-weight:700;display:grid;place-items:center;font-size:.9rem}
+.flow li:not(:last-child)::after{content:"";position:absolute;left:.85rem;top:2.1rem;bottom:.1rem;border-left:2px dashed var(--lane)}
+.flow b{display:block}
+code{font-family:"Nanum Gothic Coding",ui-monospace,monospace;font-size:.9em;background:var(--code-bg);padding:0 .3rem;border-radius:4px;white-space:nowrap}
+pre.mermaid{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;text-align:center}
+@media (max-width:520px){.sign{padding:1.25rem}h2{font-size:1.5rem}}
+
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+.narrow{max-width:760px}
+.id{font-family:"Nanum Gothic Coding",monospace;font-weight:700;color:var(--sign);white-space:nowrap}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .id{color:#6FD3A4}}
+:root[data-theme="dark"] .id{color:#6FD3A4}
+.tag.y{background:#FFF4D1;color:#7A5A00}
+.tag.r{background:#FBEDEC;color:#C8322A}
+.phase{margin-top:3rem;font-size:1.05rem;font-weight:700;color:var(--muted);border-bottom:2px dashed var(--line);padding-bottom:.4rem}
+.shot{display:grid;grid-template-columns:320px 1fr;gap:2rem;align-items:start;padding:2rem 0;border-bottom:1px solid var(--line)}
+.notes{max-width:34rem}
+.notes .id{display:inline-block;margin-bottom:.2rem}
+.notes h3{margin:0 0 .4rem}
+.notes h4{margin:1rem 0 .2rem;font-size:.95rem}
+@media (max-width:760px){.shot{grid-template-columns:1fr}.phone{margin:0 auto}}
+.part{display:flex;align-items:center;gap:1rem;margin:5rem 0 0;padding:1.1rem 1.25rem;background:var(--sign);color:#fff;border-radius:12px;border:3px solid #fff;box-shadow:0 0 0 3px var(--sign)}
+.part-no{font-family:"Black Han Sans",sans-serif;font-size:1.1rem;background:#fff;color:var(--sign);border-radius:6px;padding:.15rem .6rem;flex:none}
+.part-title{font-family:"Black Han Sans",sans-serif;font-size:1.9rem;line-height:1.15;margin:0}
+.part-sub{margin:.15rem 0 0;opacity:.9;font-size:.95rem}
+.part + .narrow h2,.part + h2,.part + .narrow > h2:first-child{margin-top:2rem}
+.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem 1.5rem;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:1.25rem 1.4rem;margin:1rem 0 0}
+.toc-part{font-weight:700;color:var(--ink);text-decoration:none;display:block;border-bottom:3px solid var(--lane);padding-bottom:.2rem;margin-bottom:.4rem}
+.toc ul{list-style:none;padding:0;margin:0;font-size:.93rem}
+.toc li{margin:.15rem 0}
+.toc a{color:var(--ink)}
+.toc a:hover{color:var(--sign)}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin:1rem 0 0}
+.glance div{background:var(--paper);border:1px solid var(--line);border-left:6px solid var(--sign);border-radius:10px;padding:.8rem 1rem}
+.glance b{display:block;font-size:1.05rem}
+.glance span{color:var(--muted);font-size:.9rem}
+
+.phone{width:320px;height:660px;border:10px solid #1C1E21;border-radius:40px;background:#F6F7F5;overflow:hidden;position:relative;color:#1E2124;font-size:13px;line-height:1.45;box-shadow:0 18px 40px -20px rgba(0,0,0,.45)}
+.phone .sb{height:28px;display:flex;justify-content:space-between;align-items:center;padding:0 20px;font-size:11px;font-weight:700}
+.phone .ab{height:48px;display:flex;align-items:center;gap:8px;padding:0 14px;font-weight:700;font-size:15px}
+.phone .ab .back{font-size:22px;line-height:1;color:#6B7177;width:20px}
+.phone .ab .step{margin-left:auto;font-size:11px;font-weight:500;color:#6B7177}
+.phone .body{padding:4px 14px 90px;height:584px;overflow:hidden}
+.phone .card{background:#fff;border:1px solid #E3E6E3;border-radius:14px;padding:12px;margin-bottom:10px}
+.phone .lbl{font-size:11px;color:#6B7177;margin-bottom:4px}
+.phone .field{border:1px solid #D6DAD6;border-radius:10px;padding:9px 10px;background:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.phone .field .ph{color:#9AA0A5}
+.phone .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.phone .chip{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;border:1px solid #D6DAD6;font-size:12px;background:#fff;margin:0 4px 6px 0}
+.phone .chip.on{background:#0E6B47;border-color:#0E6B47;color:#fff}
+.phone .chip.red{background:#FBEDEC;border-color:#C8322A;color:#C8322A}
+.phone .cta{position:absolute;left:14px;right:14px;bottom:16px;height:50px;border-radius:14px;background:#0E6B47;color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+.phone .cta.sub{background:#fff;color:#0E6B47;border:1.5px solid #0E6B47}
+.phone .big{font-size:20px;font-weight:700}
+.phone .g{color:#0E6B47}.phone .r{color:#C8322A}.phone .m{color:#6B7177}
+.phone .tiny{font-size:11px}
+.phone .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.phone .seg{display:flex;background:#E9ECE9;border-radius:10px;padding:3px;margin-bottom:8px}
+.phone .seg span{flex:1;text-align:center;padding:6px 0;border-radius:8px;font-size:12px}
+.phone .seg .on{background:#fff;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.phone .toggle{width:40px;height:24px;border-radius:999px;background:#0E6B47;position:relative;flex:none}
+.phone .toggle::after{content:"";position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+.phone .avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px;color:#fff;flex:none}
+.phone .a1{background:#0E6B47}.phone .a2{background:#3A6EA5}.phone .a3{background:#8A5A9E}.phone .a4{background:#B7791F}
+.phone .tile{background:#fff;border:1px solid #E3E6E3;border-radius:14px;padding:10px 8px;text-align:center;font-size:12px;min-height:66px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.phone .tile b{font-size:13px}
+.phone .tile.red{border-color:#F0C4C1}
+.phone .tile.green{border-color:#BBDCCB}
+.phone .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.phone .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.phone .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.phone .grid4 .tile{font-size:11px;padding:6px 3px;min-height:58px;gap:0}
+.phone .compact .tile{min-height:50px;padding:5px 4px;gap:0}
+.phone .grid4 .tile b{font-size:14px}
+.phone .bar{height:6px;border-radius:3px;background:#E9ECE9;overflow:hidden;margin-top:3px}
+.phone .bar i{display:block;height:100%;background:#F2B705}
+.phone .cnt{font-size:16px;font-weight:700;color:#C8322A;line-height:1.1}
+.phone .tl-i{display:grid;grid-template-columns:38px 12px 1fr;gap:6px;align-items:start;padding:4px 0;position:relative}
+.phone .tl-t{font-size:11px;color:#6B7177;padding-top:1px}
+.phone .tl-d{width:10px;height:10px;border-radius:50%;background:#0E6B47;margin-top:4px}
+.phone .tl-d.y{background:#F2B705}.phone .tl-d.o{background:#fff;border:2px solid #0E6B47}
+.phone .adbox{height:250px;border:1.5px dashed #B8BDB9;border-radius:10px;background:#EEF0EE;display:flex;align-items:center;justify-content:center;text-align:center;color:#6B7177;font-size:12px}
+.phone .night{position:absolute;inset:0;background:#000;color:#8A8F8C}
+.phone .night .sb,.phone .night .ab{color:#6F7471}
+.phone .night .card{background:#0E0E0E;border-color:#242424}
+.phone .night .card.hl{background:#0F2A1F;border-color:#0F2A1F;color:#BFD6CA}
+.phone .night .tile{background:#0E0E0E;border-color:#262626;color:#A3A8A5}
+.phone .night .tile.red{border-color:#46302E}.phone .night .tile.green{border-color:#223A2E}
+.phone .night .m{color:#6F7471}.phone .night .r,.phone .night .cnt{color:#B06A64}.phone .night .g{color:#5E9C80}
+.phone .night .chip{background:#0E0E0E;border-color:#2C2C2C;color:#A3A8A5}
+.phone .night .chip.on{background:#1B3F30;border-color:#1B3F30;color:#C9DDD2}
+.phone .night .cta.sub{background:#000;color:#6FA88C;border-color:#2B4E3E}
+.phone .memo{border:1.5px solid #0E6B47;border-radius:10px;padding:10px;min-height:64px;margin-bottom:6px}
+.phone .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:10px 16px 80px;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.phone .grab{width:40px;height:4px;border-radius:2px;background:#D6DAD6;margin:0 auto 12px}
+.phone .dim{position:absolute;inset:0;background:rgba(20,22,24,.45)}
+.phone .check{width:18px;height:18px;border-radius:5px;border:1.5px solid #0E6B47;background:#0E6B47;flex:none;position:relative}
+.phone .check::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.phone .check.off{background:#fff;border-color:#B8BDB9}.phone .check.off::after{display:none}
+.phone .receipt{background:#fff;border:1px solid #E3E6E3;border-radius:6px;padding:12px;font-family:"Nanum Gothic Coding",monospace;font-size:11.5px}
+.phone .receipt hr{border:0;border-top:1px dashed #9AA0A5;margin:7px 0}
+.phone .tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:#E7F2EC;color:#0E6B47}
+.phone .tag.y{background:#FFF4D1;color:#7A5A00}
+.phone .tag.r{background:#FBEDEC;color:#C8322A}
+.phone .map{height:130px;border-radius:14px;background:#E7ECE6;position:relative;overflow:hidden;margin-bottom:10px}
+.phone .lock{position:absolute;inset:0;background:#0E6B47;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+.phone .receipt{-webkit-mask:none;mask:none;max-width:none;margin:0;box-shadow:none;line-height:1.45}
+.phone .row span:last-child{white-space:normal}</style>
+</head>
+<body>
+<header class="road">
+  <div class="sign">
+    <span class="exit">최종 기획서</span>
+    <h1>운전 노동 정산기</h1>
+    <p>같이 여행 간 사람들이 운전자의 수고를 기름값·시급·운전 난이도로 계산하고, 괘씸한 동승자에게는 조금 더 받아내는 정산 앱</p>
+    <div class="dirs"><span>서비스 기획</span><span>시스템과 운영</span><span>MVP 화면과 목업</span><span>비즈니스 모델</span><span>로드맵과 결정</span></div>
+  </div>
+  <div class="lanes" aria-hidden="true"></div>
+  <p class="docmeta">2026년 9월 16일 · 기획, 시스템 설계, MVP 화면, 목업, 비즈니스 모델 통합본</p>
+</header>
+<main>
+<div class="narrow">
+<h2 id="glance">한눈에 보기</h2>
+</div>
+<div class="glance">
+<div><b>출발 전 입력 2개, 필수 탭 약 5회</b><span>도착지와 동승자만. 구간·운전자는 탭 기록에서 자동, 나머지는 기본값과 결과 화면 고치기</span></div>
+<div><b>노동비 = 시간 × 시급 × 난이도</b><span>최저시급 기준, 정체·야간·연속 운전·기상으로 최대 2배</span></div>
+<div><b>괘씸모드는 가산형, 말투는 순한맛</b><span>괘씸한 사람이 더 내고 운전자가 더 받음. 영수증 말투 3종</span></div>
+<div><b>운영비 0원, 수익은 광고 하나</b><span>무료 플랜과 하드 상한으로 운영. 계산 등록 1회당 결과 맨 아래 광고 1번</span></div>
+<div><b>서버는 주소 조회기</b><span>이름·금액·기록·결과는 서버로 가지 않음</span></div>
+<div><b>MVP 화면 15개 + 야간 모드</b><span>PWA로 출발. 여행 준비, 여행 중, 도착 후, 결과 보기 웹</span></div>
+</div>
+<nav class="toc" aria-label="목차"><div class="toc-group"><a class="toc-part" href="#part1">1부 서비스 기획</a><ul><li><a href="#s1">개요</a></li><li><a href="#s2">핵심 용어</a></li><li><a href="#s3">기능 요구사항</a></li><li><a href="#s4">계산 로직</a></li><li><a href="#s5">괘씸모드</a></li><li><a href="#s6">계산 예시</a></li><li><a href="#s7">사용성 원칙</a></li></ul></div><div class="toc-group"><a class="toc-part" href="#part2">2부 시스템과 운영</a><ul><li><a href="#s8">시스템 구성</a></li><li><a href="#s9">서버 최소 정보 원칙</a></li><li><a href="#s10">0원 운영 원칙</a></li><li><a href="#s11">어뷰징 대응</a></li><li><a href="#s12">외부 연동 검토</a></li><li><a href="#s13">데이터 모델</a></li><li><a href="#s14">정책과 예외 처리</a></li></ul></div><div class="toc-group"><a class="toc-part" href="#part3">3부 MVP 화면과 목업</a><ul><li><a href="#s15">MVP 화면 범위</a></li><li><a href="#s16">화면 흐름</a></li><li><a href="#s17">목업</a></li><li><a href="#s18">공통 UI 규칙</a></li><li><a href="#s19">MVP에서 뺀 화면</a></li></ul></div><div class="toc-group"><a class="toc-part" href="#part4">4부 비즈니스 모델</a><ul><li><a href="#s20">비즈니스 모델</a></li></ul></div><div class="toc-group"><a class="toc-part" href="#part5">5부 로드맵과 결정</a><ul><li><a href="#s21">MVP 범위와 로드맵</a></li><li><a href="#s22">확정한 결정</a></li><li><a href="#s23">남은 확인 사항</a></li></ul></div></nav>
+<div class="part" id="part1"><span class="part-no">1부</span><div><p class="part-title">서비스 기획</p><p class="part-sub">무엇을 어떻게 계산하는가</p></div></div><div class="narrow"><h2 id="s1">개요</h2>
+<p class="lead">친구·가족끼리 차 한 대로 여행을 가면 운전은 대개 한 사람이 도맡습니다. 기름값과 통행료는 N분의 1로 나누지만, 서너 시간 운전한 사람의 노동은 “고마워” 한마디로 끝나는 경우가 많습니다.</p>
+<p>이 앱은 도착지와 동승자만 넣고 출발한 뒤, 여행 중 탭 몇 번으로 남긴 기록(하차, 운전 교대, 결제, 괘씸)으로 실제 비용(유류비·통행료)과 운전 노동비를 계산해 사람별 정산 금액을 만들어 줍니다. 여기에 조수석에서 잠든 사람, 혼자 간식 먹은 사람을 반영하는 괘씸모드를 더해 정산을 대화거리로 만듭니다.</p>
+
+<div class="box">
+<b>목표</b>
+<ul>
+<li>운전자의 노동을 “시간 × 기준 단가” 또는 “택시였다면 들었을 기사 몫”이라는 납득 가능한 숫자로 보여준다.</li>
+<li>중간 합류·하차, 운전 교대가 있어도 구간 단위로 공정하게 나눈다.</li>
+<li>기름값은 실제 조회 시점 시세, 직접 주유했다면 해당 주유소 단가를 쓴다.</li>
+<li>한 사람의 폰에서 입력과 계산을 끝내고, 정산 결과는 링크 하나로 공유한다.</li>
+</ul>
+<b>주요 사용자</b>
+<p>차를 가진 20~40대 운전자(정산 요청자)와 그 동승자. 주말 국내 여행, 명절 귀성, 캠핑·골프 모임 등.</p>
+<b>입력 방식</b>
+<p style="margin-bottom:0">여행 한 건은 입력 담당 한 명의 폰에서만 기록하고 계산합니다. 로그인과 회원가입은 없고, 다른 멤버는 공유받은 결과 링크만 봅니다. 출발 전 입력은 도착지와 동승자 2개뿐이고, 구간·운전자·좌석은 여행 중 탭 기록에서 자동으로 만들어집니다. 나머지는 기본값으로 계산하고, 고치고 싶은 값만 결과 화면에서 고칩니다.</p>
+</div>
+
+</div><div class="narrow"><h2 id="s2">핵심 용어</h2>
+<div class="scroll"><table>
+<thead><tr><th>용어</th><th>정의</th></tr></thead>
+<tbody>
+<tr><td>여행(Trip)</td><td>출발지부터 최종 도착지까지 한 번의 이동 단위. 왕복은 가는 여행·오는 여행 2개로 나누거나 한 여행 안의 구간으로 구성</td></tr>
+<tr><td>구간(Segment)</td><td>운전자·탑승자 구성이 같은 운전 단위. 사용자가 미리 정하지 않고, 하차·합류·운전 교대를 기록한 시점마다 자동으로 나뉜다</td></tr>
+<tr><td>멤버</td><td>여행에 참여한 사람. 차주 여부, 운전 가능 여부를 가진다</td></tr>
+<tr><td>공통비</td><td>유류비 + 통행료 + 주차비. 해당 구간 탑승자 전원(운전자 포함)이 나눈다</td></tr>
+<tr><td>노동비</td><td>운전자가 받는 몫. 해당 구간의 운전자를 제외한 탑승자가 나눈다</td></tr>
+<tr><td>괘씸 배수</td><td>괘씸 점수에 따라 노동비 분담액에 곱해지는 값(1.0~2.0)</td></tr>
+</tbody></table></div>
+
+</div><div class="narrow"><h2 id="s3">기능 요구사항</h2>
+<p class="muted">우선순위: <span class="tag p0">P0</span> MVP 필수 <span class="tag p1">P1</span> 출시 직후 <span class="tag p2">P2</span> 추후</p>
+<div class="scroll"><table>
+<thead><tr><th style="width:26%">기능</th><th>상세</th><th>우선</th></tr></thead>
+<tbody>
+<tr><td><b>1. 출발지·도착지 설정</b></td><td>도착지만 검색 한 번. 출발지는 최근 출발지·저장한 “집”이 기본값. 출발 탭 시 출발지→도착지 경로를 1회 조회해 거리·예상 시간·통행료·택시 예상요금 확보</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>2. 동승자 설정</b></td><td>최근 함께한 사람 칩을 탭. 이름을 모르면 “+1명”(동승자 A, B…)으로 두고 결과 화면에서 이름 변경. 차주는 나. 좌석은 묻지 않음</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>3. 구간 설정</b></td><td>사전 설정 없음. 하차·합류·운전 교대 기록 시점에서 자동 분할. 구간 거리는 운전 시간 비율로 배분하고, 하차 장소를 고르면 재조회</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>4. 구간별 운전자·탑승자</b></td><td>기본 운전자는 차주(나). 여행 중 “운전 교대” 버튼으로 변경. 탑승자는 출발 멤버에서 하차·합류 기록으로 자동 반영</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>5. 유가 반영</b></td><td>조회 시점의 지역 평균 유가(유종별) 자동 적용. 주유 기록 입력 시 해당 주유소 단가·주유량으로 이후 구간 단가 재계산. 영수증 사진 OCR은 P1</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>6. 택시비 반영</b></td><td>경로 조회의 택시 예상요금을 구간 거리 비율로 배분(하차 장소를 고르면 구간별 재조회). ① 노동비 산정 방식 중 하나로 선택 가능 ② “택시였다면” 비교 지표로 결과 화면에 표시 ③ 괘씸 택시모드 기준값</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>6-1. 운전 난이도</b></td><td>구간별 난이도 계수(1.0~2.0)를 정체·야간·연속 운전·도로 유형·기상·체감으로 계산해 노동비에 곱함. 사유를 영수증에 표시</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td><b>7. 괘씸모드</b></td><td>입력 담당이 여행 중 탭으로 괘씸·감면 행동 기록, 기본은 기록 그대로 반영하고 이의가 있으면 도착 요약의 “괘씸 보기”에서 해제, 괘씸 배수 적용. 점수표는 고정이고 “기타(+1, 메모)”만 열어 둠. 켜기/끄기 가능</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>정산·공유</td><td>사람별 받을 돈/보낼 돈, 영수증형 결과, 말투 3종(순한맛·매운맛·비즈니스)과 명분 문구. 결과 보기 링크(서버 저장 없음)와 결과 이미지 공유</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>하차·합류 기록</td><td>여행 중 버튼 한 번으로 하차·합류 시각 기록, 도착 후 타임라인에서 구간 자동 분할</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>운전 교대·휴식 기록</td><td>교대 버튼으로 운전자 변경과 구간 분할, 휴식 켜기/끄기로 운전 시간에서 제외</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>도착 요약</td><td>도착 탭 한 번 → 자동 계산된 운전 시간·인원·괘씸·난이도를 한 장으로 보여주고 “정산하기”. 기상·체감은 선택 칩</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>결과 화면에서 고치기</td><td>이름·운전 시간·연비·시급·유가·기상을 결과를 보면서 수정, 금액 즉시 재계산. 기본값으로 계산한 항목은 “기본값” 표시</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>빠른 정산</td><td>여행 중 앱을 못 켠 경우 도착지·인원·출발/도착 시각만으로 바로 정산</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>결제 기록</td><td>주유·통행료·주차·기타를 누가 냈는지 기록. 정산에서 낸 돈으로 차감하고 최소 송금 목록 생성</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>야간 모드</td><td>폰 다크 모드 또는 18~06시 자동 전환. 검정 배경, 낮은 밝기, 운전 중 잠금 화면 포함</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>정산 광고</td><td>계산을 등록(정산하기)하면 여행 1건당 한 번, 결과 화면 맨 아래에 닫을 수 있는 광고 카드 1개. 결과를 가리거나 기다리게 하지 않음</td><td><span class="tag p0">P0</span></td></tr>
+<tr><td>송금 버튼</td><td>운전자가 등록한 토스·카카오페이 송금 링크를 결과 페이지에 버튼으로 표시. 계좌번호 원문은 넣지 않음</td><td><span class="tag p1">P1</span></td></tr>
+<tr><td>음성 기록</td><td>누를 때만 듣는 방식, 기기 내부 인식 환경에서만. 정해진 짧은 명령만 기록</td><td><span class="tag p2">P2</span></td></tr>
+<tr><td>주행 자동 기록</td><td>GPS로 구간 거리·시간·정체·야간 여부 자동 기록. 위치는 폰 안에서만 처리하고 서버로 보내지 않음</td><td><span class="tag p1">P1</span></td></tr>
+<tr><td>차량 감가</td><td>차주에게 km당 차량 사용료(타이어·엔진오일·감가) 옵션 지급</td><td><span class="tag p2">P2</span></td></tr>
+<tr><td>전기차·하이브리드</td><td>충전 단가(급속/완속) 기반 계산</td><td><span class="tag p2">P2</span></td></tr>
+</tbody></table></div>
+
+</div><div class="narrow"><h2 id="s4">계산 로직</h2>
+
+<h3>구간 자동 생성</h3>
+<p>사용자는 구간을 만들지 않습니다. 여행 중 누른 기록으로 앱이 구간을 만듭니다.</p>
+<div class="formula">운전 시간 = 도착 탭 시각 − 출발 탭 시각 − 휴식 합계
+여행 경로 = 출발지 → 도착지 1회 조회 (거리, 예상 시간, 통행료, 택시요금)
+구간 경계 = 하차 · 합류 · 운전 교대 기록 시각
+구간 거리 = 여행 거리 × (구간 운전 시간 ÷ 전체 운전 시간)</div>
+<ul>
+<li>하차·합류 장소를 고르면 그 지점을 경유지로 재조회해 비율 추정 대신 실제 경로 거리를 쓴다.</li>
+<li>통행료는 결제 기록이 있으면 그 금액, 없으면 경로 조회값을 구간 거리 비율로 배분한다.</li>
+<li>실제 운전 시간이 예상의 1.3배를 넘으면 정체인지 우회인지 앱이 판단할 수 없으므로, 결과 화면에 “경로보다 멀리 돌았나요? 거리 고치기”를 표시한다. 자동으로 거리를 늘리지 않는다.</li>
+<li>좌석은 묻지 않는다. “조수석 수면”을 누르면 그 사람을 조수석으로 자동 지정하고, 택시모드는 좌석 변경으로 뒷자리를 표시했을 때만 적용한다.</li>
+</ul>
+
+<h3>유류비</h3>
+<p>차량 연비는 기본값 12km/L로 시작하고, 결과 화면에서 한 번 고치면(직접 입력 또는 차종 공인연비) 다음 여행부터 기억합니다. 공인연비에는 보정계수(도심 0.85, 고속도로 1.1)를 적용합니다.</p>
+<div class="formula">구간 연료량(L) = 구간 거리(km) ÷ 연비(km/L)
+구간 유류비   = 구간 연료량 × 적용 단가</div>
+<p>적용 단가는 다음 순서로 정합니다.</p>
+<ul>
+<li><b>주유 기록 없음:</b> 여행 조회 시점의 출발지 시·도 평균가(유종별). 조회 시각과 단가를 스냅샷으로 저장해 나중에 다시 계산해도 값이 바뀌지 않게 한다.</li>
+<li><b>주유 기록 있음:</b> 주유 이후 구간은 해당 주유소 단가. 정밀 모드에서는 탱크 잔량 기준 가중평균을 쓴다.</li>
+</ul>
+<div class="formula">정밀 모드 단가 = (잔량 × 기존 단가 + 주유량 × 주유 단가) ÷ (잔량 + 주유량)</div>
+
+<h3>통행료·주차비</h3>
+<p>통행료는 경로 API 값을 기본으로 하고 실제 영수증 금액으로 수정할 수 있습니다. 하이패스 할인(출퇴근·경차 등)은 수동 수정. 주차비는 발생 구간의 도착 지점에 붙여 해당 구간 탑승자가 나눕니다.</p>
+
+<h3>노동비</h3>
+<p>여행을 만들 때 산정 방식을 고릅니다.</p>
+<div class="scroll"><table>
+<thead><tr><th>방식</th><th>공식</th><th>특징</th></tr></thead>
+<tbody>
+<tr><td><b>A. 시급형</b> (기본, 확정)</td><td>운전 시간 × 기준 시급 × 난이도 계수</td><td>기준 시급 기본값은 해당 연도 최저시급(2026년 10,320원), 사용자가 조정 가능</td></tr>
+<tr><td><b>B. 택시형</b></td><td>(택시 예상요금 − 공통비) × 반영률 α</td><td>“기사 몫”을 친구 할인해 받는 개념. α 기본 30%. 사용자가 직접 선택할 때와 괘씸 택시모드에서만 사용</td></tr>
+<tr><td><b>C. 대리형</b></td><td>대리운전 시세표(거리 구간별) × 반영률</td><td>P2. 단거리·야간 모임용</td></tr>
+</tbody></table></div>
+<p>운전 시간에는 휴게소 정차 시간을 넣지 않습니다. 기존의 개별 할증(야간·정체·연속·악천후)은 아래 난이도 지수 하나로 통합합니다.</p>
+
+<h3>운전 난이도 지수</h3>
+<p>“길이 얼마나 어려웠나”만 잽니다. 급제동·급가속·급회전 같은 운전자 행동 지표는 거칠게 운전할수록 더 받는 역보상이 생기므로 쓰지 않습니다.</p>
+<div class="formula">난이도 계수 = 1.0 + 정체 + 야간 + 연속 운전 + 도로 유형 + 기상 + 체감
+             (소수점 둘째 자리 반올림, 최소 1.0, 최대 2.0)</div>
+<div class="scroll"><table>
+<thead><tr><th>요소</th><th>계산</th><th>범위</th><th>데이터 출처</th></tr></thead>
+<tbody>
+<tr><td>정체</td><td>(실제 운전 시간 ÷ 예상 시간 − 1) × 0.5<br><span class="muted">실제 시간 입력 전에는 정체·지체 도로 거리 비율 × 0.3</span></td><td class="num">0 ~ +0.3</td><td>출발·도착 탭과 휴식 기록(자동), 경로 API의 도로별 교통 상태</td></tr>
+<tr><td>야간</td><td>22:00~06:00 운전 시간 ÷ 전체 운전 시간 × 0.3</td><td class="num">0 ~ +0.3</td><td>출발·도착 시각</td></tr>
+<tr><td>연속 운전</td><td>15분 이상 쉬지 않고 2시간을 넘긴 시간 ÷ 전체 운전 시간 × 0.2</td><td class="num">0 ~ +0.2</td><td>휴식 기록</td></tr>
+<tr><td>도로 유형</td><td>교통 원활인데 속도 40km/h 미만인 도로(도심·산길) 거리 비율 × 0.1</td><td class="num">0 ~ +0.1</td><td>경로 API의 도로별 교통 속도·상태</td></tr>
+<tr><td>기상</td><td>비·눈 체크 시</td><td class="num">+0.2</td><td>도착 요약 칩, 기본 맑음 (기상 API는 위치 전송이 필요해 미사용)</td></tr>
+<tr><td>체감</td><td>운전자 1~5점 → −0.1, −0.05, 0, +0.05, +0.1</td><td class="num">−0.1 ~ +0.1</td><td>도착 요약 칩, 기본 보통(3점)</td></tr>
+</tbody></table></div>
+<p>정체와 도로 유형은 서로 겹치지 않게 나눕니다. 막혀서 느린 도로는 정체로, 원활한데도 원래 느린 도로는 도로 유형으로 셉니다. 교통 상태 코드 중 어떤 값을 정체·지체로 볼지는 카카오모빌리티 문서의 코드 정의로 확정합니다.</p>
+
+<div class="box">
+<b>계산 예시: 강릉 → 서울, 돌아오는 밤길</b>
+<p>20:30 출발, 휴식 없이 00:10 도착(운전 3시간 40분). 예상 2시간 40분, 비 옴, 운전자 체감 4점.</p>
+<div class="formula">정체    (220분 ÷ 160분 − 1) × 0.5   = +0.19
+야간    130분 ÷ 220분 × 0.3          = +0.18
+연속    100분 ÷ 220분 × 0.2          = +0.09
+도로 유형 고속도로 위주                = +0.00
+기상    비                           = +0.20
+체감    4점                          = +0.05
+난이도 계수 = 1.71
+
+노동비 = 3시간 40분 × 10,320원 × 1.71 = 64,706원  (난이도 없이 37,840원)</div>
+<p style="margin-bottom:0">영수증에는 “난이도 1.71: 비 +0.2, 정체 +0.19, 야간 +0.18 …”처럼 큰 요소부터 사유를 표시합니다.</p>
+</div>
+
+<h3>측정 한계와 보완</h3>
+<ul>
+<li><b>조회 시점 교통:</b> 경로 API의 교통 상태는 조회한 순간의 정보라 실제 주행과 다를 수 있다. 도착 후 입력하는 실제 운전 시간 비율을 주 지표로, API 값은 입력 전 예상용 보조로 쓴다.</li>
+<li><b>공공 교통 이력은 계산이 아니라 검증에 쓴다 (2차):</b> 실제 운전 시간 비율은 그 사람이 그날 겪은 정체를 직접 반영하므로 도로 평균인 공공 데이터보다 정확하다. 공공 데이터는 입력한 운전 시간이 그럴듯한지 확인하는 용도로만 쓴다(어뷰징 대응 10번).</li>
+<li><b>출발 시각 기준 예측 (2차):</b> 카카오모빌리티 “미래 운행 정보 길찾기”로 출발 예정 시각의 교통을 예측한다. 일 5,000건 무료이며 일일 하드 상한에 포함한다.</li>
+<li><b>사람이 입력한 값:</b> 운전 시간은 출발·도착 탭으로 자동 기록되어 조작 여지가 작다. 결과 화면에서 직접 고친 값과 기상·체감 점수에만 “직접 입력” 표시와 원래 값을 보여준다.</li>
+<li><b>폰 센서 (2차, 보상 미반영):</b> GPS 정차·출발 반복, 가속도 기반 주행 기록은 폰 안에서만 계산해 운전자 본인 기록으로만 보여준다. PWA는 화면이 켜진 동안만 측정되고 거치 위치에 따라 값이 크게 달라져 정산에는 쓰지 않는다.</li>
+</ul>
+
+<h3>택시비 비교</h3>
+<p>결과 화면에 “택시로 갔다면 총 얼마, 운전자 덕분에 아낀 금액 얼마”를 보여줍니다. 계산 자체에 쓰이지 않아도 운전자의 수고를 체감하게 하는 장치입니다.</p>
+<div class="formula">아낀 금액 = Σ 구간 택시 예상요금 − (Σ 공통비 + Σ 노동비)</div>
+
+<h3>분담 공식</h3>
+<p>구간 s에서 탑승자 수를 N(운전자 포함), 비운전 탑승자를 i라고 할 때:</p>
+<div class="formula">i의 공통비 분담     = 구간 공통비 ÷ N
+i의 노동비 분담     = (구간 노동비 ÷ (N − 1)) × i의 괘씸 배수
+운전자의 공통비 분담 = 구간 공통비 ÷ N   (운전자도 탑승자라서 낸다)
+운전자가 받는 금액   = Σ 비운전 탑승자의 노동비 분담</div>
+<p>괘씸 배수는 <b>가산형</b>이 기본입니다. 괘씸한 사람이 더 낸 만큼 운전자가 더 받고, 착한 동승자의 부담은 그대로입니다. 설정에서 <b>재분배형</b>(노동비 총액은 고정, 괘씸한 사람 비중만 커짐)으로 바꿀 수 있습니다.</p>
+<p>마지막으로 “실제로 결제한 사람”(대부분 차주)을 기준으로 멤버 간 송금 목록을 만듭니다. 금액은 원 단위 정수로 계산·표시합니다. 나눗셈에서 생기는 1원 미만은 반올림하고, 반올림으로 생긴 차이는 운전자 몫에서 흡수해 차액 합계가 항상 0이 되게 합니다.</p>
+
+</div><div class="narrow"><h2 id="s5">괘씸모드</h2>
+<div class="angry-zone">
+<p style="margin-top:0">구간마다 멤버별 괘씸 점수를 쌓고, 점수를 배수로 바꿔 노동비 분담에 곱합니다.</p>
+<div class="formula">괘씸 배수 = 1.0 + 0.1 × 구간 괘씸 점수   (점수 0~10, 배수 1.0~2.0)</div>
+
+<h3>가산 항목</h3>
+<div class="scroll"><table>
+<thead><tr><th>행동</th><th>점수</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td>조수석에서 잠</td><td class="num plus">+1 / 20분</td><td>최대 +5. 조수석은 내비·졸음 방지 담당이므로 뒷자리 수면보다 무겁게</td></tr>
+<tr><td>뒷자리에서 잠</td><td class="num plus">+1 / 1시간</td><td>최대 +2</td></tr>
+<tr><td>혼자 먹음 (운전자에게 안 줌)</td><td class="num plus">+1 / 회</td><td>과자, 음료 등</td></tr>
+<tr><td>냄새 강한 음식을 차 안에서 먹음</td><td class="num plus">+2 / 회</td><td>햄버거, 오징어, 컵라면</td></tr>
+<tr><td>부스러기·쓰레기 방치</td><td class="num plus">+2</td><td>하차 시 체크</td></tr>
+<tr><td>시끄럽게 함</td><td class="num plus">+1 / 회</td><td>통화, 고성, 운전자가 싫다고 한 노래 반복</td></tr>
+<tr><td>훈수·재촉 (“왜 이 길로 가?”)</td><td class="num plus">+1 / 회</td><td></td></tr>
+<tr><td><b>둘이 타는데 뒷자리에 앉음</b></td><td class="num plus">택시모드</td><td>점수 대신 해당 구간 노동비를 아래 택시모드 공식으로 계산. 좌석은 묻지 않으므로 “좌석 변경”으로 뒷자리를 표시했을 때만 적용</td></tr>
+<tr><td>기타 (메모)</td><td class="num plus">+1 / 회</td><td>점수표에 없는 괘씸 행동. 구간당 최대 2회. 메모는 폰에만 저장되고 결과 링크에는 “기타”로만 표시</td></tr>
+</tbody></table></div>
+
+<h3>감면 항목</h3>
+<div class="scroll"><table>
+<thead><tr><th>행동</th><th>점수</th></tr></thead>
+<tbody>
+<tr><td>운전자에게 먹여줌·음료 챙겨줌</td><td class="num minus">−1 / 회</td></tr>
+<tr><td>휴게소에서 운전자 간식·커피 사줌</td><td class="num minus">−2</td></tr>
+<tr><td>내비·길 안내, 졸음 방지 대화</td><td class="num minus">−1 / 30분</td></tr>
+<tr><td>운전 교대 제안(실제 교대 여부 무관)</td><td class="num minus">−1</td></tr>
+</tbody></table></div>
+<h3>택시모드 공식</h3>
+<div class="formula">택시형 금액 = (구간 택시 예상요금 − 구간 공통비) × 30%
+택시모드 노동비 = 택시형 금액을 [시급형 × 1.5, 시급형 × 2.0] 범위로 자름
+              (여기서 시급형은 난이도 계수까지 반영한 금액)</div>
+<p>택시 느낌은 살리되 다른 괘씸 규칙과 같은 상한(2.0배)을 지킵니다. 서울 → 원주를 둘이 갔고 동승자가 뒷자리에 앉았다면 택시형 금액은 (140,000 − 22,000) × 30% = 35,400원이지만 상한 30,960원(15,480 × 2.0)이 적용됩니다. 영수증에는 “택시였다면 기사님께 35,400원, 친구라서 30,960원”으로 표시합니다.</p>
+<p class="muted">점수는 0 아래로 내려가지 않습니다. 감면으로 배수가 1.0보다 작아지지 않게 해서 “착한 행동으로 돈 버는” 역효과를 막습니다.</p>
+
+<h3>인정 방식</h3>
+<ul>
+<li>기록은 입력 담당 폰에서 한다. 동승자가 말로 알려주면 입력 담당이 버튼으로 남기고, 입력 담당이 운전 중이면 도착 후 몰아서 기록한다.</li>
+<li>기본은 기록 그대로 반영한다. 이의가 있으면 도착 요약의 “괘씸 N건 보기”에서 체크를 해제한다(필수 단계 아님).</li>
+<li>운전자는 확인 화면에서 “용서하기”로 개별 항목을 지울 수 있다.</li>
+<li>잘못 누른 기록은 토스트의 “취소”(5초) 또는 타일 길게 누르기(−1)로 되돌린다.</li>
+<li>결과 영수증에는 인정된 괘씸 사유가 선택한 말투로 한 줄씩 찍힌다.</li>
+</ul>
+</div>
+
+</div><div class="narrow"><h2 id="s6">계산 예시</h2>
+<p>서울 → 원주(휴게) → 강릉. 차주 민수가 전 구간 운전. 수빈은 원주에서 하차. 시급형, 기준 시급 10,320원, 연비 12km/L. 두 구간은 원주휴게소에서 누른 “수빈 하차” 기록으로 자동 생성됐고, 모두 주간·원활·고속도로 위주라 난이도 계수 1.0입니다. 거리·유가·통행료·택시요금은 설명용 가정값입니다.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>구간</th><th>거리·시간</th><th>탑승</th><th>공통비</th><th>노동비</th><th>괘씸</th></tr></thead>
+<tbody>
+<tr><td>① 서울 → 원주</td><td>120km, 1시간 30분</td><td>민수, 지현, 태호, 수빈</td><td class="num">유류 17,000 (10L × 1,700)<br>통행료 5,000<br><b>22,000</b></td><td class="num"><b>15,480</b></td><td>지현 조수석 수면 60분 +3<br>태호 혼자 과자 +1</td></tr>
+<tr><td>② 원주 → 강릉</td><td>108km, 1시간</td><td>민수, 지현, 태호</td><td class="num">유류 14,850 (9L × 1,650 원주 주유)<br>통행료 3,150<br><b>18,000</b></td><td class="num"><b>10,320</b></td><td>태호 통화·고성 +3</td></tr>
+</tbody></table></div>
+
+<div class="receipt" role="figure" aria-label="정산 영수증 예시">
+<h4>운전 노동 정산 영수증</h4>
+<p class="c">서울 → 강릉 · 운전자 민수</p>
+<hr>
+<div class="row"><span>지현</span><span></span></div>
+<div class="row sub"><span>공통비 5,500 + 6,000</span><span>11,500</span></div>
+<div class="row sub"><span>노동비 5,160×1.3 + 5,160</span><span>11,868</span></div>
+<div class="row sub"><span>사유: 조수석 수면 60분</span><span></span></div>
+<div class="row big"><span>보낼 돈</span><span>23,368원</span></div>
+<hr>
+<div class="row"><span>태호</span><span></span></div>
+<div class="row sub"><span>공통비 5,500 + 6,000</span><span>11,500</span></div>
+<div class="row sub"><span>노동비 5,160×1.1 + 5,160×1.3</span><span>12,384</span></div>
+<div class="row sub"><span>사유: 혼자 과자, 통화·고성</span><span></span></div>
+<div class="row big"><span>보낼 돈</span><span>23,884원</span></div>
+<hr>
+<div class="row"><span>수빈</span><span></span></div>
+<div class="row sub"><span>공통비 5,500</span><span>5,500</span></div>
+<div class="row sub"><span>노동비 5,160</span><span>5,160</span></div>
+<div class="row big"><span>보낼 돈</span><span>10,660원</span></div>
+<hr>
+<div class="row big"><span>민수가 받을 돈</span><span>57,912원</span></div>
+<div class="row sub"><span>공통비 회수</span><span>28,500</span></div>
+<div class="row sub"><span>노동비</span><span>29,412</span></div>
+<hr>
+<div class="row"><span>택시였다면(가정)</span><span>265,000</span></div>
+<div class="row"><span>실제 총비용</span><span>69,412</span></div>
+<div class="row big"><span>민수 덕분에 아낀 돈</span><span>195,588원</span></div>
+</div>
+
+<p class="muted">검산: 민수가 결제한 공통비 40,000원 중 본인 몫 11,500원을 뺀 28,500원 + 노동비 합계(17,544 + 11,868) 29,412원 = 57,912원.</p>
+
+</div><div class="narrow"><h2 id="s7">사용성 원칙</h2>
+<p class="lead">차 안, 친구 사이, 돈 이야기라는 세 조건에서 쓰기 쉽고 민망하지 않아야 합니다.</p>
+<div class="scroll"><table>
+<thead><tr><th>원칙</th><th>적용</th></tr></thead>
+<tbody>
+<tr><td>출발 전 입력은 2개</td><td>도착지와 동승자만. 구간·운전자·좌석은 기록에서 자동, 차량·규칙은 기본값(S2)</td></tr>
+<tr><td>고치기는 결과를 보면서</td><td>결과 화면에서 값을 고치면 금액이 바로 바뀜. 무엇이 기본값인지 표시(S10c)</td></tr>
+<tr><td>차 안 입력은 한 번 탭</td><td>괘씸·감면 타일은 탭하면 +1, 길게 누르면 −1. 누적 횟수를 타일에 크게 표시(S6)</td></tr>
+<tr><td>운전자는 화면을 보지 않는다</td><td>운전 중 잠금(S8). 큰 숫자는 동승자 기준. 음성 기록은 2차 조건부</td></tr>
+<tr><td>광고는 흐름을 막지 않는다</td><td>계산 등록 1회당 결과 화면 맨 아래 광고 카드 1개. 대기 시간·전면 화면·자동 재생 없음</td></tr>
+<tr><td>보내는 사람이 민망하지 않게</td><td>말투 3종(기본 순한맛), 명분 문구, 받는 사람 페이지에는 광고 없음</td></tr>
+<tr><td>받는 사람은 3초 안에 금액 확인</td><td>결과 페이지(S11)는 사람별 금액부터. 설치·로그인 없음. 송금 버튼(등록 시)</td></tr>
+<tr><td>변수는 기록만 하면 계산이 따라온다</td><td>하차·합류·운전 교대 버튼 → 구간 자동 분할. 휴식 버튼 → 운전 시간 제외. 결제 기록 → 낸 돈 차감</td></tr>
+<tr><td>밤에는 어둡게</td><td>폰 다크 모드 또는 18~06시 야간 모드. 검정 배경, 낮은 밝기(S6N, S8N)</td></tr>
+</tbody></table></div>
+
+<h3>입력 최소화</h3>
+<div class="scroll"><table>
+<thead><tr><th>단계</th><th>필수 입력</th><th>선택</th></tr></thead>
+<tbody>
+<tr><td>출발 전 (S2)</td><td>도착지 검색, 동승자 칩, “출발” 탭</td><td>출발지 변경</td></tr>
+<tr><td>여행 중 (S6)</td><td>“도착했어요” 탭</td><td>괘씸·감면, 결제, 하차·합류, 운전 교대, 휴식</td></tr>
+<tr><td>도착 후 (S9)</td><td>“정산하기” 탭</td><td>기상·체감 칩, 괘씸·타임라인·난이도 보기</td></tr>
+<tr><td>결과 (S10)</td><td>“결과 링크 공유” 탭</td><td>말투, 고치기(S10c)</td></tr>
+<tr><td>앱을 못 켠 여행 (S3)</td><td>도착지, 인원, 출발·도착 시각, “정산하기”</td><td>휴식 시간</td></tr>
+</tbody></table></div>
+<p>필수 탭은 여행 한 건에 약 5회입니다. 기록을 하나도 하지 않고 출발·도착만 눌러도 정산이 됩니다.</p>
+
+<h4>기본값</h4>
+<div class="scroll"><table>
+<thead><tr><th>항목</th><th>기본값</th><th>바꾸는 곳</th></tr></thead>
+<tbody>
+<tr><td>출발지</td><td>최근 출발지 또는 저장한 “집”</td><td>S2</td></tr>
+<tr><td>운전자·좌석</td><td>차주(나), 좌석 미지정</td><td>여행 중 운전 교대·좌석 변경</td></tr>
+<tr><td>차량 유종·연비</td><td>휘발유, 12km/L (한 번 고치면 기억)</td><td>S10c</td></tr>
+<tr><td>노동비 방식·시급</td><td>시급형, 해당 연도 최저시급</td><td>S10c</td></tr>
+<tr><td>괘씸모드·반영 방식</td><td>켜짐, 가산형</td><td>설정</td></tr>
+<tr><td>말투</td><td>순한맛</td><td>S10</td></tr>
+<tr><td>기상·체감</td><td>맑음, 보통</td><td>S9 칩</td></tr>
+<tr><td>동승자 이름</td><td>“+1명”이면 동승자 A, B…</td><td>S10c</td></tr>
+</tbody></table></div>
+<p>결과 영수증에는 기본값으로 계산한 항목(연비, 시급 등)에 “기본값” 표시를 붙여 받는 사람도 추정치임을 알 수 있게 합니다.</p>
+
+<h4>감수하는 점</h4>
+<ul>
+<li>경유지를 미리 넣지 않아 경로 조회는 출발지→도착지 한 번이다. 크게 돌아간 여행은 거리가 짧게 잡힐 수 있어 결과 화면에서 거리 고치기를 안내한다.</li>
+<li>하차 장소를 고르지 않으면 구간 거리는 운전 시간 비율 추정이다.</li>
+<li>첫 여행은 기본 연비라 기름값이 실제와 다를 수 있다. 한 번 고치면 다음부터 정확해진다.</li>
+<li>구간마다 경로를 조회하지 않아 카카오 API 호출이 줄어, 0원 운영에는 유리하다.</li>
+</ul>
+
+<h3>영수증 말투</h3>
+<p>말투는 영수증 제목, 괘씸 사유 문장, 공유 본문, 명분 문구만 바꿉니다. 금액과 “송금 전에 확인하세요” 안내는 모든 말투에서 같습니다.</p>
+<div class="scroll"><table>
+<thead><tr><th>말투</th><th>괘씸 사유 예</th><th>공유 문구 예</th><th>명분 문구</th></tr></thead>
+<tbody>
+<tr><td>순한맛 (기본)</td><td>조수석에서 푹 쉬었어요 (+3)</td><td>강릉 여행 운전 정산이 도착했어요</td><td>이 정산금은 운전자의 다음 기름값과 허리 건강에 쓰입니다</td></tr>
+<tr><td>매운맛</td><td>조수석에서 60분 숙면. 내비는 누가 봤죠? (+3)</td><td>괘씸자 1명 감지됨 🚨 정산 도착</td><td>운전자는 오늘 사람이 아니라 내비였습니다</td></tr>
+<tr><td>비즈니스</td><td>조수석 휴식 60분 (+3)</td><td>강릉 이동 운전 정산 내역입니다</td><td>표시하지 않음</td></tr>
+</tbody></table></div>
+
+<h3>음성 기록 (2차 조건)</h3>
+<ul>
+<li>기기 내부 음성 인식이 가능한 환경에서만 켠다. 서버 기반 인식은 음성이 외부로 전송되므로 쓰지 않는다.</li>
+<li>계속 듣지 않고, 버튼을 누르는 동안만 듣는다. 동승자가 누르는 것을 기본으로 한다.</li>
+<li>“괘씸 태호 시끄러움”처럼 정해진 짧은 명령만 기록하고, 확인은 도착 후 S9에서 한다. 운전 중 확인 화면은 띄우지 않는다.</li>
+</ul>
+
+<h3>송금 버튼 (출시 직후)</h3>
+<ul>
+<li>운전자가 자기 토스 아이디 링크나 카카오페이 송금 링크를 한 번 등록하면 폰에 저장되고 결과 링크에 담긴다.</li>
+<li>허용 형식이 아닌 주소, 계좌번호 원문은 저장·표시하지 않는다.</li>
+<li>금액 자동 입력이 안 되는 경우를 대비해 “금액 복사” 버튼을 함께 둔다.</li>
+</ul>
+
+</div><div class="part" id="part2"><span class="part-no">2부</span><div><p class="part-title">시스템과 운영</p><p class="part-sub">0원으로, 최소 정보로, 안전하게</p></div></div><div class="narrow"><h2 id="s8">시스템 구성</h2>
+<p class="lead">서버는 Cloudflare Worker 하나입니다. 데이터베이스와 로그인 없이, 폰이 계산하고 Worker는 API 키를 숨긴 채 외부 API를 대신 호출합니다.</p>
+
+<pre class="mermaid">
+flowchart LR
+  subgraph Phone[입력 담당 폰]
+    UI[입력·계산·로컬 저장]
+  end
+  subgraph CF[Cloudflare Worker]
+    GATE[세션·호출 제한]
+    API[/api 중계/]
+    DO[(Durable Object: 일일 예산 카운터)]
+    KV[(KV: 유가 캐시·차단 목록·스위치)]
+    CRON[Cron: 유가 갱신·사용량 알림]
+    PAGE[결과 보기 페이지]
+  end
+  UI -->|Turnstile 통과 후 세션| GATE --> API
+  API --> DO
+  API --> ADP[경로·장소 어댑터]
+  ADP --> KAKAO[카카오 로컬 / 카카오모빌리티]
+  ADP -. 예비 .-> TMAP[TMAP 경로·POI]
+  API --> KV
+  CRON --> OPI[오피넷] --> KV
+  UI -.결과 링크 공유.-> FRIEND[동승자 폰]
+  FRIEND -->|/r#압축결과| PAGE
+</pre>
+
+<h3>역할 분담</h3>
+<div class="scroll"><table>
+<thead><tr><th>위치</th><th>담당</th><th>저장하는 것</th></tr></thead>
+<tbody>
+<tr><td><b>입력 담당 폰</b></td><td>여행·구간·멤버 입력, 유류비·노동비·괘씸·정산 계산, 결과 링크 생성</td><td>여행 전체 기록, 유가 스냅샷(조회 시각 포함)</td></tr>
+<tr><td><b>Worker /api</b></td><td>API 키 보관, 카카오·오피넷 호출 중계, 응답 정리, 호출 제한</td><td>없음(응답 캐시만)</td></tr>
+<tr><td><b>Worker Cron</b></td><td>하루 몇 차례 오피넷 시·도별 평균가를 받아 캐시 갱신</td><td>KV에 시·도 × 유종 평균가 1건</td></tr>
+<tr><td><b>결과 보기 페이지</b></td><td>링크의 # 뒤 데이터를 풀어 영수증 표시</td><td>없음(정적 파일)</td></tr>
+</tbody></table></div>
+
+<h3>경로 제공자 어댑터</h3>
+<p>Worker 안에서 제공자별 응답을 같은 형식(구간별 거리, 시간, 통행료, 택시요금, 정체 비율, 저속 도로 비율)으로 바꿉니다. 앱은 어느 회사가 조회했는지 몰라도 됩니다.</p>
+<div class="scroll"><table>
+<thead><tr><th>상황</th><th>동작</th></tr></thead>
+<tbody>
+<tr><td>평소</td><td>카카오로 조회</td></tr>
+<tr><td>카카오 하드 상한(하루 9,000건) 도달</td><td>TMAP으로 전환 (하루 900건 상한)</td></tr>
+<tr><td>카카오 장애·앱 차단</td><td>즉시 TMAP으로 전환, 비상 스위치로 고정 가능</td></tr>
+<tr><td>둘 다 상한 도달</td><td>자동 조회 중단, 수동 입력</td></tr>
+</tbody></table></div>
+<ul>
+<li>한 여행 안의 구간은 같은 제공자로 조회한다. 중간에 전환되면 그 여행 전체를 새 제공자로 다시 조회해 구간 간 기준을 맞춘다.</li>
+<li>구간마다 조회 출처를 저장하고 계산 근거에 “조회: 카카오” 또는 “조회: TMAP”으로 표시한다. 두 회사의 택시요금·통행료 추정값은 조금 다를 수 있다.</li>
+<li>정체 비율 계산은 제공자별 도로 교통 정보 형식에 맞춰 따로 구현한다.</li>
+</ul>
+
+<h3>Worker API 명세 (초안)</h3>
+<div class="scroll"><table>
+<thead><tr><th>엔드포인트</th><th>입력</th><th>출력</th><th>내부 동작</th></tr></thead>
+<tbody>
+<tr><td><code>POST /api/session</code></td><td>Turnstile 토큰</td><td>서명된 세션 토큰(2시간)</td><td>Turnstile 검증 후 HMAC 서명 토큰 발급. 나머지 /api는 이 토큰 없으면 즉시 거절</td></tr>
+<tr><td><code>GET /api/places</code></td><td>q(검색어)만</td><td>장소 목록(이름, 주소, 좌표)</td><td>카카오 로컬 키워드 검색. 현재 위치 좌표는 받지 않음. 앱에서 입력 디바운스 필수</td></tr>
+<tr><td><code>POST /api/route</code></td><td>출발·도착 2점 좌표 (하차 장소를 고르면 그 지점 추가). 이름·날짜·인원 없음</td><td>구간별 거리, 시간, 통행료, 택시 예상요금, 정체·지체 거리 비율, 저속 원활 도로 비율. 2차: 지나는 고속도로 노선명과 노선별 거리</td><td>보통 여행 1건당 1회 호출. 하차 장소를 고른 경우에만 구간별로 추가 호출. 같은 좌표쌍은 캐시</td></tr>
+<tr><td><code>GET /api/fuel/avg</code></td><td>sido(시·도 코드), prod(유종). 시·도는 폰이 주소 문자열에서 판단</td><td>평균가, 기준 시각</td><td>KV에서 읽기만 함. 외부 호출 없음</td></tr>
+<tr><td><code>GET /api/fuel/stations</code> (2차)</td><td>사용자가 고른 지점 좌표(소수점 2자리, 약 1km 단위로 뭉갬), 유종</td><td>주변 주유소와 가격</td><td>기기 현재 위치는 쓰지 않음. 오피넷 좌표계(KATEC)로 변환 후 조회, 10분 캐시</td></tr>
+<tr><td><code>/r#v1.…</code></td><td>링크 조각의 압축 결과</td><td>영수증 화면</td><td>Worker 정적 자산으로 서빙</td></tr>
+</tbody></table></div>
+
+<h3>결과 링크 구조</h3>
+<div class="formula">결과 JSON(멤버 이름, 구간 요약, 금액, 괘씸 항목 코드, 말투 코드, 운전자 송금 링크(허용 형식만), 발급 시각)
+ → deflate 압축 → base64url 인코딩
+ → https://도메인/r#v1.{인코딩 문자열}</div>
+<p>링크의 <code>#</code> 뒤는 브라우저가 서버로 보내지 않아서, 누가 얼마를 냈는지가 Cloudflare 로그에도 남지 않습니다. 앞의 <code>v1</code>은 결과 형식이 바뀌어도 옛 링크를 계속 열기 위한 버전 표시입니다. 메신저 호환을 위해 인코딩 결과는 약 2,000자 이내를 목표로 하고, 넘으면 구간 상세를 빼고 사람별 합계만 담습니다.</p>
+<p>결과별 카카오톡 썸네일 카드는 만들지 않습니다. 미리보기는 카카오 서버가 페이지를 읽어 만드는데 결과 데이터는 <code>#</code> 뒤에 있어 서버가 볼 수 없기 때문입니다. 대신 Web Share API의 본문에 앱이 문구를 넣습니다. 썸네일은 공통 이미지 하나입니다.</p>
+<div class="formula">[서울→강릉] 민수 님 운전 정산 도착 · 괘씸자 1명 감지됨 🚨
+{결과 링크}</div>
+<p class="muted">단체방에서 민망하지 않도록 괘씸자는 이름 없이 인원수만 씁니다.</p>
+
+<h3>보안과 남용 방지</h3>
+<p>아래 “어뷰징 대응” 섹션에서 위협별로 정리합니다.</p>
+
+<h3>비용</h3>
+<p>Cloudflare 공식 문서(2026년 9월 확인) 기준 Workers 무료 플랜은 하루 10만 요청, 요청당 CPU 10ms이고, fetch 호출이나 KV 읽기를 기다리는 시간은 CPU 시간에 포함되지 않습니다. 이 앱의 Worker는 외부 API를 기다리는 시간이 대부분이라 CPU 한도에 걸릴 일이 적습니다. 정적 자산 요청은 무료이고 무제한이라 결과 페이지 조회는 요청 수에 들어가지 않고, Cron Trigger는 무료 플랜에서 계정당 5개까지라 유가 갱신 1개면 충분합니다. 유료 플랜은 월 최소 5달러입니다.</p>
+<p>여행 한 건에 장소 검색·경로·유가 조회로 대략 15회 안팎의 요청을 쓴다고 보면 무료 한도로 하루 수천 건을 처리할 수 있습니다. 실제 병목은 Cloudflare보다 카카오모빌리티 길찾기 무료 호출량일 가능성이 높습니다(구간 수만큼 호출).</p>
+
+<h3>개발 초기에 확인할 위험</h3>
+<ul>
+<li>오피넷 API가 Cloudflare 해외 경유 IP의 호출을 막지 않는지 첫 주에 실제 호출로 확인. 막히면 유가 갱신만 국내 소형 서버나 GitHub Actions 예약 작업으로 옮긴다.</li>
+<li>카카오모빌리티에 결제수단이 없을 때 무료량 초과분이 차단되는지 청구되는지(확인 전까지 하드 상한으로 방어).</li>
+<li>Rate Limiting 바인딩의 무료 플랜 사용 가능 여부.</li>
+<li>오피넷 API 키의 일일 호출 제한과 서비스 이용 조건.</li>
+<li>오피넷 KATEC 좌표 변환 정확도(주변 주유소 기능, 2차).</li>
+</ul>
+
+</div><div class="narrow"><h2 id="s9">서버 최소 정보 원칙</h2>
+<p class="lead">서버는 주소 조회기일 뿐, 누가 누구와 어디를 갔는지는 모릅니다. 새 기능을 추가할 때 이 원칙에 어긋나면 기능 쪽을 바꿉니다.</p>
+
+<h3>서버가 받는 것</h3>
+<div class="scroll"><table>
+<thead><tr><th>엔드포인트</th><th>받는 정보</th><th>받지 않는 것</th></tr></thead>
+<tbody>
+<tr><td><code>POST /api/session</code></td><td>Turnstile 토큰</td><td>기기 정보, 앱 식별자. 세션 ID는 무작위 값</td></tr>
+<tr><td><code>GET /api/places</code></td><td>검색어</td><td>현재 위치 좌표 (“현재 위치로 검색”은 MVP 제외)</td></tr>
+<tr><td><code>POST /api/route</code></td><td>지점 좌표 목록</td><td>장소 이름, 여행 날짜, 인원, 멤버</td></tr>
+<tr><td><code>GET /api/fuel/avg</code></td><td>시·도 코드, 유종</td><td>주소, 좌표</td></tr>
+</tbody></table></div>
+<p>경로 조회의 좌표가 서버가 아는 최대치입니다. 좌표만으로는 그 경로를 누가 언제 누구와 갔는지 알 수 없습니다.</p>
+
+<h3>서버가 절대 받지 않는 것</h3>
+<p>멤버 이름, 금액, 괘씸·감면 기록과 메모, 주유 기록, 여행 날짜, GPS·속도 정보, 결과 링크 내용.</p>
+
+<h3>서버가 저장하는 것</h3>
+<div class="scroll"><table>
+<thead><tr><th>저장소</th><th>내용</th><th>보관</th></tr></thead>
+<tbody>
+<tr><td>Durable Object</td><td>전체 호출 수, 세션 ID별 호출 수</td><td>하루 지나면 삭제. 세션 ID는 2시간 뒤 무효</td></tr>
+<tr><td>KV</td><td>유가 평균, 비상 스위치, 수동 차단 목록</td><td>차단 목록은 당일만 유효</td></tr>
+<tr><td>응답 캐시</td><td>경로·장소 응답</td><td>캐시 키는 좌표·검색어를 비밀 값과 섞은 해시. 좌표 문자열이 캐시에 남지 않음</td></tr>
+<tr><td>로그</td><td>오류 코드만</td><td>요청 본문·검색어·좌표는 기록하지 않음</td></tr>
+</tbody></table></div>
+
+<h3>개발 규칙</h3>
+<ul>
+<li>Worker 코드에서 요청 본문, 쿼리, 좌표를 <code>console.log</code>로 출력하지 않는다. 코드 리뷰 체크 항목.</li>
+<li>Workers 로그는 끄거나 오류 코드만 남기도록 설정한다.</li>
+<li>운전 중 잠금(S8)의 속도 감지는 폰 안에서만 계산한다.</li>
+<li>서버 기반 음성 인식을 쓰지 않는다. 음성이 외부 회사 서버로 전송되기 때문이다.</li>
+<li>광고 스크립트는 정산 결과 화면(S10)의 광고 카드에서만 불러오고 결과 보기 페이지(/r)에는 넣지 않는다. 광고 요청에 이름·금액·목적지 같은 여행 정보를 넣지 않는다.</li>
+<li>분당 호출 제한에는 IP를 키로 쓰지만 Cloudflare 제한 기능 안에서만 쓰이고 우리 저장소에 남기지 않는다.</li>
+<li>외부 API(카카오, TMAP, 오피넷)는 Worker의 IP만 보게 되어 사용자 IP가 외부 회사에 전달되지 않는다.</li>
+</ul>
+
+</div><div class="narrow"><h2 id="s10">0원 운영 원칙</h2>
+<p class="lead">출시와 초기 운영을 결제 0원으로 합니다. 돈이 나갈 수 있는 곳은 카카오모빌리티와 TMAP의 경로 조회 무료량 초과분뿐이므로, 이것을 코드로 막는 것이 핵심입니다.</p>
+<ol>
+<li><b>결제수단을 등록하지 않는다.</b> Cloudflare, 카카오, TMAP 모두 무료 한도 안에서만 동작하게 둔다.</li>
+<li><b>외부 API 호출은 모두 Worker의 일일 예산 카운터를 거친다.</b> 한도에 가까워지면 자동 조회를 끄고 수동 입력으로 넘긴다.</li>
+<li><b>자동 조회가 없어도 앱이 완전히 동작한다.</b> 거리·시간·통행료·유가 직접 입력 경로를 MVP 품질로 만든다.</li>
+</ol>
+<div class="scroll"><table>
+<thead><tr><th>항목</th><th>무료 범위 (2026년 9월 확인)</th><th>0원 유지 방법</th></tr></thead>
+<tbody>
+<tr><td>Cloudflare Workers</td><td>하루 10만 요청, 요청당 CPU 10ms. 정적 자산 요청 무료·무제한</td><td>무료 플랜 유지. 한도 초과 시 오류로 끝나며 청구 없음</td></tr>
+<tr><td>Durable Objects (SQLite)</td><td>무료 플랜 제공. 하루 10만 요청, 행 쓰기 10만</td><td>일일 예산 카운터 전용으로만 사용</td></tr>
+<tr><td>Turnstile</td><td>무료, 챌린지 무제한, 위젯 20개, 위젯당 호스트 10개</td><td>workers.dev 주소를 호스트로 등록</td></tr>
+<tr><td>카카오모빌리티 자동차 길찾기</td><td>일 10,000건 무료, 초과분 건당 8원</td><td><b>하루 9,000건 하드 상한</b>, 좌표 캐시</td></tr>
+<tr><td>TMAP (예비)</td><td>Free 요금제: 자동차 경로안내 일 1,000건, POI 검색 일 20,000건. 초과분 경로안내 건당 11원(Premium 기준)</td><td>경로 하루 900건, POI 하루 18,000건 하드 상한. 카카오 상한·장애 시에만 사용</td></tr>
+<tr><td>카카오 로컬 장소검색</td><td>일 최대 10만 호출 (월 통합 쿼터 별도)</td><td>과금보다 초과 시 차단 위험. 하루 50,000건 상한, 디바운스·캐시</td></tr>
+<tr><td>오피넷</td><td>무료, 키 신청</td><td>Cron에서만 하루 몇 차례 호출</td></tr>
+<tr><td>정산 광고</td><td>광고 네트워크 가입 무료</td><td>구글 애드센스는 자체 도메인이 필요할 가능성이 높아 도메인 구입(연 1만 원대)이 첫 지출이 될 수 있음. 카카오 애드핏은 매체 심사 통과 필요</td></tr>
+<tr><td>교통 이력 요약표 (2차)</td><td>GitHub Actions(공개 저장소), Worker 정적 자산</td><td>원본 CSV 가공은 Worker가 아닌 GitHub Actions 예약 작업에서. 결과 JSON은 정적 파일로 배포(요청 무료·무제한)</td></tr>
+<tr><td>도메인</td><td>workers.dev 서브도메인 무료</td><td>도메인 구매는 수익이 생긴 뒤</td></tr>
+<tr><td>지도 표시</td><td>—</td><td>지도 SDK 미사용. 경로 화면은 도식형 SVG</td></tr>
+<tr><td>결과 공유</td><td>—</td><td>카카오톡 SDK 대신 브라우저 공유(Web Share API)와 링크 복사</td></tr>
+<tr><td>앱 배포</td><td>PWA는 비용 없음</td><td>스토어 등록(구글 1회 25달러, 애플 연 99달러)은 나중에</td></tr>
+</tbody></table></div>
+<p class="muted">무료 제공량은 각 사가 변경할 수 있다고 명시하고 있으므로 출시 직전과 분기마다 다시 확인합니다.</p>
+
+</div><div class="narrow"><h2 id="s11">어뷰징 대응</h2>
+<p class="lead">로그인이 없고 서버가 공개 API를 중계하는 구조라, 누구든 앱 없이 Worker를 직접 두드릴 수 있습니다. 목표는 완벽한 차단이 아니라 “공격해도 돈이 나가지 않고, 정상 사용자는 수동 입력으로라도 정산을 끝낼 수 있게” 만드는 것입니다.</p>
+
+<h3>위협 목록</h3>
+<div class="scroll"><table>
+<thead><tr><th>ID</th><th>위협</th><th>피해</th><th>심각도</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td>스크립트로 경로·장소 API 반복 호출</td><td>카카오 일일 무료량 소진, 정상 사용자 자동 조회 중단, 초과 과금 위험</td><td><span class="tag p0">높음</span></td></tr>
+<tr><td>T2</td><td>다른 서비스가 우리 Worker를 무료 길찾기 API처럼 사용</td><td>T1과 같음. 장기간 조용히 진행될 수 있음</td><td><span class="tag p0">높음</span></td></tr>
+<tr><td>T3</td><td>차단당할 요청이라도 대량으로 보내기</td><td>거절 응답도 Worker 요청 수에 포함되어 하루 10만 소진 시 Worker 전체 오류</td><td><span class="tag p1">중간</span></td></tr>
+<tr><td>T4</td><td>카카오 운영정책 위반</td><td>쿼터 초과 이용·동일 서비스 복수 앱 운영 시 앱 차단</td><td><span class="tag p0">높음</span></td></tr>
+<tr><td>T5</td><td>결과 링크 위조·악용</td><td>임의 금액 링크로 송금 유도, 욕설 이름 노출, 스크립트 삽입, 압축 폭탄으로 페이지 멈춤</td><td><span class="tag p1">중간</span></td></tr>
+<tr><td>T6</td><td>입력 담당의 정산 조작</td><td>운전 시간·통행료·괘씸 부풀리기로 친구 간 분쟁</td><td><span class="tag p2">낮음</span></td></tr>
+<tr><td>T7</td><td>API 키 유출</td><td>Worker를 거치지 않는 직접 호출로 쿼터 소진</td><td><span class="tag p1">중간</span></td></tr>
+</tbody></table></div>
+
+<h3>요청이 거치는 방어 순서</h3>
+<p>비용이 싼 검사를 앞에, 비싼 검사를 뒤에 둡니다. 앞 단계에서 거절되면 뒤 단계(DO 호출, 카카오 호출)는 실행되지 않습니다.</p>
+<div class="formula">① 경로·메서드·입력값 검증        (CPU만 사용)
+② 세션 토큰 서명·만료 확인        (CPU만 사용)
+③ 차단 목록 확인                  (KV 읽기)
+④ 분당 호출 제한                  (Rate Limiting 바인딩)
+⑤ 응답 캐시 확인 → 적중 시 반환   (Cache API)
+⑥ 일일 예산 차감                  (Durable Object)
+⑦ 카카오 호출 → 응답 축소 → 캐시 저장</div>
+
+<h3>1. 세션 발급: 사람이 쓰는 앱인지 확인 (T1, T2)</h3>
+<ul>
+<li>앱을 처음 열 때 Turnstile(보이지 않는 모드)을 실행하고, 토큰을 <code>POST /api/session</code>으로 보낸다.</li>
+<li>Worker는 Turnstile 검증에 통과하면 세션 ID, 만료 시각(2시간)을 HMAC으로 서명한 토큰을 준다. 이후 모든 /api 요청은 이 토큰이 필요하다.</li>
+<li>토큰 검증은 서명 계산만 하므로 외부 호출 없이 끝난다. 위조·만료 토큰은 ②에서 즉시 401.</li>
+<li>세션 발급 자체도 IP당 10분에 5회로 제한해 세션 대량 생성을 막는다.</li>
+<li>Turnstile 위젯 호스트에는 서비스 주소만 등록하므로, 다른 사이트에 위젯을 심어 세션을 받아가는 방식은 통하지 않는다.</li>
+</ul>
+
+<h3>2. 호출량 제한: 세션·IP·전체 3단 (T1, T2, T4)</h3>
+<div class="scroll"><table>
+<thead><tr><th>단위</th><th>경로 조회 <code>/api/route</code></th><th>장소검색 <code>/api/places</code></th><th>구현</th></tr></thead>
+<tbody>
+<tr><td>세션 분당</td><td class="num">5회</td><td class="num">30회</td><td>Rate Limiting 바인딩</td></tr>
+<tr><td>IP 분당</td><td class="num">15회</td><td class="num">90회</td><td>Rate Limiting 바인딩 (공용 와이파이 고려해 여유 있게)</td></tr>
+<tr><td>세션 하루</td><td class="num">40회</td><td class="num">300회</td><td>Durable Object 카운터</td></tr>
+<tr><td>전체 시간당</td><td class="num">1,500건</td><td class="num">8,000건</td><td>Durable Object. 오전에 하루치가 다 타버리는 것 방지</td></tr>
+<tr><td>전체 하루 (하드 상한)</td><td class="num">9,000건</td><td class="num">50,000건</td><td>Durable Object. 넘으면 카카오를 절대 호출하지 않음</td></tr>
+<tr><td>TMAP 예비 하루 (하드 상한)</td><td class="num">900건</td><td class="num">18,000건</td><td>Durable Object. 카카오 상한 도달·장애 시에만 사용</td></tr>
+</tbody></table></div>
+<p>Rate Limiting 바인딩은 Cloudflare 위치별로 대략 세는 방식이라 순간 폭주를 싸게 거르는 용도로 쓰고, 돈과 직결되는 일일 상한은 정확히 세는 Durable Object에 맡깁니다. 세션 하루 40회는 구간 4개짜리 여행을 10번 조회할 수 있는 양으로, 정상 사용자는 닿지 않습니다.</p>
+
+<h3>3. 단계별 절전 모드 (T1, T2)</h3>
+<div class="scroll"><table>
+<thead><tr><th>일일 사용률</th><th>동작</th><th>앱 표시</th></tr></thead>
+<tbody>
+<tr><td>0~70%</td><td>정상</td><td>—</td></tr>
+<tr><td>70~90%</td><td>세션 하루 한도 절반으로, 장소검색 최소 글자 수 2 → 3</td><td>—</td></tr>
+<tr><td>90~100%</td><td>새 카카오 호출 중단, 캐시 적중과 TMAP 예비로 응답</td><td>—</td></tr>
+<tr><td>카카오·TMAP 모두 100%</td><td>자동 조회 엔드포인트 즉시 503</td><td>같은 문구, 수동 입력 필드 자동 펼침</td></tr>
+</tbody></table></div>
+
+<h3>4. 훔쳐 갈 가치 낮추기 (T2)</h3>
+<ul>
+<li><b>응답 축소:</b> 경로 응답은 구간별 거리·시간·통행료·택시요금과 난이도용 비율 2개, 숫자 6개만(2차에 고속도로 노선명·거리 추가, 개인 정보 아님). 비율은 Worker가 도로별 교통 정보로 계산한 뒤 원본을 버린다. 경로 좌표(vertexes), 도로별 정보는 내보내지 않는다. 내비·배달 서비스가 대신 쓰기에 쓸모없게 만든다.</li>
+<li><b>장소검색 축소:</b> 상위 5개, 이름·주소·좌표만. 전화번호·카테고리·페이지 넘김은 제공하지 않는다.</li>
+<li><b>입력 제한:</b> 좌표는 대한민국 영역 안, 지점 최대 11개(구간 10개), 검색어 2~40자. 벗어나면 400.</li>
+<li><b>캐시:</b> 좌표를 소수점 4자리(약 10m)로 반올림한 뒤 비밀 값과 섞어 해시한 값을 캐시 키로 사용. 같은 구간 반복 조회는 카카오를 부르지 않는다.</li>
+</ul>
+
+<h3>5. Worker 요청 한도 방어 (T3)</h3>
+<ul>
+<li>거절 경로(①~④)는 외부 호출 없이 1ms 안에 끝나게 유지해 CPU 한도에 걸리지 않게 한다.</li>
+<li>Worker 요청 한도가 소진돼도 서비스가 멈추지 않게 설계한다. 앱 화면은 서비스 워커로 폰에 캐시되고, 계산·기록·결과 링크 생성은 서버 없이 동작한다. 결과 보기 페이지도 브라우저에서만 해석한다.</li>
+<li>정적 자산은 Worker 코드보다 먼저 응답하도록 설정한다. 요청 한도 소진 시 정적 자산 응답이 유지되는지는 배포 후 실제로 확인한다.</li>
+<li>도메인을 사게 되면(수익 발생 후) Worker 실행 전 단계인 WAF 차단 규칙으로 옮겨 요청 수 소모 자체를 줄인다.</li>
+</ul>
+
+<h3>6. 감시와 비상 스위치 (T1~T4, T7)</h3>
+<ul>
+<li><b>알림:</b> Cron이 매시 정각 Durable Object 카운터를 읽어 사용률 50%, 80%, 95%에서 디스코드 또는 텔레그램 웹훅으로 알림(무료).</li>
+<li><b>이상 징후:</b> 세션 하루 한도에 닿은 세션 수를 알림에 포함. 한도에 닿는 세션이 10개를 넘으면 공격 의심 알림. IP는 저장하지 않으므로 공격자별 분석은 하지 않는다.</li>
+<li><b>비상 스위치:</b> KV에 <code>auto_route</code>, <code>auto_places</code> 켜기/끄기 값. 재배포 없이 대시보드에서 바로 끈다.</li>
+<li><b>차단 목록:</b> KV에 세션 ID, 그날만 쓰는 솔트로 해시한 IP. 수동 등록만 하고 당일에 만료. KV 쓰기 한도에 걸리지 않는다.</li>
+<li><b>키 유출 대응:</b> 카카오·오피넷 키 재발급 → <code>wrangler secret put</code>으로 교체 → 옛 키 폐기. 절차를 운영 문서에 적어 둔다.</li>
+</ul>
+
+<h3>7. 제공자 운영정책 지키기 (T4)</h3>
+<ul>
+<li>카카오 앱은 하나만 만든다. 개발용·운영용으로 앱을 나누거나 쿼터를 늘리려 앱을 추가하지 않는다(동일 서비스 복수 앱 운영은 차단 사유).</li>
+<li>개발·테스트는 저장해 둔 샘플 응답(목업 데이터)으로 하고, 실제 키 호출은 통합 테스트 때만.</li>
+<li>일일 하드 상한을 카카오·TMAP 무료량보다 낮게 둬서 쿼터 초과 이용이 구조적으로 발생하지 않게 한다.</li>
+<li>카카오 앱이 차단되더라도 TMAP 예비로 전환되어 서비스가 멈추지 않는다. TMAP도 계정·앱을 하나만 운영한다.</li>
+</ul>
+
+<h3>8. 결과 링크 악용 막기 (T5)</h3>
+<ul>
+<li><b>형식 검증:</b> 링크 데이터 최대 4KB, 압축 해제는 32KB에서 중단. 멤버 10명, 구간 10개, 이름 10자, 금액 0~500만원 범위를 벗어나면 “손상된 링크” 화면.</li>
+<li><b>자유 텍스트 최소화:</b> 괘씸 사유는 항목 코드로만 전달하고 문구는 페이지가 가진 고정 문장으로 표시. “기타” 항목의 메모는 링크에 넣지 않는다. 자유 입력은 이름뿐이다.</li>
+<li><b>안전한 표시:</b> 모든 값은 텍스트로만 출력(HTML 해석 금지). 링크 데이터 안의 URL은 절대 링크로 만들지 않는다. 결과 페이지에 엄격한 CSP 적용.</li>
+<li><b>송금 유도 차단:</b> 결과 링크에는 계좌번호 원문을 절대 넣지 않는다. 송금 버튼은 토스 아이디 링크, 카카오페이 송금 링크처럼 정해진 형식의 주소만 허용하고, 결과 페이지가 표시 전에 형식을 다시 검증한다. 버튼 옆에 “송금 앱에서 받는 사람이 ○○ 님인지 확인하세요”를 둔다. 결과 페이지 고정 문구: “유가 시세, 최저시급, 함께 확인한 괘씸 기록으로 자동 계산했어요. 금액은 링크를 만든 사람이 입력한 값 기준이니 송금 전에 확인하세요.” 입력 담당의 부담을 덜면서 사실과 어긋나지 않게 한다.</li>
+<li><b>서명은 하지 않는다:</b> 서명하려면 결과 내용이나 해시를 서버로 보내야 해서 서버 최소 정보 원칙에 어긋난다. 서명은 “앱에서 계산했다”는 증명일 뿐 입력값이 사실이라는 증명도 아니므로, 고정 안내 문구로 대신한다.</li>
+</ul>
+
+<h3>9. 정산 조작 드러내기 (T6)</h3>
+<p>한 폰 입력 구조에서는 입력 담당이 값을 바꾸는 것을 막을 수 없습니다. 대신 결과에서 보이게 합니다.</p>
+<ul>
+<li>자동 조회값을 직접 수정한 항목은 결과 영수증 계산 근거에 원래 값과 함께 표시. 예: “운전 시간 직접 입력: 예상 1시간 → 2시간”</li>
+<li>직접 입력한 운전 시간이 자동 조회 예상의 1.5배를 넘으면 결과 페이지에 주의 표시. 조회 시점 교통 기준이라 부정확할 수 있어, 고속도로 구간은 2차에서 10번의 평소 이력 기준 판정으로 대체한다.</li>
+<li>괘씸 배수 상한 2.0, 난이도 계수 상한 2.0 유지. 직접 입력한 실제 운전 시간·기상·체감 점수는 영수증에 “직접 입력”으로 표시. 결과에 택시 예상요금을 함께 보여줘 비상식적인 금액이 한눈에 드러나게 한다.</li>
+</ul>
+
+<h3>10. 공공 교통 이력으로 운전 시간 검증하기 (T6, 2차)</h3>
+<p>“금요일 저녁이라 막혔다”는 입력이 사실에 가까운지, 동승자가 판단할 근거를 줍니다. 서버는 여행 시각을 전혀 알지 못하고 비용도 들지 않습니다.</p>
+<ol class="flow">
+<li><b>이력 수집 (GitHub Actions)</b>주 1회 예약 작업이 한국도로공사 VDS 소통 통계를 받아 “고속도로 노선 × 방향 × 요일 × 시간대 → 평소 평균 속도, 정체 빈도” 요약표(JSON)를 만든다. 원본은 크고 무거우므로 Worker에서 처리하지 않는다.</li>
+<li><b>정적 배포</b>요약표를 Worker 정적 자산으로 배포한다. 폰은 필요할 때 한 번 내려받아 캐시한다.</li>
+<li><b>노선 정보 받기</b><code>/api/route</code>가 구간마다 지나는 고속도로 노선명과 노선별 거리를 추가로 돌려준다. 카카오 응답의 도로 이름으로 Worker가 계산하고 원본은 버린다.</li>
+<li><b>폰 안에서 비교</b>폰이 출발 시각과 노선으로 요약표를 조회해 “평소 이 시간대 예상 소요 시간”을 계산한다. 시각은 서버로 가지 않는다.</li>
+<li><b>결과에 표시</b>입력한 실제 운전 시간과 평소 예상을 나란히 보여준다.</li>
+</ol>
+<div class="scroll"><table>
+<thead><tr><th>판정</th><th>조건</th><th>결과 영수증 표시</th></tr></thead>
+<tbody>
+<tr><td>평소 혼잡 시간대</td><td>입력 시간이 평소 예상의 1.3배 이내</td><td>“금요일 저녁 영동고속도로는 평소에도 느린 시간대예요. 입력한 운전 시간과 비슷해요.”</td></tr>
+<tr><td>평소보다 오래 걸림</td><td>평소 예상의 1.3~2배</td><td>“평소보다 오래 걸렸어요. 사고·공사·날씨 영향일 수 있어요.” (중립)</td></tr>
+<tr><td>확인 필요</td><td>평소 예상의 2배 초과</td><td><span class="tag y">확인 필요</span> “평소 이 시간대의 2배 넘게 걸렸다고 입력됐어요.”</td></tr>
+<tr><td>판정 불가</td><td>고속도로 비중이 구간 거리의 50% 미만, 요약표에 없는 노선</td><td>표시하지 않음</td></tr>
+</tbody></table></div>
+<ul>
+<li>판정은 정산 금액을 바꾸지 않는다. 금액은 입력값 그대로 계산하고 판단은 사람에게 맡긴다.</li>
+<li>“확인 필요”도 비난하는 문구를 쓰지 않는다. 실제 사고나 폭설은 이력 평균으로 설명되지 않는다.</li>
+<li>도심 도로는 지자체마다 데이터 형식이 달라 판정하지 않는다.</li>
+</ul>
+
+<h3>MVP에 넣을 것과 미룰 것</h3>
+<div class="scroll"><table>
+<thead><tr><th>MVP 필수</th><th>2차</th></tr></thead>
+<tbody>
+<tr><td>입력값 검증, 세션 토큰(Turnstile), 분당 제한, 일일 하드 상한, 응답 축소, 좌표 캐시, 비상 스위치, 사용률 알림, 결과 링크 형식 검증·텍스트 출력·안내 문구, 직접 입력 표시</td><td>시간당 예산·단계별 절전 모드 세분화, 공공 교통 이력 기반 운전 시간 검증(조작 의심 표시), 도메인 구매 후 WAF 이전</td></tr>
+</tbody></table></div>
+
+</div><div class="narrow"><h2 id="s12">외부 연동 검토</h2>
+<div class="scroll"><table>
+<thead><tr><th>용도</th><th>후보</th><th>확인할 점</th></tr></thead>
+<tbody>
+<tr><td>유가(평균가·주유소별 가격)</td><td>오피넷(한국석유공사) 오픈 API</td><td>API 키 발급, 호출 한도, 주유소 가격 갱신 주기, 상업적 이용 조건</td></tr>
+<tr><td>경로·거리·시간·통행료·택시요금</td><td><b>주력</b> 카카오모빌리티 자동차 길찾기 (일 10,000건 무료)<br><b>예비</b> TMAP 자동차 경로안내 (Free 요금제 일 1,000건)</td><td>두 회사 모두 택시요금·통행료 응답 포함. 제공자별 도로 교통 정보 형식 차이, 응답 캐시 허용 범위</td></tr>
+<tr><td>검토 후 제외</td><td>네이버 클라우드 Maps, 구글 지도, 오픈소스 경로 엔진(OSM)</td><td>네이버: 무료량·결제수단 조건이 0원 원칙과 충돌, 경유지 5개 제한. 구글: 한국 자동차 길찾기 제공 시기 불확실, 결제 계정 필요. OSM: 경로 서버 직접 운영 필요, 실시간 교통·택시요금·통행료 없음</td></tr>
+<tr><td>장소 검색</td><td><b>주력</b> 카카오 로컬 키워드 검색<br><b>예비</b> TMAP POI 검색, 주소는 행정안전부 도로명주소 API</td><td>휴게소·주유소 검색 품질, 예비 전환 시 결과 형식 통일</td></tr>
+<tr><td>결과 공유</td><td>Web Share API, 링크 복사</td><td>카카오톡 SDK 미사용. 공유 본문 문구는 앱이 직접 작성</td></tr>
+<tr><td>송금</td><td>토스·카카오페이 송금 링크</td><td>딥링크 방식, 금액 prefill 가능 여부</td></tr>
+<tr><td>영수증 인식 (P1)</td><td>OCR API</td><td>주유 영수증 단가·주유량 추출 정확도</td></tr>
+<tr><td>고속도로 소통 이력 (2차)</td><td>한국도로공사 VDS 지점별 소통 통계(1시간 단위 CSV), 교통 빅데이터 플랫폼 전체 데이터</td><td>로그인 다운로드 조건, 이용허락 범위, 갱신 주기. 파일이라 API 호출량 제한 없음</td></tr>
+<tr><td>출발 전 예측 대안 (검토)</td><td>국가교통정보센터 교통예측정보(고속도로·국도 예상 속도)</td><td>표준노드링크 매칭 필요, 공공데이터포털 개발·운영계정 트래픽. MVP는 카카오가 구현이 간단</td></tr>
+<tr><td>도심 도로 소통 (보류)</td><td>서울 TOPIS 등 지자체별 소통 정보</td><td>도시마다 형식이 달라 전국 적용 어려움</td></tr>
+</tbody></table></div>
+
+</div><div class="narrow"><h2 id="s13">데이터 모델</h2>
+<p>모든 데이터는 입력 담당의 폰(브라우저 IndexedDB 또는 앱 로컬 DB)에만 저장합니다. 서버에는 여행 기록이 남지 않습니다.</p>
+<div class="scroll"><table>
+<thead><tr><th>엔티티</th><th>주요 필드</th></tr></thead>
+<tbody>
+<tr><td>Trip</td><td>id, 제목, 출발 탭 시각, 도착 탭 시각, 출발지·도착지, 경로 요약(거리·예상 시간·통행료·택시요금), 빠른 정산 여부, 차량 id, 노동비 방식, 기준 시급, α, 괘씸모드 on/off, 괘씸 방식(가산/재분배), 상태</td></tr>
+<tr><td>Vehicle</td><td>id, 차주 멤버 id, 유종, 연비(기본 12km/L, 기본값 여부), 탱크 용량</td></tr>
+<tr><td>Member</td><td>id, trip id, 이름(미입력 시 동승자 A…), 차주 여부, 추정 좌석</td></tr>
+<tr><td>Segment</td><td>id, trip id, 순서, 출발/도착 좌표, 거리, 예상 시간, 실제 운전 시간, 정차 시간, 출발·도착 시각, 통행료, 주차비, 택시 예상요금, 정체·지체 거리 비율, 저속 원활 도로 비율, 기상 체크, 체감 점수, 난이도 계수, 경로 조회 출처(카카오/TMAP), 운전자 멤버 id</td></tr>
+<tr><td>TripEvent</td><td>id, trip id, 종류(하차·합류·운전 교대·휴식 시작·휴식 종료), 시각, 대상 멤버, 장소(선택). Segment와 SegmentRider는 이 기록에서 자동 생성</td></tr>
+<tr><td>SegmentRider</td><td>segment id, member id, 좌석(조수석/뒷자리/미지정), 자동 생성</td></tr>
+<tr><td>FuelLog</td><td>id, trip id, 구간 id, 주유소 id·이름, 단가, 주유량, 결제자, 영수증 이미지</td></tr>
+<tr><td>PriceSnapshot</td><td>id, trip id, 조회 시각, 지역, 유종, 평균가, 출처</td></tr>
+<tr><td>PenaltyEvent</td><td>id, segment id, 대상 멤버, 항목 코드, 점수, 메모(기타 항목, 폰에만 저장), 기록 시각, 확정 여부, 용서 여부</td></tr>
+<tr><td>Payment</td><td>id, trip id, 결제자, 항목(유류/통행/주차), 금액</td></tr>
+<tr><td>Settlement</td><td>trip id, 보내는 사람, 받는 사람, 금액, 결과 링크 발급 시각</td></tr>
+</tbody></table></div>
+
+</div><div class="narrow"><h2 id="s14">정책과 예외 처리</h2>
+<ul>
+<li><b>안전:</b> 입력 담당이 현재 구간 운전자로 지정되어 있고 이동 속도가 감지되면 입력을 막고 “도착 후 기록하세요”를 띄운다. 속도 계산은 폰 안에서만 한다.</li>
+<li><b>자동 조회 한도 도달:</b> 화면을 막는 팝업 대신 입력 필드 위 안내 문구와 수동 입력 필드 자동 펼침. 차 안에서 쓰는 앱이므로 흐름을 끊지 않는다.</li>
+<li><b>운전 교대:</b> 여행 중 “운전 교대” 버튼으로 새 운전자를 탭하면 그 시각에 구간이 나뉜다. 깜빡했으면 도착 후 타임라인에서 추가한다.</li>
+<li><b>앱을 못 켠 여행:</b> 홈의 “빠른 정산”에서 도착지·인원·출발/도착 시각만으로 정산한다. 괘씸·결제 기록은 결과 화면에서 추가할 수 있다.</li>
+<li><b>차주가 운전하지 않는 경우:</b> 노동비는 운전자에게, 차량 감가(P2)는 차주에게 따로 지급.</li>
+<li><b>연비 모름:</b> 차종 공인연비 사용, 주유 기록이 2회 이상 쌓이면 실측 연비 제안.</li>
+<li><b>유가 API 장애:</b> 마지막 성공 스냅샷 사용, 결과에 “기준 시각”을 명시.</li>
+<li><b>괘씸모드 과열 방지:</b> 배수 상한 2.0, 한 사람이 받는 괘씸 가산액이 본인 기본 노동비 분담액을 넘지 않게 제한. 여행 생성자가 끌 수 있음.</li>
+<li><b>재계산:</b> 입력을 수정하면 즉시 재계산. 결과 링크는 발급 시점 결과를 담으므로, 확정 후 수정하면 새 링크를 다시 공유한다. 결과 페이지에 발급 시각을 표시해 옛 링크와 구분한다.</li>
+<li><b>중간 하차·합류:</b> 여행 중 “하차·합류” 버튼으로 사람과 시각만 폰에 기록한다. 도착 후 타임라인에서 그 시각을 경계로 구간이 나뉘고, 장소는 검색으로 고르거나 고르지 않으면 운전 시간 비율로 거리를 나눈다. 지도 핀이나 현재 위치는 쓰지 않는다.</li>
+<li><b>선결제:</b> 동승자가 휴게소에서 기름값·통행료를 냈다면 결제 기록에 결제자로 남긴다. 정산은 사람별 “낸 돈 − 자기 몫”으로 차액을 계산해 최소 송금 목록을 만든다.</li>
+<li><b>폰 분실·앱 삭제:</b> 서버에 기록이 없으므로 복구되지 않는다. 여행 내보내기(파일 백업)를 P1로 제공한다.</li>
+</ul>
+
+</div><div class="part" id="part3"><span class="part-no">3부</span><div><p class="part-title">MVP 화면과 목업</p><p class="part-sub">한 폰에서 정산 링크까지</p></div></div>
+<div class="narrow">
+<h2 id="s15">MVP 화면 범위</h2>
+<p>1부 서비스 기획과 2부 시스템·운영 설계를 기준으로 합니다. 한 폰 입력 구조라 로그인, 멤버 초대, 투표 화면은 없고, 서버 최소 정보 원칙에 따라 기기의 현재 위치를 서버로 보내는 화면도 없습니다. 앱은 Cloudflare Worker가 서빙하는 PWA를 가정하지만 네이티브로 옮겨도 화면 구성은 같습니다.</p>
+</div>
+<div class="scroll"><table>
+<thead><tr><th>ID</th><th>화면</th><th>목적</th><th>핵심 요소</th></tr></thead>
+<tbody>
+<tr><td class="id">S1</td><td>홈</td><td>진행 중·지난 여행, 새 여행·빠른 정산 시작</td><td>진행 중 여행 카드, 지난 여행 목록, 새 여행 버튼, 빠른 정산 링크</td></tr>
+<tr><td class="id">S2</td><td>새 여행</td><td>출발 전 필수 입력 2개</td><td>도착지 검색, 동승자 칩(+1명), 기본값 한 줄 요약, 출발 버튼</td></tr>
+<tr><td class="id">S3</td><td>빠른 정산</td><td>앱을 못 켠 여행을 바로 정산</td><td>도착지, 인원, 출발·도착 시각, 휴식</td></tr>
+<tr><td class="id">S6</td><td>여행 중 기록</td><td>주행 중 사건을 탭으로 기록</td><td>현재 구간(큰 글자), 결제·하차·합류·운전 교대·휴식, 괘씸·감면(길게 누르면 −1), 기타, 좌석 변경</td></tr>
+<tr><td class="id">S6a</td><td>기타 괘씸 기록</td><td>점수표에 없는 괘씸 행동 기록</td><td>대상, 메모(폰에만 저장), 구간당 남은 횟수</td></tr>
+<tr><td class="id">S7</td><td>결제 기록</td><td>누가 무엇을 냈는지 반영</td><td>종류(주유·통행료·주차·기타), 금액, 결제한 사람, 주유 단가·주유량</td></tr>
+<tr><td class="id">S8</td><td>운전 중 잠금</td><td>입력 담당이 운전 중일 때 조작 차단</td><td>잠금 안내, 동승자에게 폰 넘기기, 정차 후 해제</td></tr>
+<tr><td class="id">S9</td><td>도착 요약</td><td>자동 계산값 한 장 확인 후 정산</td><td>운전 시간·인원·괘씸·난이도 요약, 기상·체감 칩(선택), 상세 보기 링크, 정산하기</td></tr>
+<tr><td class="id">S9a</td><td>괘씸 기록 보기 (선택)</td><td>이의가 있을 때만 확인</td><td>구간별 괘씸 항목, 체크 해제, 용서하기</td></tr>
+<tr><td class="id">S9b</td><td>난이도 상세 (선택)</td><td>난이도 요소 확인·수정</td><td>자동 운전 시간, 기상, 체감, 요소별 가산, 노동비 비교</td></tr>
+<tr><td class="id">S9c</td><td>여행 타임라인 (선택)</td><td>자동 생성된 구간 확인·보완</td><td>시각별 하차·합류·교대·결제, 하차 장소 선택, 기록 추가</td></tr>
+<tr><td class="id">S10</td><td>정산 결과</td><td>누가 누구에게 얼마 보낼지 확인·공유</td><td>받을 돈(큰 글자), 말투 선택, 명분 문구, 사람별 보낼 돈, 기본값 안내·고치기, 결과 링크 공유</td></tr>
+<tr><td class="id">S10b</td><td>정산 결과 · 아래쪽</td><td>계산 근거 확인, 광고 카드 1개</td><td>구간별 계산 근거, 낸 돈·몫·차액, 닫을 수 있는 광고 카드(계산 등록 1회)</td></tr>
+<tr><td class="id">S10c</td><td>고치기</td><td>결과를 보면서 값 수정</td><td>이름, 운전 시간, 거리, 연비, 시급, 유가, 기상 · 기본값/자동/직접 입력 표시</td></tr>
+<tr><td class="id">S11</td><td>결과 보기(웹)</td><td>링크 받은 사람이 앱 없이 확인</td><td>사람별 금액 목록(큰 글자), 계산 근거 펼치기, 송금 버튼(등록 시), 받는 사람 확인 안내, 고정 안내 문구</td></tr>
+<tr><td class="id">S6N</td><td>여행 중 기록 · 야간</td><td>야간 운전 시야 방해 최소화</td><td>검정 배경, 낮은 밝기, 큰 숫자 유지</td></tr>
+<tr><td class="id">S8N</td><td>운전 중 잠금 · 야간</td><td>잠금 화면이 밤에 눈부시지 않게</td><td>검정 배경, 작은 아이콘, 어두운 버튼</td></tr>
+</tbody></table></div>
+
+<h2 id="s16">화면 흐름</h2>
+<pre class="mermaid">
+flowchart LR
+  S1[S1 홈] -->|새 여행| S2[S2 새 여행]
+  S1 -->|앱을 못 켰을 때| S3[S3 빠른 정산]
+  S2 -->|출발| S6[S6 여행 중 기록]
+  S6 <--> S7[S7 결제 기록]
+  S6 <--> S6a[S6a 기타 괘씸]
+  S6 -. 운전 중 감지 .-> S8[S8 잠금]
+  S8 -. 정차 .-> S6
+  S6 -->|도착했어요| S9[S9 도착 요약]
+  S9 -. 선택 .-> S9a[S9a 괘씸 보기]
+  S9 -. 선택 .-> S9b[S9b 난이도]
+  S9 -. 선택 .-> S9c[S9c 타임라인]
+  S9 -->|정산하기 = 계산 등록| S10[S10 정산 결과]
+  S3 -->|정산하기| S10
+  S10 --- S10b[S10b 아래쪽·광고 카드]
+  S10 <--> S10c[S10c 고치기]
+  S10 -. 링크 공유 .-> S11[S11 결과 보기 웹]
+  S1 -->|진행 중 여행| S6
+  S1 -->|지난 여행| S10
+</pre>
+<p class="muted">필수 경로는 S2 → S6 → S9 → S10 네 화면, 필수 탭은 약 5회입니다. 점선으로 이어진 화면은 필요할 때만 엽니다.</p>
+
+<h2 id="s17">목업</h2>
+
+<p class="phase">시작</p>
+
+<section class="shot">
+<div class="phone" aria-label="S1 홈 목업">
+  <div class="sb"><span>11:05</span><span>●●● 80%</span></div>
+  <div class="ab">운전 노동 정산기</div>
+  <div class="body">
+    <div class="lbl">진행 중</div>
+    <div class="card" style="border-color:#0E6B47;border-width:1.5px">
+      <div class="row"><b>강릉 여행</b><span class="tag y">여행 중</span></div>
+      <div class="m tiny" style="margin:2px 0 8px">서울 → 원주 → 강릉 · 4명</div>
+      <div class="row tiny"><span>2/2 구간 운전 중 · 민수</span><span class="g"><b>이어서 기록 ›</b></span></div>
+    </div>
+    <div class="lbl" style="margin-top:16px">지난 여행</div>
+    <div class="card"><div class="row"><b>가평 캠핑</b><span class="m tiny">8월 23일</span></div><div class="row tiny m" style="margin-top:4px"><span>운전 태호 · 3명</span><span>정산 완료</span></div></div>
+    <div class="card"><div class="row"><b>부모님 댁</b><span class="m tiny">8월 2일</span></div><div class="row tiny m" style="margin-top:4px"><span>운전 민수 · 2명</span><span class="r">택시모드 발동</span></div></div>
+    <div class="card"><div class="row"><b>양양 서핑</b><span class="m tiny">7월 12일</span></div><div class="row tiny m" style="margin-top:4px"><span>운전 민수·지현 · 4명</span><span>정산 완료</span></div></div>
+  </div>
+  <div class="g tiny" style="position:absolute;left:0;right:0;bottom:78px;text-align:center"><b>여행 중에 앱을 못 켰나요? 빠른 정산 ›</b></div>
+  <div class="cta">새 여행</div>
+</div>
+<div class="notes">
+<span class="id">S1</span><h3>홈</h3>
+<p>앱을 열면 진행 중인 여행이 맨 위에 옵니다. 여행 중에 앱을 다시 열었을 때 한 번에 기록 화면(S6)으로 돌아가는 것이 이 화면의 가장 중요한 일입니다.</p>
+<h4>동작</h4>
+<ul>
+<li>진행 중 카드 탭 → S6, 지난 여행 탭 → S10(결과 다시 보기, 링크 재공유)</li>
+<li>“빠른 정산 ›” → S3. 기록 없이 끝난 여행도 바로 정산</li>
+<li>진행 중 여행은 한 번에 하나만. 새 여행을 만들려 하면 기존 여행 종료 여부를 묻습니다.</li>
+<li>지난 여행 길게 누르기 → 복제(같은 멤버·경로로 새 여행), 삭제</li>
+</ul>
+<h4>빈 상태</h4>
+<p>“아직 여행이 없어요. 출발지와 도착지만 넣으면 운전자 몫을 계산해 드려요.”와 새 여행 버튼만 표시.</p>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S2 새 여행 목업">
+  <div class="sb"><span>08:57</span><span>●●● 100%</span></div>
+  <div class="ab"><span class="back">‹</span>새 여행</div>
+  <div class="body">
+    <div style="font-size:18px;font-weight:700;margin:6px 0 8px">어디로 가요?</div>
+    <div class="field" style="padding:12px;border:1.5px solid #0E6B47"><span><b>강릉 경포해변</b></span><span class="m">✕</span></div>
+    <div class="row tiny m" style="margin:-2px 2px 18px"><span>출발 · 서울 강남역 (최근 출발지)</span><span class="g"><b>변경</b></span></div>
+    <div class="row" style="margin-bottom:8px"><span style="font-size:18px;font-weight:700">누구랑 가요?</span><span class="tiny m">나 포함 4명</span></div>
+    <div style="margin-bottom:14px">
+      <span class="chip on">민수 (나)</span><span class="chip on">✓ 지현</span><span class="chip on">✓ 태호</span><span class="chip on">✓ 수빈</span>
+      <span class="chip">준영</span><span class="chip">하은</span><span class="chip">도윤</span><span class="chip" style="border-style:dashed">+1명</span>
+    </div>
+    <div class="card tiny" style="background:#F0F5F2;border-color:#D5E6DC">
+      <div class="row"><span class="m">휘발유 12km/L · 시급형 · 괘씸모드 켜짐</span><span class="tag" style="background:#fff">기본값</span></div>
+      <div class="m" style="margin-top:4px">결과 화면에서 언제든 고칠 수 있어요</div>
+    </div>
+  </div>
+  <div class="cta">출발</div>
+</div>
+<div class="notes">
+<span class="id">S2</span><h3>새 여행</h3>
+<p>출발 전 입력은 이 한 화면, 필수 값은 도착지와 동승자 2개입니다. 경유지·구간·운전자·차량·정산 규칙은 묻지 않습니다.</p>
+<h4>동작</h4>
+<ul>
+<li>도착지: 탭하면 검색(<code>GET /api/places</code>, 서버에는 검색어만). 최근 목적지 먼저 표시</li>
+<li>출발지: 최근 출발지 또는 저장한 “집”이 기본값. 기기 현재 위치로 채우지 않음</li>
+<li>동승자: 최근 함께한 사람 칩 탭으로 선택. 이름을 모르면 “+1명” → 동승자 A, B… 이름은 결과 화면에서 변경</li>
+<li>“출발” 탭 → 출발 시각 기록, 출발지→도착지 경로 1회 조회(오프라인이면 연결 시 재시도), S6로 이동</li>
+<li>기본값 한 줄: 차량·노동비 방식·괘씸모드. 탭하면 설명만 보여주고 수정은 결과 화면(S10c)에서</li>
+</ul>
+<h4>검증</h4>
+<p>도착지가 비어 있으면 출발 버튼 비활성, “어디로 가는지 알려주세요.” 동승자를 안 골라도 출발 가능(나 혼자 운전 기록).</p>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S3 빠른 정산 목업">
+  <div class="sb"><span>19:20</span><span>●●● 58%</span></div>
+  <div class="ab"><span class="back">‹</span>빠른 정산</div>
+  <div class="body">
+    <div class="lbl">어디로 갔어요?</div>
+    <div class="field"><b>강릉 경포해변</b><span class="m tiny">출발 서울 강남역</span></div>
+    <div class="lbl" style="margin-top:10px">몇 명이서? <span class="m">(나 포함)</span></div>
+    <div class="row card" style="padding:8px 14px"><span class="avatar" style="background:#E9ECE9;color:#1E2124">−</span><b style="font-size:24px">4명</b><span class="avatar a1">+</span></div>
+    <div class="lbl">언제 운전했어요?</div>
+    <div class="grid2">
+      <div><div class="tiny m">출발</div><div class="field"><b>09:00</b><span class="m tiny">오늘</span></div></div>
+      <div><div class="tiny m">도착</div><div class="field"><b>11:40</b><span class="m tiny">오늘</span></div></div>
+    </div>
+    <div class="row" style="margin:2px 0 12px"><span class="tiny m">중간에 쉰 시간</span><span><span class="chip on" style="margin:0">없음</span> <span class="chip" style="margin:0">15분</span> <span class="chip" style="margin:0">30분</span></span></div>
+    <div class="card tiny" style="background:#F0F5F2;border-color:#D5E6DC">운전자는 나, 동승자는 A·B·C로 계산해요. 이름·결제·괘씸은 결과 화면에서 추가할 수 있어요.</div>
+  </div>
+  <div class="cta">정산하기</div>
+</div>
+<div class="notes">
+<span class="id">S3</span><h3>빠른 정산</h3>
+<p>여행 중 앱을 켜지 못했거나 기록이 귀찮았던 여행을 위한 입구입니다. 기록이 없다는 이유로 정산을 포기하지 않게 합니다.</p>
+<h4>동작</h4>
+<ul>
+<li>필수 값: 도착지, 인원, 출발·도착 시각. 출발지는 S2와 같은 기본값</li>
+<li>인원은 스테퍼. 이름 대신 동승자 A, B, C로 생성, 운전자는 나</li>
+<li>시각은 오늘 기준, 날짜를 바꾸면 지난 날짜도 가능. 휴식은 칩 3개 중 선택</li>
+<li>“정산하기” → 경로 1회 조회 후 S10. 계산 등록으로 광고 규칙은 일반 여행과 같음</li>
+<li>결과 화면 S10c에서 이름·결제·괘씸·중간 하차를 뒤늦게 추가 가능</li>
+</ul>
+</div>
+</section>
+
+<p class="phase">여행 중</p>
+
+<section class="shot">
+<div class="phone" aria-label="S6 여행 중 기록 목업">
+  <div class="sb"><span>11:02</span><span>●●● 82%</span></div>
+  <div class="ab">강릉 여행<span class="step">여행 중</span></div>
+  <div class="body">
+    <div class="card" style="background:#0E6B47;border-color:#0E6B47;color:#fff;padding:10px 12px">
+      <div class="tiny" style="opacity:.85">지금 구간 2/2</div>
+      <div style="font-size:24px;font-weight:700;line-height:1.25">원주 → 강릉</div>
+      <div class="row tiny" style="margin-top:4px;opacity:.9"><span>운전 민수 · 탑승 지현, 태호</span><span>출발 후 22분</span></div>
+    </div>
+    <div class="grid4 compact" style="margin-bottom:10px">
+      <div class="tile green"><b>💳</b>결제<span class="tiny m">1건</span></div>
+      <div class="tile"><b>🚏</b>하차·합류<span class="tiny m">수빈</span></div>
+      <div class="tile"><b>🔄</b>운전 교대<span class="tiny m">민수</span></div>
+      <div class="tile"><b>☕</b>휴식<span class="tiny m">켜기</span></div>
+    </div>
+    <div class="row" style="margin-bottom:6px"><b>괘씸 기록</b><span class="tiny m">대상 <span class="chip on" style="margin:0">태호</span></span></div>
+    <div class="grid4" style="margin-bottom:8px">
+      <div class="tile red"><b>😴</b>조수석 수면<span class="tiny m">타이머</span></div>
+      <div class="tile red"><b>🍪</b>혼자 먹음<span class="tiny r">+1</span></div>
+      <div class="tile red"><b>🍔</b>냄새 음식<span class="tiny r">+2</span></div>
+      <div class="tile red" style="background:#FBEDEC"><b>📣</b>시끄러움<span class="cnt">3</span></div>
+      <div class="tile red"><b>🗺️</b>훈수<span class="tiny r">+1</span></div>
+      <div class="tile red"><b>🗑️</b>쓰레기<span class="tiny r">+2</span></div>
+      <div class="tile red"><b>✏️</b>기타<span class="tiny r">2회 남음</span></div>
+      <div class="tile"><b>💺</b>좌석 변경<span class="tiny m">택시모드</span></div>
+    </div>
+    <div class="row" style="margin-bottom:6px"><b>감면 기록</b><span class="tiny m">길게 누르면 −1</span></div>
+    <div class="grid3 compact">
+      <div class="tile green"><b>🥤</b>먹여줌<span class="tiny g">−1</span></div>
+      <div class="tile green"><b>☕</b>간식 사줌<span class="tiny g">−2</span></div>
+      <div class="tile green"><b>🧭</b>길 안내<span class="tiny g">−1</span></div>
+    </div>
+  </div>
+  <div class="cta sub">도착했어요</div>
+</div>
+<div class="notes">
+<span class="id">S6</span><h3>여행 중 기록</h3>
+<p>흔들리는 차 안에서 동승자가 들고 쓰는 화면입니다. 현재 구간과 누적 횟수를 크게 보여주고, 모든 기록은 탭 한 번으로 끝납니다.</p>
+<h4>동작</h4>
+<ul>
+<li>괘씸·감면 타일 탭 → +1 즉시 기록, 하단 토스트 “태호 시끄러움 +1 · 취소”(5초)</li>
+<li>타일 길게 누르기 → −1(짧은 진동). 누적 횟수는 타일 안에 큰 숫자로 표시</li>
+<li>대상 칩 → 현재 구간 탑승자 중 선택, 마지막 선택 유지</li>
+<li>조수석 수면은 탭으로 타이머 시작·종료, 20분당 +1. 누른 사람을 조수석으로 자동 지정(좌석은 미리 묻지 않음)</li>
+<li>“결제” → S7. “하차·합류” → 사람 선택, 그 시각에 구간 자동 분할(시각은 폰에만 기록)</li>
+<li>“운전 교대” → 새 운전자 탭, 그 시각부터 운전자 변경과 구간 분할. “휴식” → 켜는 동안의 시간은 운전 시간에서 제외</li>
+<li>아무것도 누르지 않아도 됨. 출발·도착 탭만으로 정산 가능</li>
+<li>“기타” → S6a, 구간당 남은 횟수 표시. “좌석 변경” → 둘이 타는데 뒷자리로 바뀌면 “택시모드가 적용돼요” 토스트</li>
+<li>괘씸모드가 꺼져 있으면 괘씸·감면 영역 대신 결제·하차 기록만 표시. 야간에는 S6N 스타일</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S6a 기타 괘씸 기록 목업">
+  <div class="sb"><span>10:58</span><span>●●● 83%</span></div>
+  <div class="ab">강릉 여행<span class="step">여행 중</span></div>
+  <div class="body">
+    <div class="card" style="background:#0E6B47;color:#fff;border-color:#0E6B47"><div class="tiny" style="opacity:.85">지금 구간 2/2</div><div class="big">원주 → 강릉</div></div>
+  </div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="row" style="margin-bottom:12px"><b style="font-size:16px">기타 괘씸 기록</b><span class="m">✕</span></div>
+    <div class="lbl">누가</div>
+    <div style="margin-bottom:6px"><span class="chip on">지현</span><span class="chip">태호</span></div>
+    <div class="lbl">무슨 일이었나요</div>
+    <div class="memo">에어컨 몰래 끔</div>
+    <div class="row tiny m" style="margin-bottom:12px"><span>7 / 20자</span><span>이 구간 남은 기타 기록 1회</span></div>
+    <div class="card tiny" style="background:#F0F5F2;border-color:#D5E6DC">메모는 이 폰에만 저장돼요. 공유하는 결과 링크에는 “기타 +1”로만 표시돼요.</div>
+    <div class="row" style="margin:4px 0 0"><span>점수</span><b class="r">+1 (고정)</b></div>
+    <div class="cta" style="bottom:16px">기록하기</div>
+  </div>
+</div>
+<div class="notes">
+<span class="id">S6a</span><h3>기타 괘씸 기록</h3>
+<p>점수표는 고정하되 “이건 표에 없는데 괘씸하다”는 순간을 받아주는 보조 시트입니다. 점수 남발과 링크 악용을 막는 제한이 화면에 그대로 보이게 합니다.</p>
+<h4>동작</h4>
+<ul>
+<li>대상은 S6에서 선택한 사람이 기본값, 현재 구간 탑승자 중 변경 가능</li>
+<li>메모 최대 20자, 비워 두어도 기록 가능. 점수는 +1 고정으로 선택지 없음</li>
+<li>구간당 2회 제한. 남은 횟수를 시트와 S6 타일에 함께 표시</li>
+<li>메모는 폰(IndexedDB)에만 저장. S9 확인 화면에서는 보이고, 결과 링크·결과 이미지에는 “기타”로만 표시</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S7 결제 기록 목업">
+  <div class="sb"><span>10:38</span><span>●●● 85%</span></div>
+  <div class="ab">강릉 여행<span class="step">여행 중</span></div>
+  <div class="body">
+    <div class="card" style="background:#0E6B47;color:#fff;border-color:#0E6B47"><div class="tiny" style="opacity:.85">원주휴게소 정차 중</div><div class="big" style="font-size:22px">구간 ① 끝 · ② 준비</div></div>
+  </div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="row" style="margin-bottom:10px"><b style="font-size:16px">결제 기록</b><span class="m">✕</span></div>
+    <div class="seg"><span class="on">주유</span><span>통행료</span><span>주차</span><span>기타</span></div>
+    <div class="field"><span>SK 원주휴게소(강릉방향)</span><span class="m tiny">변경</span></div>
+    <div class="grid2">
+      <div><div class="lbl">리터당 가격</div><div class="field"><b>1,650</b><span class="m">원</span></div></div>
+      <div><div class="lbl">주유량</div><div class="field"><b>30.0</b><span class="m">L</span></div></div>
+    </div>
+    <div class="row tiny m" style="margin:-2px 0 8px"><span>결제 금액 <b style="color:#1E2124">49,500원</b></span><span class="g">금액으로 입력</span></div>
+    <div class="lbl">결제한 사람</div>
+    <div><span class="chip on">민수</span><span class="chip">지현</span><span class="chip">태호</span><span class="chip">수빈</span></div>
+    <div class="tiny m" style="margin-top:2px">결제한 사람의 낸 돈으로 정산에서 차감돼요. 다음 구간부터 1,650원/L 적용.</div>
+    <div class="cta" style="bottom:16px">기록하기</div>
+  </div>
+</div>
+<div class="notes">
+<span class="id">S7</span><h3>결제 기록</h3>
+<p>S6의 “결제 기록”에서 여는 바텀시트입니다. 기름값뿐 아니라 통행료·주차비를 동승자가 먼저 낸 경우까지 한곳에서 받습니다.</p>
+<h4>동작</h4>
+<ul>
+<li>종류 탭: 주유는 주유소·단가·주유량(또는 금액), 통행료·주차·기타는 금액과 메모만</li>
+<li>결제한 사람은 필수. 정산에서 사람별 “낸 돈 − 자기 몫”으로 차액을 계산해 최소 송금 목록을 만듦</li>
+<li>주유소는 검색어로 찾거나 직접 입력. 현재 위치로 자동 채우지 않음</li>
+<li>주유 단가는 이후 구간 유류비에 적용. 정밀 모드(탱크 잔량 가중평균)는 설정에서 켤 때만</li>
+<li>기록은 S9c 타임라인에 “💳 주유 49,500원 · 민수 결제”로 표시</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S8 운전 중 잠금 목업">
+  <div class="sb" style="position:relative;z-index:2;color:#fff"><span>10:05</span><span>●●● 90%</span></div>
+  <div class="lock">
+    <div style="width:64px;height:64px;border-radius:50%;border:3px solid #F2B705;display:grid;place-items:center;font-size:28px;margin-bottom:18px">✋</div>
+    <div class="big" style="font-size:22px;margin-bottom:8px">운전 중에는<br>기록할 수 없어요</div>
+    <p style="opacity:.9;margin:0 0 22px">민수 님이 지금 구간 운전자로 지정되어 있고, 차가 움직이고 있어요.</p>
+    <div style="background:rgba(255,255,255,.12);border-radius:14px;padding:12px;width:100%;text-align:left;font-size:12px">
+      <b>동승자가 대신 기록하려면</b><br>폰을 건네받은 사람이 아래 버튼을 누르고 이름을 선택하세요.
+    </div>
+  </div>
+  <div class="cta" style="background:#F2B705;color:#2B2E33;z-index:2">동승자가 기록할게요</div>
+</div>
+<div class="notes">
+<span class="id">S8</span><h3>운전 중 잠금</h3>
+<p>입력 담당 폰이 곧 운전자 폰인 경우가 많아서 안전 장치는 MVP에 포함합니다. 기록을 막되, 동승자에게 폰을 넘기는 길은 열어둡니다.</p>
+<h4>표시 조건</h4>
+<ul>
+<li>현재 구간 운전자가 입력 담당 본인으로 지정되어 있고</li>
+<li>위치 권한이 있고, 최근 10초 평균 속도가 시속 10km 이상일 때</li>
+</ul>
+<h4>동작</h4>
+<ul>
+<li>“동승자가 기록할게요” → 탑승자 이름 선택 → 해당 구간 동안 잠금 해제(구간이 바뀌면 다시 확인)</li>
+<li>속도가 60초 이상 0에 가까우면(정차) 자동 해제</li>
+<li>위치 권한이 없으면 잠금 대신 S6 상단에 “운전 중이라면 도착 후 기록하세요” 배너만 표시</li>
+<li>속도는 폰 안에서만 계산하고 위치·속도 값은 저장하지도, 서버로 보내지도 않음. 권한 요청 문구: “운전 중 조작을 막는 데만 쓰고 저장하지 않아요.”</li>
+</ul>
+</div>
+</section>
+
+<p class="phase">도착 후</p>
+
+<section class="shot">
+<div class="phone" aria-label="S9 도착 요약 목업">
+  <div class="sb"><span>11:41</span><span>●●● 74%</span></div>
+  <div class="ab">도착했어요</div>
+  <div class="body">
+    <div class="card" style="padding:14px">
+      <div class="tiny m">강릉 여행 · 서울 강남역 → 강릉 경포해변</div>
+      <div style="font-size:26px;font-weight:700;margin:6px 0 2px">운전 2시간 30분</div>
+      <div class="tiny m">09:00 출발 · 11:40 도착 · 휴식 10분 제외</div>
+      <div style="border-top:1px solid #EEF0EE;margin:12px 0 8px"></div>
+      <div class="row" style="padding:4px 0"><span>👥 4명 · 수빈 원주 하차</span><span class="g tiny"><b>타임라인 ›</b></span></div>
+      <div class="row" style="padding:4px 0"><span>😤 괘씸 4건</span><span class="g tiny"><b>보기 ›</b></span></div>
+      <div class="row" style="padding:4px 0"><span>🧭 난이도 1.0 <span class="tiny m">원활·주간</span></span><span class="g tiny"><b>상세 ›</b></span></div>
+      <div class="row" style="padding:4px 0"><span>💳 결제 1건 <span class="tiny m">주유 49,500원</span></span><span></span></div>
+    </div>
+    <div class="lbl">날씨 <span class="m">(선택)</span></div>
+    <div style="margin-bottom:6px"><span class="chip on">맑음</span><span class="chip">비</span><span class="chip">눈</span></div>
+    <div class="lbl">운전 어땠어요? <span class="m">(선택)</span></div>
+    <div><span class="chip">편했음</span><span class="chip on">보통</span><span class="chip">힘들었음</span></div>
+  </div>
+  <div class="cta">정산하기</div>
+</div>
+<div class="notes">
+<span class="id">S9</span><h3>도착 요약</h3>
+<p>S6의 “도착했어요” 한 번으로 열리는 화면입니다. 앱이 자동으로 채운 값을 한 장으로 보여주고, 사용자는 “정산하기”만 누르면 됩니다.</p>
+<h4>자동으로 채우는 값</h4>
+<ul>
+<li>운전 시간 = 도착 탭 − 출발 탭 − 휴식. 인원·하차는 하차·합류 기록에서, 괘씸·결제는 여행 중 기록에서</li>
+<li>난이도는 운전 시간·시각·경로 교통 정보로 계산. 기상·체감은 기본값(맑음·보통)</li>
+</ul>
+<h4>선택 동작</h4>
+<ul>
+<li>날씨·체감 칩: 탭 한 번. 체감 3단계는 1·3·5점으로 저장(난이도 −0.1, 0, +0.1)</li>
+<li>“타임라인 ›” → S9c, “보기 ›” → S9a, “상세 ›” → S9b. 모두 필수 아님</li>
+<li>“정산하기” → 계산 등록, S10으로 이동</li>
+</ul>
+<p class="muted">앞 설계의 “도착 후 확정” 두 탭(구간 수정·괘씸 확인)을 필수 단계에서 선택 링크로 바꾼 화면입니다.</p>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S9a 괘씸 기록 보기 목업">
+  <div class="sb"><span>11:41</span><span>●●● 76%</span></div>
+  <div class="ab"><span class="back">‹</span>괘씸 기록 4건</div>
+  <div class="body">
+    <p class="tiny m" style="margin:0 0 8px">다 같이 보면서 인정 못 하는 항목은 체크를 풀어주세요.</p>
+    <div class="lbl">① 서울 → 원주</div>
+    <div class="card" style="padding:4px 12px">
+      <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span class="row" style="gap:10px"><span class="check"></span><span><b>지현</b> 조수석 수면 60분<br><span class="tiny m">9:12 ~ 10:12</span></span></span><b class="r">+3</b></div>
+      <div class="row" style="padding:9px 0"><span class="row" style="gap:10px"><span class="check"></span><span><b>태호</b> 혼자 먹음<br><span class="tiny m">9:40</span></span></span><b class="r">+1</b></div>
+    </div>
+    <div class="lbl">② 원주 → 강릉</div>
+    <div class="card" style="padding:4px 12px">
+      <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span class="row" style="gap:10px"><span class="check"></span><span><b>태호</b> 시끄러움 3회<br><span class="tiny m">10:51 · 11:03 · 11:20</span></span></span><b class="r">+3</b></div>
+      <div class="row" style="padding:9px 0;opacity:.55"><span class="row" style="gap:10px"><span class="check off"></span><span><b>지현</b> 기타 · 에어컨 몰래 끔<br><span class="tiny g">민수가 용서함</span></span></span><s class="m">+1</s></div>
+    </div>
+    <div class="card row" style="background:#FBEDEC;border-color:#F0C4C1"><span class="tiny">최종 괘씸 배수</span><span class="tiny"><b>지현</b> 1.3 / 1.0 · <b>태호</b> 1.1 / 1.3</span></div>
+  </div>
+  <div class="cta">요약으로 돌아가기</div>
+</div>
+<div class="notes">
+<span class="id">S9a</span><h3>괘씸 기록 보기 (선택)</h3>
+<p>S9 도착 요약의 “괘씸 4건 보기”로 엽니다. 기본은 기록 그대로 반영되므로, 이의가 있을 때만 들어오는 화면입니다. 기록 시각을 같이 보여줘서 “그때 진짜 잤잖아”라는 대화가 나오게 합니다.</p>
+<h4>동작</h4>
+<ul>
+<li>체크 해제 → 점수에서 제외(이의 인정)</li>
+<li>항목을 왼쪽으로 밀기 → “용서하기”. 해제와 달리 결과 영수증에 “용서함”으로 남음</li>
+<li>하단 요약에 구간별 최종 괘씸 배수를 실시간 반영</li>
+<li>기타 항목은 메모까지 보여줌(폰 화면이므로). 결과 링크로 넘어갈 때는 메모 제외</li>
+</ul>
+</div>
+</section>
+
+
+
+<section class="shot">
+<div class="phone" aria-label="S9b 구간 수정과 난이도 목업">
+  <div class="sb"><span>00:14</span><span>●●● 31%</span></div>
+  <div class="ab"><span class="back">‹</span>난이도 상세</div>
+  <div class="body">
+    
+    <div class="card" style="padding:10px 12px">
+      <div class="row"><b>강릉 → 서울</b><span class="tiny m">20:30 → 00:10 · 정차 0분</span></div>
+      <div class="row" style="margin-top:8px"><span class="tiny m">실제 운전 시간</span><b>3시간 40분 <span class="tag">자동</span></b></div>
+      <div class="row tiny m"><span>예상</span><span>2시간 40분</span></div>
+      <div class="row" style="margin-top:8px"><span class="tiny m">기상</span><span><span class="chip" style="margin:0">맑음</span> <span class="chip on" style="margin:0">비</span> <span class="chip" style="margin:0">눈</span></span></div>
+      <div class="row" style="margin-top:6px"><span class="tiny m">운전자 체감</span><span><span class="chip" style="margin:0;padding:3px 7px">1</span><span class="chip" style="margin:0;padding:3px 7px">2</span><span class="chip" style="margin:0;padding:3px 7px">3</span><span class="chip on" style="margin:0;padding:3px 7px">4</span><span class="chip" style="margin:0;padding:3px 7px">5</span></span></div>
+    </div>
+    <div class="card" style="padding:10px 12px">
+      <div class="row"><b>난이도</b><span style="font-family:'Black Han Sans',sans-serif;font-size:24px;color:#7A5A00">1.71</span></div>
+      <div class="tiny" style="margin-top:4px">
+        <div class="row"><span>비</span><b>+0.20</b></div><div class="bar"><i style="width:100%"></i></div>
+        <div class="row" style="margin-top:5px"><span>정체 <span class="m">예상보다 1시간 더</span></span><b>+0.19</b></div><div class="bar"><i style="width:63%"></i></div>
+        <div class="row" style="margin-top:5px"><span>야간 <span class="m">130분</span></span><b>+0.18</b></div><div class="bar"><i style="width:60%"></i></div>
+        <div class="row" style="margin-top:5px"><span>연속 운전 <span class="m">2시간 초과 100분</span></span><b>+0.09</b></div><div class="bar"><i style="width:45%"></i></div>
+        <div class="row m" style="margin-top:5px"><span>체감 +0.05 · 도로 유형 +0.00</span><span></span></div>
+      </div>
+    </div>
+    <div class="card row" style="background:#F0F5F2;border-color:#D5E6DC;padding:10px 12px"><span class="tiny">노동비<br><span class="m">난이도 없이 37,840원</span></span><b class="g" style="font-size:16px">64,706원</b></div>
+  </div>
+  <div class="cta">정산하기</div>
+</div>
+<div class="notes">
+<span class="id">S9b</span><h3>구간 수정 · 난이도</h3>
+<p>S9 도착 요약의 “상세 ›”로 여는 선택 화면입니다. 값은 대부분 자동으로 채워져 있고, 어떤 요소가 얼마를 올렸는지 막대로 보여줍니다. 예시는 강릉 여행과 별개인 “돌아오는 밤길” 여행입니다.</p>
+<h4>동작</h4>
+<ul>
+<li>실제 운전 시간은 출발·도착 탭과 휴식 기록으로 자동 계산(“자동” 표시). 탭해서 고치면 “직접 입력”으로 바뀌고 요소 즉시 재계산</li>
+<li>실제 운전 시간을 입력하기 전에는 정체를 경로 API 비율로 추정하고 “예상”으로 표시</li>
+<li>기상은 맑음/비/눈 수동 선택. 위치 기반 기상 조회는 하지 않음(서버 최소 정보 원칙)</li>
+<li>운전자 체감은 기본 3점(보통). S9의 3단계 칩과 연동되고, 이 화면에서만 5단계로 세밀하게 조정</li>
+<li>요소는 가산이 큰 순서로 정렬, 0인 요소는 한 줄로 접음. 막대 길이는 각 요소의 최대치 대비 비율. 계수는 최소 1.0, 최대 2.0</li>
+<li>직접 입력한 값에는 <span class="tag y">직접 입력</span> 표시가 붙고 결과 영수증에도 그대로 전달</li>
+</ul>
+<h4>표시하지 않는 것</h4>
+<p>급제동·급가속 같은 운전 행동 지표. 거친 운전이 더 받는 역보상을 막기 위해 정산 화면에 두지 않습니다.</p>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S9c 하차·합류 타임라인 목업">
+  <div class="sb"><span>11:43</span><span>●●● 74%</span></div>
+  <div class="ab"><span class="back">‹</span>여행 타임라인</div>
+  <div class="body">
+    <div class="lbl">자동으로 만든 구간</div>
+    <div class="card" style="padding:8px 12px">
+      <div class="tl-i"><span class="tl-t">09:00</span><span class="tl-d o"></span><span><b>서울 강남역 출발</b><br><span class="tiny m">민수 · 지현 · 태호 · 수빈</span></span></div>
+      <div class="tl-i"><span class="tl-t">10:30</span><span class="tl-d"></span><span><b>원주휴게소 도착</b><br><span class="tiny m">구간 ① 1시간 30분</span></span></div>
+      <div class="tl-i" style="background:#FFF8E1;border-radius:8px;margin:0 -6px;padding:4px 6px;grid-template-columns:38px 12px 1fr"><span class="tl-t">10:36</span><span class="tl-d y"></span><span><b>🚏 수빈 하차</b><br><span class="chip" style="margin:3px 0 0;padding:2px 8px">원주휴게소 ▾</span></span></div>
+      <div class="tl-i"><span class="tl-t">10:38</span><span class="tl-d"></span><span>💳 주유 49,500원<br><span class="tiny m">민수 결제</span></span></div>
+      <div class="tl-i"><span class="tl-t">10:40</span><span class="tl-d"></span><span><b>구간 ② 출발</b><br><span class="tiny m">민수 · 지현 · 태호</span></span></div>
+      <div class="tl-i"><span class="tl-t">11:40</span><span class="tl-d o"></span><span><b>강릉 경포해변 도착</b><br><span class="tiny m">구간 ② 1시간</span></span></div>
+    </div>
+    <div class="card tiny" style="background:#F0F5F2;border-color:#D5E6DC">수빈 하차 기록으로 구간이 2개로 나뉘었어요. 하차 장소를 고르지 않으면 운전 시간 비율로 거리를 나눠요.</div>
+    <div class="g tiny" style="text-align:center"><b>+ 하차·합류 추가</b></div>
+  </div>
+  <div class="cta">요약으로 돌아가기</div>
+</div>
+<div class="notes">
+<span class="id">S9c</span><h3>여행 타임라인 (선택)</h3>
+<p>여행 중 누른 하차·합류·결제 기록을 시간순으로 보여주고, 하차·합류 지점에서 구간을 자동으로 나눕니다. 사람을 구간마다 지우고 추가하는 대신 “여기서 내렸다”만 확인하면 됩니다.</p>
+<h4>동작</h4>
+<ul>
+<li>하차·합류 항목의 시각 탭 → 시각 수정, 장소 칩 → 장소 검색(서버에는 검색어만)</li>
+<li>장소를 고르면 경로 재조회로 구간 거리 확정. 고르지 않으면 앞뒤 구간 운전 시간 비율로 거리 분할</li>
+<li>나뉜 구간의 탑승자·운전자는 자동 반영되고 S9b 구간 수정 값에 이어짐</li>
+<li>“+ 하차·합류 추가”로 여행 중 깜빡한 하차·합류·운전 교대·휴식을 도착 후 넣을 수 있음</li>
+<li>S9 도착 요약의 “타임라인 ›”로 여는 선택 화면. 확인하지 않아도 자동 구간으로 정산됨</li>
+<li>지도·현재 위치는 사용하지 않음(0원·서버 최소 정보 원칙)</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S10 정산 결과 목업">
+  <div class="sb"><span>11:45</span><span>●●● 74%</span></div>
+  <div class="ab"><span class="back">‹</span>정산 결과<span class="step" style="font-size:18px">⋯</span></div>
+  <div class="body">
+    <div class="card" style="text-align:center;background:#0E6B47;color:#fff;border-color:#0E6B47;padding:10px">
+      <div class="tiny" style="opacity:.85">민수가 받을 돈</div>
+      <div style="font-family:'Black Han Sans',sans-serif;font-size:32px;line-height:1.2">57,912원</div>
+      <div class="tiny" style="opacity:.9">택시였다면 265,000원 · 195,588원 아꼈어요</div>
+    </div>
+    <div class="row" style="margin-bottom:4px"><span class="lbl" style="margin:0">말투</span></div>
+    <div class="seg"><span class="on">순한맛</span><span>매운맛</span><span>비즈니스</span></div>
+    <div class="tiny m" style="text-align:center;margin:0 0 8px">“이 정산금은 운전자의 다음 기름값과 허리 건강에 쓰입니다”</div>
+    <div class="card" style="padding:2px 12px">
+      <div class="row" style="padding:8px 0;border-bottom:1px solid #EEF0EE"><span class="row" style="gap:8px"><span class="avatar a3">태</span><span><b>태호</b><br><span class="tiny r">간식은 혼자, 목소리는 크게 (+1, +3)</span></span></span><b style="font-size:15px">23,884원</b></div>
+      <div class="row" style="padding:8px 0;border-bottom:1px solid #EEF0EE"><span class="row" style="gap:8px"><span class="avatar a2">지</span><span><b>지현</b><br><span class="tiny r">조수석에서 푹 쉬었어요 (+3)</span></span></span><b style="font-size:15px">23,368원</b></div>
+      <div class="row" style="padding:8px 0"><span class="row" style="gap:8px"><span class="avatar a4">수</span><span><b>수빈</b><br><span class="tiny m">원주에서 먼저 내렸어요</span></span></span><b style="font-size:15px">10,660원</b></div>
+    </div>
+    <div class="row tiny" style="margin:0 2px;background:#FFF8E1;border-radius:8px;padding:6px 8px"><span>연비·시급은 <b>기본값</b>으로 계산했어요</span><span class="g"><b>고치기 ›</b></span></div>
+  </div>
+  <div class="cta">결과 링크 공유</div>
+</div>
+<div class="notes">
+<span class="id">S10</span><h3>정산 결과</h3>
+<p>운전자가 받을 돈을 가장 크게 두고, 말투를 고르면 사유 문장과 공유 문구가 바로 바뀝니다. 금액은 말투와 무관하게 같습니다.</p>
+<h4>동작</h4>
+<ul>
+<li>말투: 순한맛(기본)·매운맛·비즈니스 → 사유 문장, 명분 문구, 공유 본문 변경. 비즈니스는 명분 문구 숨김. 마지막 선택 기억</li>
+<li>“계산 근거” → 사람별 낸 돈·자기 몫·차액 표, 구간별 공통비·노동비·난이도·괘씸 배수·경로 조회 출처</li>
+<li>“결과 링크 공유” → Web Share API 본문에 말투별 문구(순한맛: “강릉 여행 운전 정산이 도착했어요”), 괘씸자는 이름 없이 인원수만</li>
+<li>“고치기 ›” 또는 금액 탭 → S10c. 기본값으로 계산한 항목이 있을 때 노란 안내 줄 표시</li>
+<li>실제 운전 시간이 예상의 1.3배를 넘으면 안내 줄에 “경로보다 멀리 돌았나요? 거리 고치기”를 우선 표시</li>
+<li>⋯ 메뉴 → 결과 이미지 저장, 계산 근거로 이동(S10b)</li>
+<li>결제자가 여러 명이면 최소 송금 목록(누가 누구에게)으로 표시</li>
+<li>링크 발급 후 수정하면 “이미 공유한 링크는 예전 결과예요. 새 링크를 공유하세요.” 배너</li>
+<li>S9 “정산하기”는 곧 계산 등록. 결과는 기다림 없이 즉시 표시되고, 광고는 스크롤 맨 아래(S10b)에만</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S10b 정산 결과 아래쪽 목업">
+  <div class="sb"><span>11:45</span><span>●●● 74%</span></div>
+  <div class="ab"><span class="back">‹</span>정산 결과<span class="step" style="font-size:18px">⋯</span></div>
+  <div class="body">
+    <div class="lbl">계산 근거</div>
+    <div class="card" style="padding:8px 12px">
+      <div class="row tiny" style="padding:3px 0"><b>① 서울 → 원주</b><span class="m">난이도 1.0 · 조회 카카오</span></div>
+      <div class="row tiny m" style="padding-bottom:6px;border-bottom:1px solid #EEF0EE"><span>공통비 22,000 · 노동비 15,480</span><span>4명</span></div>
+      <div class="row tiny" style="padding:6px 0 3px"><b>② 원주 → 강릉</b><span class="m">난이도 1.0 · 조회 카카오</span></div>
+      <div class="row tiny m"><span>공통비 18,000 · 노동비 10,320</span><span>3명</span></div>
+    </div>
+    <div class="lbl">낸 돈과 자기 몫</div>
+    <div class="card" style="padding:6px 12px">
+      <div class="row tiny" style="padding:4px 0"><b>민수</b><span class="m">낸 40,000 · 몫 11,500 · 수고비 29,412</span><b class="g">+57,912</b></div>
+      <div class="row tiny" style="padding:4px 0"><b>태호</b><span class="m">낸 0 · 몫 23,884</span><b>−23,884</b></div>
+      <div class="row tiny" style="padding:4px 0"><b>지현</b><span class="m">낸 0 · 몫 23,368</span><b>−23,368</b></div>
+      <div class="row tiny" style="padding:4px 0"><b>수빈</b><span class="m">낸 0 · 몫 10,660</span><b>−10,660</b></div>
+    </div>
+    <div class="card" style="padding:10px 12px;margin-top:14px">
+      <div class="row tiny" style="margin-bottom:8px"><span class="tag" style="background:#E9ECE9;color:#6B7177">광고</span><span class="m" style="font-size:16px;line-height:1">✕</span></div>
+      <div class="row" style="justify-content:flex-start;gap:10px">
+        <div style="width:56px;height:56px;border-radius:10px;background:#E9ECE9;flex:none"></div>
+        <div><b style="font-size:13px">광고 제목 영역</b><div class="tiny m">광고 네트워크 네이티브 광고 문구 영역</div></div>
+      </div>
+    </div>
+    <div class="tiny m" style="text-align:center">계산을 등록할 때 한 번만 보여요</div>
+  </div>
+  <div class="cta">결과 링크 공유</div>
+</div>
+<div class="notes">
+<span class="id">S10b</span><h3>정산 결과 · 아래쪽 (광고 카드)</h3>
+<p>S10을 끝까지 내렸을 때의 모습입니다. 이 앱의 유일한 광고가 계산 근거 다음, 화면 맨 아래에 한 번 붙습니다.</p>
+<h4>광고 동작</h4>
+<ul>
+<li>S9 “정산하기”로 계산을 처음 등록할 때 광고를 1번 요청. 결과는 기다리지 않고 먼저 표시</li>
+<li>광고가 준비되면 콘텐츠 맨 끝에 붙어, 위의 금액·목록 위치가 움직이지 않음</li>
+<li>하단 “결과 링크 공유” 버튼과 겹치지 않게 버튼 높이만큼 여백 확보(실수 클릭 방지)</li>
+<li>✕ → 카드 제거, 이 여행에서는 다시 표시하지 않음</li>
+<li>수정 후 재등록, 지난 여행 다시 보기, 재공유에는 광고 없음. 불러오기 실패 시 아무것도 표시하지 않음</li>
+<li>결과 이미지 저장·공유 문구·받는 사람 페이지(S11)에는 광고를 넣지 않음. 야간 모드에서는 카드를 어둡게</li>
+</ul>
+<h4>계산 근거</h4>
+<p>구간별 공통비·노동비·난이도·탑승 인원·경로 조회 출처와, 사람별 “낸 돈 − 자기 몫” 차액을 보여줍니다. 운전자는 받을 수고비(노동비)를 더해 계산합니다(민수: 40,000 − 11,500 + 29,412 = +57,912). 차액 합계는 항상 0입니다.</p>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S10c 고치기 목업">
+  <div class="sb"><span>11:46</span><span>●●● 74%</span></div>
+  <div class="ab"><span class="back">‹</span>정산 결과</div>
+  <div class="body">
+    <div class="card" style="text-align:center;background:#0E6B47;color:#fff;border-color:#0E6B47;padding:10px">
+      <div class="tiny" style="opacity:.85">민수가 받을 돈</div>
+      <div style="font-family:'Black Han Sans',sans-serif;font-size:32px;line-height:1.2">57,912원</div>
+    </div>
+  </div>
+  <div class="dim"></div>
+  <div class="sheet" style="padding-bottom:84px">
+    <div class="grab"></div>
+    <div class="row" style="margin-bottom:6px"><b style="font-size:16px">고치기</b><span class="tiny m">고치면 금액이 바로 바뀌어요</span></div>
+    <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span>연비</span><span><b>12.0 km/L</b> <span class="tag y">기본값</span> ›</span></div>
+    <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span>기준 시급</span><span><b>10,320원</b> <span class="tag y">기본값</span> ›</span></div>
+    <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span>운전 시간</span><span><b>2시간 30분</b> <span class="tag">자동</span> ›</span></div>
+    <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span>거리</span><span><b>228km</b> <span class="tag">자동</span> ›</span></div>
+    <div class="row" style="padding:9px 0;border-bottom:1px solid #EEF0EE"><span>유가</span><span><b>1,700 → 1,650원</b> <span class="tag">주유 기록</span> ›</span></div>
+    <div class="row" style="padding:9px 0"><span>이름·결제·괘씸</span><span class="m">4명 · 1건 · 4건 ›</span></div>
+    <div class="cta" style="bottom:16px">완료</div>
+  </div>
+</div>
+<div class="notes">
+<span class="id">S10c</span><h3>고치기</h3>
+<p>출발 전에 묻지 않은 값을 결과를 보면서 고치는 곳입니다. 뒤에 보이는 금액이 바로 바뀌어서, 무엇을 고쳐야 결과가 달라지는지 직접 확인할 수 있습니다.</p>
+<h4>동작</h4>
+<ul>
+<li>각 값에 출처 표시: <span class="tag y">기본값</span> 앱이 가정한 값, <span class="tag r">직접 입력</span> 사용자가 고친 값, 자동·주유 기록 등 기록에서 온 값</li>
+<li>연비: 숫자 입력 또는 차종 검색(공인연비). 한 번 고치면 다음 여행부터 기본값으로 기억</li>
+<li>기준 시급·노동비 방식(시급형/택시형), 유가, 운전 시간, 거리 수정. 거리를 고치면 구간 거리 비율도 다시 계산</li>
+<li>“이름·결제·괘씸” → 동승자 A·B 이름 바꾸기, 뒤늦은 결제·괘씸·하차 추가(S7·S6a·S9c 재사용)</li>
+<li>모든 수정은 즉시 자동 저장. 결과 링크를 이미 공유했다면 “새 링크를 공유하세요” 배너</li>
+<li>기본값이 남아 있으면 결과 영수증과 받는 사람 페이지 계산 근거에 “기본값” 표시</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S11 결과 보기 웹 목업">
+  <div class="sb"><span>12:10</span><span>●●● 64%</span></div>
+  <div style="margin:0 10px 8px;background:#E9ECE9;border-radius:10px;padding:6px 10px;font-size:11px;color:#6B7177">🔒 정산기.app/r#v1.eJyNk…</div>
+  <div class="body" style="height:560px">
+    <div style="text-align:center;margin:2px 0 8px"><b>강릉 여행 운전 정산</b><div class="tiny m">9월 19일 · 운전 민수 · 발급 11:46</div></div>
+    <div class="lbl">민수 님에게 보낼 돈</div>
+    <div class="card" style="padding:2px 12px">
+      <div style="padding:8px 0;border-bottom:1px solid #EEF0EE">
+        <div class="row"><b>태호 ▾</b><span style="font-size:24px;font-weight:700">23,884원</span></div>
+        <div class="tiny m">공통비 11,500 · 노동비 12,384 (괘씸 가산 2,064)</div>
+      </div>
+      <div class="row" style="padding:8px 0;border-bottom:1px solid #EEF0EE"><b>지현 ▸</b><span style="font-size:24px;font-weight:700">23,368원</span></div>
+      <div class="row" style="padding:8px 0"><b>수빈 ▸</b><span style="font-size:24px;font-weight:700">10,660원</span></div>
+    </div>
+    <div class="grid2" style="margin-bottom:6px">
+      <div class="tile" style="min-height:48px;border-color:#0E6B47"><b>토스로 송금</b></div>
+      <div class="tile" style="min-height:48px;border-color:#0E6B47"><b>카카오페이로 송금</b></div>
+    </div>
+    <div class="tiny" style="text-align:center;margin-bottom:6px"><span class="m">송금 앱에서 받는 사람이 <b style="color:#1E2124">민수</b> 님인지 확인하세요</span> · <span class="g"><b>금액 복사</b></span></div>
+    <div class="tiny m" style="text-align:center;line-height:1.5">이 정산금은 운전자의 다음 기름값과 허리 건강에 쓰입니다<br>유가 시세, 최저시급, 함께 확인한 괘씸 기록으로 자동 계산했어요. 금액은 링크를 만든 사람이 입력한 값 기준이니 송금 전에 확인하세요.</div>
+  </div>
+</div>
+<div class="notes">
+<span class="id">S11</span><h3>결과 보기 (받는 사람용 웹)</h3>
+<p>링크를 받은 사람의 질문은 “그래서 내가 얼마야?” 하나입니다. 열자마자 사람별 금액이 큰 글자로 보이고, 이름을 누르면 계산 근거가 펼쳐집니다.</p>
+<h4>동작</h4>
+<ul>
+<li>링크 <code>#</code> 뒤 데이터를 브라우저에서만 해제해 렌더링. 서버 요청, 로그인, 설치 요구, 광고 없음</li>
+<li>이름 탭 → 공통비·노동비·괘씸 가산·난이도 사유 펼침. 마지막으로 연 이름은 localStorage에 기억해 다음 방문 시 자동 펼침</li>
+<li>송금 버튼은 운전자가 송금 링크를 등록한 경우에만 표시. 토스 아이디 링크·카카오페이 송금 링크 형식을 페이지가 다시 검증하고, 형식이 아니면 버튼을 숨김</li>
+<li>계좌번호는 표시하지 않음. 금액 자동 입력이 안 되는 송금 앱을 위해 “금액 복사” 제공</li>
+<li>링크 데이터 4KB·해제 32KB 초과, 멤버·금액 범위 이탈 시 손상 링크 화면. 모든 값은 텍스트로만 출력, 괘씸 사유는 코드값을 말투별 고정 문장으로 변환(기타는 “기타 +1”)</li>
+<li>하단에 명분 문구(말투에 따름)와 고정 안내 문구</li>
+</ul>
+<h4>오류</h4>
+<p>데이터가 깨진 링크: “링크가 잘렸거나 손상됐어요. 보낸 사람에게 링크를 다시 요청하세요.” 버전이 너무 새로운 링크: “새 버전 결과예요. 페이지를 새로고침하세요.”</p>
+</div>
+</section>
+
+<p class="phase">야간 모드</p>
+
+<section class="shot">
+<div class="phone" aria-label="S6N 여행 중 기록 야간 목업">
+ <div class="night">
+  <div class="sb"><span>22:40</span><span>●●● 48%</span></div>
+  <div class="ab">돌아오는 밤길<span class="step">야간 모드</span></div>
+  <div class="body">
+    <div class="card hl" style="padding:10px 12px">
+      <div class="tiny" style="opacity:.8">지금 구간 1/1</div>
+      <div style="font-size:24px;font-weight:700;line-height:1.25">강릉 → 서울</div>
+      <div class="row tiny" style="margin-top:4px;opacity:.85"><span>운전 민수 · 탑승 지현</span><span>출발 후 2시간 10분</span></div>
+    </div>
+    <div class="grid4 compact" style="margin-bottom:10px">
+      <div class="tile green"><b>💳</b>결제<span class="tiny m">1건</span></div>
+      <div class="tile"><b>🚏</b>하차·합류<span class="tiny m">없음</span></div>
+      <div class="tile"><b>🔄</b>운전 교대<span class="tiny m">민수</span></div>
+      <div class="tile"><b>☕</b>휴식<span class="tiny m">켜기</span></div>
+    </div>
+    <div class="row" style="margin-bottom:6px"><b>괘씸 기록</b><span class="tiny m">대상 <span class="chip on" style="margin:0">지현</span></span></div>
+    <div class="grid4" style="margin-bottom:8px">
+      <div class="tile red"><b>😴</b>조수석 수면<span class="cnt">40분</span></div>
+      <div class="tile red"><b>🍪</b>혼자 먹음<span class="tiny r">+1</span></div>
+      <div class="tile red"><b>🍔</b>냄새 음식<span class="tiny r">+2</span></div>
+      <div class="tile red"><b>📣</b>시끄러움<span class="tiny r">+1</span></div>
+      <div class="tile red"><b>🗺️</b>훈수<span class="tiny r">+1</span></div>
+      <div class="tile red"><b>🗑️</b>쓰레기<span class="tiny r">+2</span></div>
+      <div class="tile red"><b>✏️</b>기타<span class="tiny r">2회 남음</span></div>
+      <div class="tile"><b>💺</b>좌석 변경<span class="tiny m">택시모드</span></div>
+    </div>
+    <div class="row" style="margin-bottom:6px"><b>감면 기록</b><span class="tiny m">길게 누르면 −1</span></div>
+    <div class="grid3 compact">
+      <div class="tile green"><b>🥤</b>먹여줌<span class="tiny g">−1</span></div>
+      <div class="tile green"><b>☕</b>간식 사줌<span class="tiny g">−2</span></div>
+      <div class="tile green"><b>🧭</b>길 안내<span class="tiny g">−1</span></div>
+    </div>
+  </div>
+  <div class="cta sub">도착했어요</div>
+ </div>
+</div>
+<div class="notes">
+<span class="id">S6N</span><h3>여행 중 기록 · 야간</h3>
+<p>S6와 구조는 같고 밝기만 바꿉니다. 조수석에서 폰을 켜도 운전자 시야에 빛이 번지지 않게 하는 것이 목표입니다.</p>
+<h4>전환 조건</h4>
+<ul>
+<li>폰이 다크 모드면 항상 야간 모드</li>
+<li>폰 설정이 라이트여도 18:00~06:00에는 자동 전환. 일몰 시각 계산은 위치가 필요해 쓰지 않음</li>
+<li>설정에서 “항상 켜기 / 자동 / 끄기” 수동 선택 가능</li>
+</ul>
+<h4>표현 규칙</h4>
+<ul>
+<li>배경은 완전 검정(OLED에서 픽셀이 꺼짐), 카드는 거의 검정</li>
+<li>텍스트는 흰색 대신 낮은 밝기의 회색, 초록·빨강은 채도를 낮춤</li>
+<li>현재 구간 이름과 누적 숫자의 크기는 주간과 동일하게 유지</li>
+<li>토스트·시트도 같은 어두운 색. 흰 배경 팝업을 띄우지 않음</li>
+</ul>
+</div>
+</section>
+
+<section class="shot">
+<div class="phone" aria-label="S8N 운전 중 잠금 야간 목업">
+ <div class="night">
+  <div class="sb"><span>22:05</span><span>●●● 55%</span></div>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px">
+    <div style="width:44px;height:44px;border-radius:50%;border:2px solid #6B5620;display:grid;place-items:center;font-size:20px;margin-bottom:16px;opacity:.45">✋</div>
+    <div style="font-size:18px;font-weight:700;color:#6A6F6C;margin-bottom:6px">운전 중에는<br>기록할 수 없어요</div>
+    <p class="m" style="margin:0 0 18px;font-size:12px">정차하면 자동으로 풀려요</p>
+  </div>
+  <div class="cta" style="background:#1E1A0E;color:#A38B4A;border:1px solid #3A3118">동승자가 기록할게요</div>
+ </div>
+</div>
+<div class="notes">
+<span class="id">S8N</span><h3>운전 중 잠금 · 야간</h3>
+<p>주간 S8은 초록 전체 화면이라 밤에는 가장 눈부신 화면이 됩니다. 야간에는 거의 빛을 내지 않는 잠금 화면으로 바꿉니다.</p>
+<h4>표현 규칙</h4>
+<ul>
+<li>완전 검정 배경, 아이콘은 작게, 문구는 두 줄로 줄임</li>
+<li>설명 박스를 없애고 “정차하면 자동으로 풀려요” 한 줄만</li>
+<li>버튼은 어두운 황색 테두리와 낮은 밝기의 글자</li>
+<li>잠금이 걸릴 때 진동·소리 없음</li>
+</ul>
+<p class="muted">표시 조건과 해제 동작은 S8과 같습니다.</p>
+</div>
+</section>
+
+<div class="narrow">
+<h2 id="s18">공통 UI 규칙</h2>
+<ul>
+<li><b>터치 영역:</b> 차 안 사용을 전제로 모든 버튼 최소 48×48px, 주요 버튼은 화면 하단 고정.</li>
+<li><b>자동 저장:</b> 모든 입력은 즉시 폰에 저장. 저장 버튼은 두지 않고, 되돌리기는 토스트의 “취소”로.</li>
+<li><b>금액 표기:</b> 천 단위 쉼표, “원” 붙임. 자동 조회 값과 직접 입력 값을 구분 표시(직접 입력에 작은 연필 표시).</li>
+<li><b>색의 의미:</b> 초록은 확정·기본 동작, 노랑은 주의·진행 중, 빨강은 괘씸 가산에만 씁니다. 오류 표시에 빨강을 쓰지 않아 괘씸과 헷갈리지 않게 합니다(오류는 노랑 박스 + 아이콘).</li>
+<li><b>오프라인:</b> 산길·터널에서 조회가 실패해도 기록은 계속 가능. 조회는 연결되면 자동 재시도하고, 그 전까지 “조회 대기” 표시.</li>
+<li><b>접근성:</b> 괘씸 타일은 이모지와 텍스트를 함께 표기, 색만으로 상태를 전달하지 않음. 글자 크기 확대 시 괘씸 타일은 4열 → 2열, 감면 타일은 3열 → 2열로.</li>
+<li><b>큰 숫자:</b> 동승자가 보는 핵심 숫자(S6 현재 구간, S10 받을 돈, S11 사람별 금액)는 24px 이상. 운전자가 흘끗 보도록 설계하지 않음.</li>
+<li><b>되돌리기:</b> 기록은 토스트 “취소”(5초) 또는 길게 눌러 −1. 삭제 확인 팝업은 띄우지 않음.</li>
+<li><b>야간 모드:</b> 폰 다크 모드 또는 18~06시 자동. 모든 화면과 시트, 토스트에 적용.</li>
+<li><b>광고:</b> 계산 등록 1회당 S10 맨 아래 카드 한 곳에서만. 대기 화면·전면 광고·다른 화면 배너를 두지 않음.</li>
+<li><b>자동 조회 한도:</b> 팝업으로 막지 않고 입력 필드 위 안내 문구 + 수동 입력 필드 자동 펼침.</li>
+<li><b>입력 최소화:</b> 출발 전 필수 입력은 도착지·동승자 2개. 새로 묻고 싶은 값이 생기면 기본값 + S10c 고치기로 넣고, 출발 전 화면에 필드를 추가하지 않음.</li>
+<li><b>기본값 표시:</b> 앱이 가정한 값은 어디서든 “기본값” 태그로 구분.</li>
+<li><b>서버 최소 정보:</b> 화면 어디에도 기기 현재 위치를 서버로 보내는 기능을 두지 않음. 새 화면 추가 시 서버로 가는 값을 기획서 표와 대조.</li>
+</ul>
+
+<h2 id="s19">MVP에서 뺀 화면</h2>
+<div class="scroll"><table style="min-width:520px">
+<thead><tr><th>화면</th><th>뺀 이유</th><th>시점</th></tr></thead>
+<tbody>
+<tr><td>GPS·센서 주행 기록</td><td>배터리·권한 설계, 위치정보법 검토 필요. PWA는 화면이 켜진 동안만 측정되고 거치 위치에 따라 값이 흔들림. 정산에는 반영하지 않고 운전자 본인 기록용</td><td>2차</td></tr>
+<tr><td>출발 시각 기준 난이도 예측</td><td>미래 운행 정보 길찾기 API 호출량을 하드 상한 설계에 포함해야 함</td><td>2차</td></tr>
+<tr><td>주변 주유소 가격 비교</td><td>오피넷 좌표 변환 검증 필요, 주유 기록은 수동으로 충분</td><td>2차</td></tr>
+<tr><td>영수증 사진 인식</td><td>OCR 비용·정확도 검증 필요</td><td>2차</td></tr>
+<tr><td>송금 링크 등록 화면</td><td>송금 링크 형식·금액 자동 입력 확인 필요. 결과 페이지 버튼(S11)은 등록 기능과 함께 출시</td><td>출시 직후</td></tr>
+<tr><td>음성 기록</td><td>기기 내부 인식 환경 확인 필요, 누를 때만 듣는 방식으로 설계</td><td>2차</td></tr>
+<tr><td>전면·대기 화면·동영상 광고</td><td>결과를 가리거나 기다리게 해 사용성을 해침. 웹(PWA)에서는 앱 전용 형식도 불가</td><td>계획 없음</td></tr>
+<tr><td>여행 백업·복원</td><td>파일 내보내기 형식 확정 필요</td><td>2차</td></tr>
+<tr><td>현재 위치로 검색</td><td>서버 최소 정보 원칙</td><td>계획 없음</td></tr>
+<tr><td>출발 전 경로·구간·운전자·정산 규칙 설정</td><td>여행 중 기록과 기본값, 결과 화면 고치기(S10c)로 대체</td><td>계획 없음</td></tr>
+<tr><td>결과별 카카오톡 썸네일</td><td># 뒤 결과 데이터를 서버가 볼 수 없어 기술적으로 불가</td><td>계획 없음</td></tr>
+<tr><td>괘씸 점수표 편집</td><td>고정 점수표 + 기타 항목으로 확정</td><td>계획 없음</td></tr>
+<tr><td>누적 통계(올해 운전 시간)</td><td>여행이 쌓인 뒤에 의미가 있음</td><td>3차</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="part" id="part4"><span class="part-no">4부</span><div><p class="part-title">비즈니스 모델</p><p class="part-sub">계산 등록 1회당 광고 1번</p></div></div><div class="narrow"><h2 id="s20">비즈니스 모델</h2>
+<p class="lead">기능은 전부 무료이고, 수익은 “계산을 등록하면 광고 1번” 하나입니다. 결제, 구독, 송금 수수료는 없습니다. 광고는 사용 흐름을 절대 막지 않는다는 원칙을 우선합니다.</p>
+
+<h3>광고 규칙</h3>
+<div class="scroll"><table>
+<thead><tr><th>항목</th><th>규칙</th></tr></thead>
+<tbody>
+<tr><td>트리거</td><td>도착 후 “정산하기”로 계산을 처음 등록할 때 광고 1번 요청</td></tr>
+<tr><td>빈도</td><td>여행 1건당 1번. 수정 후 재등록, 지난 여행 다시 보기, 링크 재공유에는 표시하지 않음(폰에 표시 여부 저장)</td></tr>
+<tr><td>위치</td><td>정산 결과 화면(S10) 스크롤 맨 아래, 계산 근거 다음. 결과 금액·보낼 돈 목록보다 항상 아래</td></tr>
+<tr><td>형태</td><td>배너·네이티브 광고 카드 1개. “광고” 표시, 닫기(✕) 버튼</td></tr>
+<tr><td>기다림</td><td>없음. 결과는 즉시 표시하고 광고는 뒤에서 불러와 준비되면 맨 아래에 붙음</td></tr>
+<tr><td>실패 시</td><td>아무것도 표시하지 않음. 빈 자리나 오류 문구 없음</td></tr>
+<tr><td>표시하지 않는 곳</td><td>여행 중 화면(S6~S8), 받는 사람 결과 페이지(S11), 결과 이미지·공유 문구</td></tr>
+</tbody></table></div>
+
+<h3>사용성을 지키는 장치</h3>
+<ul>
+<li><b>결과가 먼저:</b> 광고를 기다리는 대기 화면, 카운트다운, 전면 광고를 쓰지 않는다.</li>
+<li><b>화면이 밀리지 않게:</b> 광고 카드는 콘텐츠 맨 끝에 붙기 때문에, 불러오는 순간에도 위의 금액·목록 위치가 움직이지 않는다.</li>
+<li><b>실수 클릭 방지:</b> 광고 카드는 하단 “결과 링크 공유” 버튼과 겹치지 않도록 버튼 영역만큼 여백을 둔다. 광고 네트워크의 유도 클릭 금지 정책과도 맞다.</li>
+<li><b>닫으면 끝:</b> ✕를 누르면 카드가 사라지고 이 여행에서는 다시 나오지 않는다.</li>
+<li><b>소리·움직임 없음:</b> 자동 재생 동영상, 소리 나는 광고 형식은 쓰지 않는다. 야간 모드에서는 카드 테두리와 배경을 어둡게 한다.</li>
+</ul>
+
+<h3>광고 네트워크 현실 (확인 필요)</h3>
+<ul>
+<li><b>웹에 맞는 형식:</b> 결과 화면 안의 카드 광고는 웹(PWA)에서 쓸 수 있는 배너·네이티브 광고와 잘 맞는다. 카카오 애드핏은 배너·네이티브 광고를 제공하고, 실행·화면 전환 팝업 광고는 앱 전용 상품이다.</li>
+<li><b>매체 심사:</b> 애드핏은 매체 소유관계, 콘텐츠의 질적·양적 품질, 트래픽 품질을 심사한다. 도구형 앱은 불리할 수 있어 서비스 소개·사용 가이드·계산 방법 설명 페이지를 함께 준비한다.</li>
+<li><b>도메인:</b> 구글 애드센스는 상위 도메인 기준으로 승인받는 것이 일반적이라 workers.dev 주소로는 어려울 가능성이 높다. 자체 도메인 구입(연 1만 원대)이 첫 지출이 될 수 있다.</li>
+<li><b>닫기 버튼과 노출 기준:</b> 광고 카드에 닫기 버튼을 두는 것과 화면 맨 아래 배치가 광고 네트워크 정책·노출 집계 기준에 맞는지 확인한다.</li>
+</ul>
+
+<h3>개인정보와 보안</h3>
+<ul>
+<li>광고 스크립트는 S10의 광고 카드에서만 불러온다. 결과 보기 페이지(/r)는 CSP로 외부 스크립트를 막는다.</li>
+<li>광고 네트워크는 쿠키·기기 정보를 직접 수집할 수 있으므로 개인정보처리방침에 고지하고, 맞춤형 광고 동의가 필요한지 확인한다.</li>
+<li>광고 요청에 이름·금액·목적지 같은 여행 정보를 넣지 않는다. 서버 최소 정보 원칙은 그대로다.</li>
+</ul>
+
+<h3>기대 수익과 다음 단계</h3>
+<p>여행 때만 쓰는 앱이고 광고가 화면 맨 아래에 있어, 노출 수와 광고 단가 모두 높지 않을 것입니다. 사용성을 우선한 선택이며, 초기 목표는 도메인·운영 비용을 덮는 수준입니다. 수익을 키우는 방안은 사용자 반응을 본 뒤 판단하고, 그 전에 유상운송 쟁점 확인이 선행되어야 합니다.</p>
+
+</div><div class="part" id="part5"><span class="part-no">5부</span><div><p class="part-title">로드맵과 결정</p><p class="part-sub">무엇을 정했고 무엇이 남았나</p></div></div><div class="narrow"><h2 id="s21">MVP 범위와 로드맵</h2>
+<div class="scroll"><table>
+<thead><tr><th>단계</th><th>범위</th></tr></thead>
+<tbody>
+<tr><td><b>MVP</b></td><td>PWA 앱, Cloudflare Worker(API 중계·카카오 주력/TMAP 예비 어댑터·유가 캐싱·결과 페이지), 새 여행(도착지·동승자), 기록 기반 구간·운전자 자동 생성, 도착 요약, 빠른 정산, 결과 화면 고치기, 경로 API 자동 조회, 오피넷 평균가, 결제·하차·합류 기록, 시급형·택시형 노동비, 난이도 지수, 괘씸모드(기록·확인·길게 눌러 −1), 말투 3종, 야간 모드, 정산 광고, 영수증 결과, 결과 링크 공유</td></tr>
+<tr><td><b>출시 직후</b></td><td>송금 버튼(송금 링크 등록), 여행 백업 파일</td></tr>
+<tr><td><b>2차</b></td><td>GPS 주행 기록(폰 내부 처리, 위치정보법 검토 후), 미래 운행 정보 길찾기(출발 시각 기준 난이도 예측), 폰 센서 주행 기록(본인 기록용, 정산 미반영), 공공 교통 이력 기반 운전 시간 검증(고속도로), 주변 주유소 가격 조회(뭉갠 좌표), 영수증 OCR, 실측 연비, 음성 기록(누를 때만, 기기 내부 인식 조건)</td></tr>
+<tr><td><b>3차</b></td><td>차량 감가, 전기차 충전 단가, 대리형 노동비, 모임 단위 누적 정산(“올해 민수가 운전한 시간”)</td></tr>
+<tr><td><b>네이티브 전환</b></td><td>전환 조건 충족 시 Expo(React Native)로 AOS·iOS 앱 출시. 계산 엔진·결과 링크 패키지는 그대로 재사용</td></tr>
+</tbody></table></div>
+
+<h3>출시 형태와 코드 구조</h3>
+<p>PWA로 먼저 출시하고, 나중에 네이티브로 옮길 때 다시 만들지 않도록 화면과 로직을 분리한 모노레포로 시작합니다.</p>
+<div class="formula">driver-labor/
+├── CLAUDE.md, docs/          ← Claude Code용 규칙과 기획 문서
+├── packages/calc             ← 계산 엔진: 구간 자동 생성, 유류비, 노동비, 난이도, 괘씸, 정산 (순수 함수)
+├── packages/link-codec       ← 결과 링크 압축·해제·검증
+├── packages/storage          ← 저장소 인터페이스 (웹: IndexedDB, 네이티브: SQLite로 교체)
+├── apps/web                  ← PWA 앱 (Vite + React + TypeScript)
+├── apps/result               ← 결과 보기 정적 페이지 (외부 스크립트 없음)
+├── apps/worker               ← Cloudflare Worker (/api 중계, 정적 자산 서빙)
+└── fixtures/                 ← 카카오·TMAP·오피넷 샘플 응답 (실제 키 없이 개발)</div>
+<ul>
+<li><b>계산 엔진 공유:</b> 앱, 결과 페이지, 나중의 네이티브 앱이 같은 계산 코드를 쓴다. 기획서의 계산 예시를 단위 테스트로 고정한다.</li>
+<li><b>화면만 교체:</b> 네이티브 전환 시 새로 만드는 것은 apps/mobile의 화면과 저장소 구현뿐이다.</li>
+<li><b>결과 페이지는 계속 웹:</b> 링크를 받은 사람은 앱이 없으므로 네이티브 전환 후에도 apps/result는 유지한다.</li>
+</ul>
+
+<h3>네이티브 전환 조건</h3>
+<p>아래 중 하나라도 해당하면 네이티브 전환을 검토합니다. 수치 기준은 출시 후 실제 사용량을 보고 정합니다.</p>
+<ul>
+<li><b>광고:</b> 웹 광고 네트워크 승인을 받지 못하거나, 웹 광고 수익이 도메인·운영 비용을 덮지 못함. 네이티브는 앱 광고 SDK를 쓸 수 있다.</li>
+<li><b>재사용:</b> 같은 사용자가 반복해서 여행을 등록해 “홈 화면 아이콘·스토어 설치” 가치가 커짐.</li>
+<li><b>기능 한계:</b> 운전 중 잠금의 속도 감지 불안정, 기기 내부 음성 인식 요구 등 PWA로 해결할 수 없는 요구가 반복됨.</li>
+</ul>
+<p class="muted">전환 시 추가 비용: 구글 플레이 개발자 등록 1회 25달러, 애플 개발자 프로그램 연 99달러. iOS 맞춤형 광고는 추적 동의 창(ATT)이 필요하므로 비맞춤형 광고로 시작한다.</p>
+
+</div><div class="narrow"><h2 id="s22">확정한 결정</h2>
+<div class="scroll"><table>
+<thead><tr><th>항목</th><th>결정</th><th>근거</th></tr></thead>
+<tbody>
+<tr><td>출시 형태</td><td>PWA 우선, 전환 조건 충족 시 네이티브(Expo)</td><td>0원으로 검증하고, 계산·링크 패키지를 공유해 전환 비용 최소화</td></tr>
+<tr><td>기술 스택</td><td>TypeScript 모노레포. 웹 Vite + React, 서버 Cloudflare Worker, 테스트 Vitest</td><td>앱·결과 페이지·서버·나중의 네이티브 앱이 같은 언어와 계산 코드 공유</td></tr>
+<tr><td>금액 단위</td><td>원 단위 정수로 계산·표시, 반올림 차이는 운전자 몫에서 흡수</td><td>송금 앱이 원 단위를 지원하고, 기획서 예시 금액과 일치</td></tr>
+<tr><td>입력 방식</td><td>출발 전 필수 입력은 도착지·동승자 2개. 구간·운전자·좌석은 기록에서 자동 생성</td><td>사전 계획 화면 4개를 없애 입력 장벽 최소화</td></tr>
+<tr><td>값 수정 위치</td><td>결과 화면(S10c)에서, 금액을 보면서</td><td>무엇을 고쳐야 할지 결과를 보고 판단하기 쉬움</td></tr>
+<tr><td>도착 후 확인</td><td>요약 한 장 + 정산하기. 괘씸·타임라인·난이도 확인은 선택</td><td>필수 단계 최소화</td></tr>
+<tr><td>빠른 정산</td><td>앱을 못 켠 여행도 4개 값으로 정산</td><td>기록을 안 했다는 이유로 사용을 포기하지 않게</td></tr>
+<tr><td>노동비 기본 방식</td><td>시급형</td><td>첫 정산부터 택시 기준 고액이면 동승자 반발이 커져 사용 장벽이 된다</td></tr>
+<tr><td>괘씸 반영 방식</td><td>가산형</td><td>재분배형은 괘씸한 사람 때문에 착한 동승자의 부담이 줄어드는 이상한 보상이 생긴다</td></tr>
+<tr><td>택시모드 강도</td><td>α 30%, 시급형 × 1.5~2.0 범위로 자름</td><td>택시 느낌은 살리되 괘씸 배수 상한 2.0과 일관성 유지</td></tr>
+<tr><td>괘씸 점수표</td><td>고정 + “기타 +1(메모)”, 구간당 2회</td><td>출발 전 편집은 입력 피로가 크다. 메모는 링크 악용을 막기 위해 폰에만</td></tr>
+<tr><td>앱 형태</td><td>PWA로 출발</td><td>동승자는 링크로 들어오므로 설치 없는 웹 경험이 핵심. 스토어 비용·검수 절약</td></tr>
+<tr><td>무료량 초과 대응</td><td>하드 상한 후 수동 입력 전환, 과금 없음</td><td>0원 운영 원칙</td></tr>
+<tr><td>공유 방식</td><td>Web Share API 본문 문구 + 공통 썸네일</td><td>결과별 썸네일은 # 뒤 데이터를 서버가 볼 수 없어 불가</td></tr>
+<tr><td>수익 모델</td><td>계산 등록 1회당 광고 1번만. 결제·구독·수수료 없음</td><td>개인 간 정산이라 유료 장벽을 두지 않음. 구조가 단순하고 서버·결제 인프라가 필요 없음</td></tr>
+<tr><td>광고 위치</td><td>정산 결과 화면(S10) 맨 아래 닫을 수 있는 카드. 대기 화면·전면 광고 없음. 여행 중 화면과 받는 사람 페이지에는 없음</td><td>사용 흐름을 막지 않음. 차가 멈춘 뒤라 안전, 받는 사람 페이지 신뢰와 보안 유지</td></tr>
+<tr><td>영수증 말투</td><td>순한맛 기본, 매운맛·비즈니스 선택. 금액과 안내 문구는 불변</td><td>보내는 사람의 민망함 완화</td></tr>
+<tr><td>송금 버튼</td><td>정해진 형식의 송금 링크만. 계좌번호 원문 금지</td><td>위조 링크로 사기 계좌 송금을 유도하는 악용 방지</td></tr>
+<tr><td>중간 하차</td><td>시간 기반 타임라인으로 구간 분할</td><td>지도 SDK·현재 위치 없이 같은 편의 제공</td></tr>
+<tr><td>음성 기록</td><td>2차, 누를 때만·기기 내부 인식 조건</td><td>서버 기반 인식은 음성이 외부로 전송되고 차 안 대화를 듣게 됨</td></tr>
+<tr><td>큰 숫자</td><td>동승자가 보는 화면(S6, S10, S11) 기준 24px 이상</td><td>운전자가 화면을 보게 만드는 설계는 운전 중 잠금 원칙과 충돌</td></tr>
+<tr><td>현재 위치 검색</td><td>MVP 제외</td><td>서버 최소 정보 원칙, 위치정보 이슈 축소</td></tr>
+<tr><td>결과 링크 서명</td><td>하지 않음</td><td>서버 최소 정보 원칙. 안내 문구로 대체</td></tr>
+<tr><td>운전 난이도</td><td>환경 요소 기반 난이도 지수(1.0~2.0)로 기존 할증 통합</td><td>설명 가능한 사유로 표시할 수 있고 추가 수집 정보가 없음</td></tr>
+<tr><td>경로 제공자</td><td>카카오 주력 + TMAP 예비</td><td>무료 조회량 확대(하루 약 1만 건), 카카오 앱 차단·장애 시에도 서비스 유지</td></tr>
+<tr><td>네이버·구글·오픈소스 경로</td><td>채택하지 않음</td><td>0원 원칙 충돌, 한국 길찾기 제공 불확실, 택시요금·통행료·실시간 교통 부재</td></tr>
+<tr><td>운전 행동 지표</td><td>정산에 반영하지 않음</td><td>급제동·급가속을 보상하면 거친 운전이 더 받는 역보상</td></tr>
+<tr><td>공공 교통 데이터</td><td>정산 계산에는 쓰지 않고 운전 시간 검증에만 사용(2차)</td><td>실제 운전 시간이 그날 정체를 더 정확히 반영. 이력은 그럴듯함 판단용. 주행 중 실시간 조회는 현재 위치 전송이 되어 제외</td></tr>
+</tbody></table></div>
+
+</div><div class="narrow"><h2 id="s23">남은 확인 사항</h2>
+<ul>
+<li><b>유상운송 (출시 전 필수):</b> 기름값을 넘는 “운전 노동비” 정산을 돕고 광고 수익을 내는 서비스가 여객자동차운수사업법상 유상운송 알선으로 해석될 여지가 있는지 법률 확인. 영수증 표현은 “요금”이 아닌 “수고비”로 통일.</li>
+<li><b>광고 (출시 전):</b> 카카오 애드핏 매체 심사 기준(도구형 앱의 콘텐츠 품질), 구글 애드센스의 도메인 조건, 광고 카드 닫기 버튼·하단 배치의 정책 적합성, 개인정보처리방침의 광고 관련 고지와 맞춤형 광고 동의 필요 여부, 광고 수익 소득 신고.</li>
+<li><b>송금 링크 (출시 직후 기능 전):</b> 토스·카카오페이 송금 링크의 형식, 금액 자동 입력 지원 여부.</li>
+<li><b>위치정보법 (출시 전 필수):</b> 운전 중 잠금의 폰 내부 속도 감지와, 사용자가 고른 장소 좌표를 서버가 중계하는 것이 위치정보 수집·이용 신고나 동의 대상인지 전문가 확인. 해당하면 동의 화면 추가 또는 기능 조정.</li>
+<li><b>기술 확인:</b> “개발 초기에 확인할 위험” 목록(오피넷 해외 IP 차단 여부, 카카오모빌리티 결제수단 없을 때 초과분 처리, Rate Limiting 바인딩 무료 플랜 사용 가능 여부, 오피넷 이용 조건).</li>
+<li><b>TMAP 예비 (개발 착수 전):</b> Free 요금제를 결제수단 없이 쓸 수 있는지, 응답 캐시·가공 표시 허용 범위(카카오 포함), 도로별 교통 정보를 받는 방식.</li>
+<li><b>공공 교통 이력 (2차 착수 전):</b> 한국도로공사·교통 빅데이터 플랫폼 데이터의 이용허락 범위(서비스 내 가공 표시 가능 여부), 자동 다운로드 허용 여부, 카카오 도로 이름과 도로공사 노선명 매칭 정확도.</li>
+</ul>
+
+</div>
+</main>
+</body>
+</html>
