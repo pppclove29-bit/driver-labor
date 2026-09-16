@@ -24,12 +24,12 @@
 
 ## M0 · 모노레포 뼈대
 
-- [ ] pnpm 워크스페이스, TypeScript strict, ESLint·Prettier
-- [ ] `packages/calc`, `packages/link-codec`, `packages/storage` 빈 패키지와 Vitest 설정
-- [ ] `apps/web`(Vite + React, PWA 매니페스트·서비스 워커), `apps/result`(Vite), `apps/worker`(Wrangler)
-- [ ] 루트 스크립트: `test`, `dev:web`, `dev:result`, `dev:worker`, `build`
-- [ ] Worker가 빌드된 web을 `/`, result를 `/r`로 서빙하는 로컬 구성
-- [ ] CLAUDE.md의 "명령어" 섹션을 실제 명령으로 갱신
+- [x] pnpm 워크스페이스, TypeScript strict, ESLint·Prettier
+- [x] `packages/calc`, `packages/link-codec`, `packages/storage` 빈 패키지와 Vitest 설정
+- [x] `apps/web`(Vite + React, PWA 매니페스트·서비스 워커), `apps/result`(Vite), `apps/worker`(Wrangler)
+- [x] 루트 스크립트: `test`, `dev:web`, `dev:result`, `dev:worker`, `build`
+- [x] Worker가 빌드된 web을 `/`, result를 `/r`로 서빙하는 로컬 구성
+- [x] CLAUDE.md의 "명령어" 섹션을 실제 명령으로 갱신
 
 **완료 기준:** `pnpm test`가 빈 테스트로 통과, `pnpm dev:worker`로 로컬에서 `/`와 `/r`이 열림.
 

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 외부 스크립트·광고·분석 도구 차단. Worker도 같은 헤더를 응답에 붙인다. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>정산 결과</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 1.5rem;
+        background: #f3f4f2;
+        color: #1e2124;
+        font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
+        line-height: 1.7;
+        word-break: keep-all;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #1b1d20;
+          color: #e9ecea;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="receipt"></main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

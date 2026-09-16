@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "driver-labor",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-16",
+  // Wrangler 사용 통계를 Cloudflare로 보내지 않는다.
+  "send_metrics": false,
+  "observability": {
+    // 요청 본문·검색어·좌표를 남기지 않는다 (CLAUDE.md 절대 규칙 7).
+    // 오류 코드만 필요하므로 기본 로그 수집을 끈다.
+    "enabled": false
+  },
+  // 8787은 다른 로컬 서비스가 쓰고 있어 8788로 둔다.
+  "dev": {
+    "port": 8788
+  },
+  "assets": {
+    "directory": "./dist-assets",
+    "binding": "ASSETS",
+    // 정적 자산이 Worker 코드보다 먼저 응답한다.
+    // /api/* 만 예외로 Worker가 먼저 받는다 (architecture.md "Worker 요청 한도 방어").
+    "run_worker_first": ["/api/*"]
+  }
+}

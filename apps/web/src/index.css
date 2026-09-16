@@ -1,0 +1,29 @@
+/* 주간·야간 토큰은 M2에서 정리한다. M0은 읽을 수 있는 최소 스타일만. */
+:root {
+  --sign: #0e6b47;
+  --bg: #f3f4f2;
+  --ink: #1e2124;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sign: #0f7a51;
+    --bg: #1b1d20;
+    --ink: #e9ecea;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+a {
+  color: var(--sign);
+}

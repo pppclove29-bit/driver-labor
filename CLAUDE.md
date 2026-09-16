@@ -39,11 +39,25 @@ PWA로 먼저 출시하고, 나중에 네이티브(Expo)로 옮긴다.
 - 계산 변경은 테스트를 먼저 쓰거나 고친다. `docs/tasks.md`의 기준값 테스트는 절대 삭제하지 않는다
 - UI 문구는 한국어. 금액 표기는 천 단위 쉼표 + "원"
 
-## 명령어 (M0에서 만든 뒤 이 섹션을 실제 명령으로 갱신할 것)
-- `pnpm install`
-- `pnpm test` 전체 테스트
-- `pnpm dev:web` / `pnpm dev:result` / `pnpm dev:worker`
-- `pnpm build`
+## 명령어
+
+Node 22.11 이상이 필요하다(`.nvmrc` = 22.22.2). `nvm use`로 맞춘 뒤 실행한다.
+
+| 명령 | 하는 일 |
+|---|---|
+| `pnpm install` | 의존성 설치 |
+| `pnpm test` | 전체 테스트 (Vitest, 루트에서 워크스페이스 전체) |
+| `pnpm test:watch` | 테스트 watch 모드 |
+| `pnpm typecheck` | 전체 패키지 `tsc --noEmit` |
+| `pnpm lint` | ESLint (절대 규칙 3·7을 `no-restricted-properties`·`no-console`로 강제) |
+| `pnpm format` | Prettier 전체 적용 |
+| `pnpm dev:web` | PWA 개발 서버 (`apps/web`) |
+| `pnpm dev:result` | 결과 보기 페이지 개발 서버 (`apps/result`) |
+| `pnpm dev:worker` | web·result 빌드 → 자산 수집 → `wrangler dev`. `/`에 web, `/r`에 result |
+| `pnpm build` | web → result → worker 순서로 빌드 (worker는 `wrangler deploy --dry-run`) |
+
+- `apps/worker`에서 `pnpm run assets`는 빌드된 web·result를 `dist-assets/`로 모은다(`/` = web, `/r` = result). `dev`·`build`가 먼저 실행하므로 따로 부를 일은 없다.
+- `pnpm --filter @dl/worker deploy`로 배포한다. API 키는 `wrangler secret put`으로만 넣는다(절대 규칙 7).
 
 ## 작업 방식
 - 한 번에 한 마일스톤. 시작 전 계획을 보여주고 승인받는다

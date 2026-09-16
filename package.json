@@ -1,0 +1,31 @@
+{
+  "name": "driver-labor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.5.2",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev:web": "pnpm --filter @dl/web dev",
+    "dev:result": "pnpm --filter @dl/result dev",
+    "dev:worker": "pnpm --filter @dl/worker dev",
+    "build": "pnpm --filter @dl/web build && pnpm --filter @dl/result build && pnpm --filter @dl/worker build",
+    "typecheck": "pnpm -r --no-bail exec tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.10.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.12.0",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "5.0.1"
+  }
+}

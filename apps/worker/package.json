@@ -1,0 +1,16 @@
+{
+  "name": "@dl/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "assets": "node scripts/collect-assets.mjs",
+    "dev": "pnpm --filter @dl/web build && pnpm --filter @dl/result build && pnpm run assets && wrangler dev",
+    "build": "pnpm run assets && wrangler deploy --dry-run --outdir .wrangler/build",
+    "deploy": "pnpm run assets && wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260916.1",
+    "wrangler": "4.132.0"
+  }
+}
