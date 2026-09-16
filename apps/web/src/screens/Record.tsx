@@ -52,12 +52,14 @@ export function Record({
   onChange,
   onArrive,
   onOpenPayment,
+  onOpenEtc,
   toast,
 }: {
   trip: AppTrip;
   onChange: (next: AppTrip) => void;
   onArrive: () => void;
   onOpenPayment: () => void;
+  onOpenEtc: () => void;
   toast: (message: string, undo?: () => void) => void;
 }) {
   const riders = currentRiders(trip);
@@ -123,6 +125,24 @@ export function Record({
   };
 
   const tile = (spec: TileSpec, credit: boolean) => {
+    if (spec.kind === 'etc') {
+      const left = selected
+        ? Math.max(0, ETC_LIMIT_PER_SEGMENT - countOf(trip, segment, selected, 'etc'))
+        : 0;
+      return (
+        <button
+          key={spec.kind}
+          type="button"
+          className="tile"
+          disabled={!selected}
+          onClick={onOpenEtc}
+        >
+          <span className="tile__emoji">{spec.emoji}</span>
+          <span>{spec.label}</span>
+          <span className="tile__count">{left}</span>
+        </button>
+      );
+    }
     const key = selected ? `${selected}:${spec.kind}` : '';
     const running = spec.timed && trip.sleepTimers?.[key] !== undefined;
     const count = selected ? countOf(trip, segment, selected, spec.kind) : 0;

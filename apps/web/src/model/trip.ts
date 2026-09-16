@@ -68,12 +68,19 @@ export interface AppTrip {
   restStartedAt?: string;
   /** 조수석 수면 타이머를 켠 시각. 멤버별로 하나. 끄면 분이 괘씸 점수로 바뀐다. */
   sleepTimers?: Record<MemberId, string>;
+  /**
+   * 기타 괘씸의 메모. 폰에만 저장하고 결과 링크·결과 이미지에는 "기타"로만 나간다
+   * (CLAUDE.md 절대 규칙 1, spec-screens.md S6a).
+   */
+  penaltyMemos?: Record<string, string>;
   /** 계산을 처음 등록한 시각. 광고는 이때 1번만 (decisions.md 광고 규칙). */
   settledAt?: string;
   /** 결과 링크를 발급한 시각. 이후 값을 고치면 "새 링크를 공유하세요" 안내를 띄운다. */
   sharedAt?: string;
   /** 결과 화면에서 값을 고친 시각. */
   editedAt?: string;
+  /** 직접 입력으로 바뀐 항목. 결과 영수증의 "기본값" 표시를 끈다. */
+  editedFields?: string[];
   adDismissed?: boolean;
 }
 

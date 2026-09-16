@@ -7,8 +7,14 @@ import { useCallback, useState } from 'react';
 import type { AppTrip } from './model/trip.js';
 import { newTrip } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
+import { Difficulty } from './screens/Difficulty.jsx';
+import { EtcPenalty } from './screens/EtcPenalty.jsx';
+import { Edit } from './screens/Edit.jsx';
 import { Home } from './screens/Home.jsx';
 import { NewTrip } from './screens/NewTrip.jsx';
+import { PenaltyReview } from './screens/PenaltyReview.jsx';
+import { QuickSettle } from './screens/QuickSettle.jsx';
+import { Timeline } from './screens/Timeline.jsx';
 import { PaymentSheet } from './screens/PaymentSheet.jsx';
 import { Record } from './screens/Record.jsx';
 import { Result } from './screens/Result.jsx';
@@ -16,7 +22,19 @@ import { useTrips } from './store/useTrips.js';
 import { Toast, type ToastState } from './ui/Toast.jsx';
 import { useTheme } from './ui/useTheme.js';
 
-type ScreenId = 'home' | 'new' | 'record' | 'payment' | 'arrival' | 'result';
+type ScreenId =
+  | 'home'
+  | 'new'
+  | 'quick'
+  | 'record'
+  | 'payment'
+  | 'arrival'
+  | 'penalties'
+  | 'timeline'
+  | 'etc'
+  | 'difficulty'
+  | 'result'
+  | 'edit';
 
 export function App({ storage }: { storage?: Storage }) {
   useTheme();
@@ -92,12 +110,32 @@ export function App({ storage }: { storage?: Storage }) {
         />
       );
     }
+    if (screen === 'quick') {
+      return (
+        <QuickSettle
+          origin={preferences.recentOrigin}
+          onBack={() => {
+            setScreen('home');
+          }}
+          onSettle={(created) => {
+            created.settings = { ...preferences.settings };
+            created.tone = preferences.lastTone;
+            void save(created);
+            setActiveId(created.id);
+            setScreen('result');
+          }}
+        />
+      );
+    }
     if (screen === 'home' || !trip) {
       return (
         <Home
           trips={trips}
           onNew={() => {
             setScreen('new');
+          }}
+          onQuick={() => {
+            setScreen('quick');
           }}
           onOpen={open}
         />
@@ -118,6 +156,9 @@ export function App({ storage }: { storage?: Storage }) {
           }}
           onOpenPayment={() => {
             setScreen('payment');
+          }}
+          onOpenEtc={() => {
+            setScreen('etc');
           }}
           toast={notify}
         />
@@ -146,6 +187,15 @@ export function App({ storage }: { storage?: Storage }) {
           onBack={() => {
             setScreen('record');
           }}
+          onOpenPenalties={() => {
+            setScreen('penalties');
+          }}
+          onOpenDifficulty={() => {
+            setScreen('difficulty');
+          }}
+          onOpenTimeline={() => {
+            setScreen('timeline');
+          }}
           onSettle={() => {
             // "정산하기"가 곧 계산 등록. 광고는 이때 1번만 (M5에서 카드 부착).
             update({
@@ -153,6 +203,65 @@ export function App({ storage }: { storage?: Storage }) {
               status: 'settled',
               settledAt: trip.settledAt ?? new Date().toISOString(),
             });
+            setScreen('result');
+          }}
+        />
+      );
+    }
+    if (screen === 'etc') {
+      return (
+        <EtcPenalty
+          trip={trip}
+          onBack={() => {
+            setScreen('record');
+          }}
+          onSave={(next) => {
+            update(next);
+            setScreen('record');
+            notify('기타 괘씸 +1');
+          }}
+        />
+      );
+    }
+    if (screen === 'timeline') {
+      return (
+        <Timeline
+          trip={trip}
+          onChange={update}
+          onBack={() => {
+            setScreen('arrival');
+          }}
+        />
+      );
+    }
+    if (screen === 'penalties') {
+      return (
+        <PenaltyReview
+          trip={trip}
+          onChange={update}
+          onBack={() => {
+            setScreen('arrival');
+          }}
+        />
+      );
+    }
+    if (screen === 'difficulty') {
+      return (
+        <Difficulty
+          trip={trip}
+          onChange={update}
+          onBack={() => {
+            setScreen('arrival');
+          }}
+        />
+      );
+    }
+    if (screen === 'edit') {
+      return (
+        <Edit
+          trip={trip}
+          onChange={update}
+          onBack={() => {
             setScreen('result');
           }}
         />
@@ -167,6 +276,9 @@ export function App({ storage }: { storage?: Storage }) {
         }}
         onHome={() => {
           setScreen('home');
+        }}
+        onEdit={() => {
+          setScreen('edit');
         }}
       />
     );

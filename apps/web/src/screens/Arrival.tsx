@@ -25,11 +25,17 @@ export function Arrival({
   onChange,
   onSettle,
   onBack,
+  onOpenPenalties,
+  onOpenDifficulty,
+  onOpenTimeline,
 }: {
   trip: AppTrip;
   onChange: (next: AppTrip) => void;
   onSettle: () => void;
   onBack: () => void;
+  onOpenPenalties: () => void;
+  onOpenDifficulty: () => void;
+  onOpenTimeline: () => void;
 }) {
   const input = toTripInput(trip);
   const segments = buildSegments(input);
@@ -70,27 +76,28 @@ export function Arrival({
           <span>운전 시간</span>
           <span className="big">{duration(driveMinutes)}</span>
         </div>
-        <div className="split">
+        <button type="button" className="row" onClick={onOpenTimeline}>
           <span>구간</span>
-          <span>{segments.length}개</span>
-        </div>
+          <span>{segments.length}개 · 타임라인 ›</span>
+        </button>
         <div className="split">
           <span>탑승</span>
           <span>{trip.members.length}명</span>
         </div>
-        <div className="split">
+        <button type="button" className="row" onClick={onOpenPenalties}>
           <span>괘씸 기록</span>
-          <span className={penaltyCount > 0 ? 'penalty' : 'dim'}>{penaltyCount}건</span>
-        </div>
-        <div className="split">
+          <span className={penaltyCount > 0 ? 'penalty' : 'dim'}>{penaltyCount}건 보기 ›</span>
+        </button>
+        <button type="button" className="row" onClick={onOpenDifficulty}>
           <span>난이도</span>
           <span>
             {maxDifficulty.toFixed(2)}
             {topFactor && topFactor[1] > 0 ? (
               <span className="dim"> · {topFactor[0]} 가장 큼</span>
-            ) : null}
+            ) : null}{' '}
+            상세 ›
           </span>
-        </div>
+        </button>
       </Card>
 
       <Card label="날씨">

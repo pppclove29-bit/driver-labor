@@ -10,16 +10,19 @@ import { duration, km, signedWon, won } from '../model/format.js';
 import { memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip, Tone } from '../model/trip.js';
 import { justification, penaltyReason, receiptTitle, shareText, TONES } from '../model/tone.js';
+import { AdCard } from '../ui/AdCard.jsx';
 import { Card, DefaultTag, Screen } from '../ui/parts.jsx';
 
 export function Result({
   trip,
   onChange,
   onHome,
+  onEdit,
 }: {
   trip: AppTrip;
   onChange: (next: AppTrip) => void;
   onHome: () => void;
+  onEdit: () => void;
 }) {
   const [showBasis, setShowBasis] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -60,6 +63,14 @@ export function Result({
   };
 
   const note = justification(trip.tone);
+  const edited = new Set(trip.editedFields ?? []);
+  const defaultsLeft = [
+    ...(edited.has('efficiency') ? [] : ['연비']),
+    ...(edited.has('wage') ? [] : ['기준 시급']),
+    ...(edited.has('distance') ? [] : ['거리']),
+    ...(edited.has('toll') ? [] : ['통행료']),
+    ...(edited.has('fuelPrice') ? [] : ['유가']),
+  ];
   const overDistance =
     result.segments.reduce((a, s) => a + s.driveMinutes, 0) > input.route.expectedMinutes * 1.3;
 
@@ -157,21 +168,31 @@ export function Result({
         <div className="note">이미 공유한 링크는 예전 결과예요. 새 링크를 공유하세요.</div>
       ) : null}
 
-      <div className="note">
-        연비 12km/L·시급 10,320원은 <DefaultTag /> 입니다. 거리·통행료도 임시 값이라 다음 단계에서
-        경로 조회로 바뀝니다.
-        {overDistance ? ' 경로보다 멀리 돌았나요? 거리 고치기는 다음 단계에서 붙습니다.' : ''}
-      </div>
+      {overDistance ? (
+        <div className="note">경로보다 멀리 돌았나요? 고치기에서 거리를 바꿔 보세요.</div>
+      ) : null}
 
-      <button
-        type="button"
-        className="btn"
-        onClick={() => {
-          setShowBasis((v) => !v);
-        }}
-      >
-        계산 근거 {showBasis ? '접기' : '보기'}
-      </button>
+      {defaultsLeft.length > 0 ? (
+        <div className="note">
+          {defaultsLeft.join(' · ')}은 <DefaultTag /> 입니다. 고치기에서 바꾸면 금액이 바로
+          바뀝니다.
+        </div>
+      ) : null}
+
+      <div className="chips">
+        <button type="button" className="btn" onClick={onEdit}>
+          고치기 ›
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            setShowBasis((v) => !v);
+          }}
+        >
+          계산 근거 {showBasis ? '접기' : '보기'}
+        </button>
+      </div>
 
       {showBasis ? (
         <Card label="구간별">
@@ -237,9 +258,15 @@ export function Result({
       ) : null}
 
       {note ? <p className="screen__sub">{note}</p> : null}
-      <p className="screen__sub">
-        링크의 # 뒤 결과는 서버로 가지 않습니다. 광고 카드는 다음 단계에서 붙습니다.
-      </p>
+      <p className="screen__sub">링크의 # 뒤 결과는 서버로 가지 않습니다.</p>
+
+      {trip.settledAt && !trip.adDismissed ? (
+        <AdCard
+          onClose={() => {
+            onChange({ ...trip, adDismissed: true });
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }

@@ -7,10 +7,12 @@ import { Card, Screen } from '../ui/parts.jsx';
 export function Home({
   trips,
   onNew,
+  onQuick,
   onOpen,
 }: {
   trips: AppTrip[];
   onNew: () => void;
+  onQuick: () => void;
   onOpen: (trip: AppTrip) => void;
 }) {
   const active = trips.find((t) => t.status !== 'settled');
@@ -74,7 +76,14 @@ export function Home({
         </Card>
       ) : null}
 
-      <p className="screen__sub">빠른 정산(S3)과 결과 링크 공유는 다음 단계에서 붙입니다.</p>
+      <button type="button" className="row" onClick={onQuick}>
+        <span>
+          앱을 못 켰나요?
+          <br />
+          <span className="dim">도착지·인원·시각만으로 바로 정산</span>
+        </span>
+        <span className="dim">빠른 정산 ›</span>
+      </button>
     </Screen>
   );
 }

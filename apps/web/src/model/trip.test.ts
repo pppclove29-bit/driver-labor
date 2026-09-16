@@ -144,3 +144,83 @@ describe('자동 저장', () => {
     ).toBe(57912);
   });
 });
+
+describe('S10c 고치기가 금액에 반영된다', () => {
+  it('거리를 고치면 유류비와 금액이 바뀐다', () => {
+    const trip = 강릉여행앱();
+    delete trip.segmentRoutes;
+    const before = settleTrip(toTripInput(trip));
+
+    const 고친여행: AppTrip = {
+      ...trip,
+      route: { ...trip.route, distanceM: 300000 },
+      editedFields: ['distance'],
+    };
+    const after = settleTrip(toTripInput(고친여행));
+
+    expect(after.totals.commonCostWon).toBeGreaterThan(before.totals.commonCostWon);
+    expect(after.members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
+  });
+
+  it('연비를 고치면 유류비가 줄어든다', () => {
+    const trip = 강릉여행앱();
+    const before = settleTrip(toTripInput(trip)).segments[0]?.fuelCostWon ?? 0;
+    const after =
+      settleTrip(toTripInput({ ...trip, settings: { ...trip.settings, fuelEfficiencyKmPerL: 24 } }))
+        .segments[0]?.fuelCostWon ?? 0;
+    expect(after).toBe(Math.round(before / 2));
+  });
+
+  it('시급을 고치면 수고비가 바뀐다', () => {
+    const trip = 강릉여행앱();
+    const after = settleTrip(
+      toTripInput({ ...trip, settings: { ...trip.settings, hourlyWageWon: 20640 } }),
+    );
+    // 시급이 두 배면 구간 노동비도 두 배 (난이도 1.0)
+    expect(after.segments[0]?.laborCostWon).toBe(30960);
+  });
+
+  it('괘씸모드를 끄면 수고비 가산이 사라진다', () => {
+    const trip = 강릉여행앱();
+    const off = settleTrip(
+      toTripInput({ ...trip, settings: { ...trip.settings, penaltyEnabled: false } }),
+    );
+    for (const share of off.segments.flatMap((s) => s.laborShares)) {
+      expect(share.multiplier).toBe(1);
+    }
+    expect(off.members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
+  });
+});
+
+describe('S9a 용서하기', () => {
+  it('용서한 기록은 배수에서 빠진다', () => {
+    const trip = 강릉여행앱();
+    const 용서 = {
+      ...trip,
+      penalties: trip.penalties.map((p) => ({ ...p, forgiven: true })),
+    };
+    const 결과 = settleTrip(toTripInput(용서));
+    for (const share of 결과.segments.flatMap((s) => s.laborShares)) {
+      expect(share.score).toBe(0);
+    }
+  });
+});
+
+describe('S3 빠른 정산', () => {
+  it('도착지·인원·시각만으로 차액 합계 0이 나온다', () => {
+    const trip = newTrip({
+      id: 'q1',
+      now: '2026-09-19T09:00:00+09:00',
+      origin: '집',
+      destination: '부산',
+      driverName: '나',
+      companionNames: ['동승자 A', '동승자 B'],
+    });
+    trip.events.push({ type: 'arrive', at: '2026-09-19T14:00:00+09:00' });
+    const 결과 = settleTrip(toTripInput(trip));
+    expect(결과.segments[0]?.driveMinutes).toBe(300);
+    expect(결과.members).toHaveLength(3);
+    expect(결과.members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
+    expect(결과.assumedCommonWon).toBeGreaterThan(0);
+  });
+});
