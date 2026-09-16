@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // 압축(CompressionStream)과 base64 변환에 브라우저 타입을 쓴다.
+    "lib": ["ES2022", "DOM"]
+  },
   "include": ["src"]
 }

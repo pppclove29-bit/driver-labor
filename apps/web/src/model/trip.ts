@@ -70,6 +70,10 @@ export interface AppTrip {
   sleepTimers?: Record<MemberId, string>;
   /** 계산을 처음 등록한 시각. 광고는 이때 1번만 (decisions.md 광고 규칙). */
   settledAt?: string;
+  /** 결과 링크를 발급한 시각. 이후 값을 고치면 "새 링크를 공유하세요" 안내를 띄운다. */
+  sharedAt?: string;
+  /** 결과 화면에서 값을 고친 시각. */
+  editedAt?: string;
   adDismissed?: boolean;
 }
 

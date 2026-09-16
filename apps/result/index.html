@@ -11,20 +11,159 @@
     <meta name="referrer" content="no-referrer" />
     <title>정산 결과</title>
     <style>
-      body {
-        margin: 0;
-        padding: 1.5rem;
-        background: #f3f4f2;
-        color: #1e2124;
-        font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
-        line-height: 1.7;
-        word-break: keep-all;
+      :root {
+        --bg: #f3f4f2;
+        --card: #ffffff;
+        --ink: #1e2124;
+        --dim: #5c6360;
+        --line: #dfe3e0;
+        --sign: #0e6b47;
+        --warn: #8a6100;
+        --warn-bg: #fdf3d7;
+        --penalty: #a6231f;
+        color-scheme: light;
       }
       @media (prefers-color-scheme: dark) {
-        body {
-          background: #1b1d20;
-          color: #e9ecea;
+        :root {
+          --bg: #000000;
+          --card: #0d0f10;
+          --ink: #c9cfcc;
+          --dim: #7d8481;
+          --line: #22262a;
+          --sign: #1f8a5f;
+          --warn: #c8a24a;
+          --warn-bg: #241d0a;
+          --penalty: #b5615c;
+          color-scheme: dark;
         }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 1.25rem 1rem 2.5rem;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
+        line-height: 1.6;
+        word-break: keep-all;
+      }
+      main {
+        max-width: 520px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .title {
+        margin: 0;
+        font-size: 20px;
+      }
+      .sub {
+        margin: 0 0 6px;
+        color: var(--dim);
+        font-size: 14px;
+      }
+      .person {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      /* 받는 사람이 보는 핵심 숫자는 24px 이상, 터치 영역은 48px 이상. */
+      .person__head {
+        width: 100%;
+        min-height: 60px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        background: none;
+        border: 0;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .person__name {
+        font-size: 17px;
+        font-weight: 700;
+      }
+      .person__amount {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .basis {
+        padding: 0 14px 12px;
+        border-top: 1px solid var(--line);
+      }
+      .basis[hidden] {
+        display: none;
+      }
+      .row {
+        margin: 6px 0 0;
+        font-size: 14px;
+      }
+      .dim {
+        color: var(--dim);
+      }
+      .label {
+        margin: 10px 0 0;
+        color: var(--dim);
+        font-size: 13px;
+      }
+      .reason {
+        margin: 6px 0 0;
+        color: var(--penalty);
+        font-size: 14px;
+      }
+      .saved {
+        margin: 4px 0;
+        font-size: 15px;
+      }
+      .pay {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .pay__button,
+      .pay__copy {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 18px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .pay__button {
+        background: var(--sign);
+        color: #fff;
+      }
+      .pay__copy {
+        background: var(--card);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        font-weight: 400;
+        cursor: pointer;
+      }
+      .justification {
+        margin: 6px 0 0;
+        color: var(--dim);
+        font-size: 14px;
+      }
+      .notice {
+        margin: 4px 0 0;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: var(--warn-bg);
+        color: var(--warn);
+        font-size: 13px;
       }
     </style>
   </head>

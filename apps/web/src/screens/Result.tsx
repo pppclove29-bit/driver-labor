@@ -4,6 +4,8 @@
 import { settleTrip } from '@dl/calc';
 import { useState } from 'react';
 
+import { buildResultLink } from '../model/link.js';
+
 import { duration, km, signedWon, won } from '../model/format.js';
 import { memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip, Tone } from '../model/trip.js';
@@ -20,6 +22,7 @@ export function Result({
   onHome: () => void;
 }) {
   const [showBasis, setShowBasis] = useState(false);
+  const [copied, setCopied] = useState(false);
   const input = toTripInput(trip);
   const result = settleTrip(input);
 
@@ -44,12 +47,16 @@ export function Result({
   };
 
   const share = async (): Promise<void> => {
+    const url = await buildResultLink(trip, result, new Date().toISOString(), location.origin);
     const text = shareText(trip.tone, trip.destination, penalized.size);
+    // 링크 발급 후 값을 고치면 예전 결과가 되므로 발급 시각을 남긴다.
+    onChange({ ...trip, sharedAt: new Date().toISOString() });
     if (navigator.share) {
-      await navigator.share({ text });
+      await navigator.share({ text, url });
       return;
     }
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    setCopied(true);
   };
 
   const note = justification(trip.tone);
@@ -69,7 +76,7 @@ export function Result({
             void share();
           }}
         >
-          결과 공유
+          {copied ? '링크를 복사했어요' : '결과 링크 공유'}
         </button>
       }
     >
@@ -144,6 +151,10 @@ export function Result({
           {memberName(trip, result.assumedCommonPayerId ?? trip.driverId)}가 낸 것으로 봤어요{' '}
           <DefaultTag />. 실제로 나눠 냈다면 결제 기록을 추가하세요.
         </p>
+      ) : null}
+
+      {trip.sharedAt && trip.sharedAt < (trip.editedAt ?? '') ? (
+        <div className="note">이미 공유한 링크는 예전 결과예요. 새 링크를 공유하세요.</div>
       ) : null}
 
       <div className="note">
@@ -227,7 +238,7 @@ export function Result({
 
       {note ? <p className="screen__sub">{note}</p> : null}
       <p className="screen__sub">
-        결과 링크 공유(S11)와 광고 카드는 다음 단계에서 붙습니다. 지금은 문구만 공유됩니다.
+        링크의 # 뒤 결과는 서버로 가지 않습니다. 광고 카드는 다음 단계에서 붙습니다.
       </p>
     </Screen>
   );
