@@ -168,6 +168,51 @@ describe('괘씸 반영 방식', () => {
   });
 });
 
+describe('결제 기록이 없는 공통비', () => {
+  it('운전자가 냈다고 보고 차액 합계를 0으로 닫는다', () => {
+    const 결과 = settleTrip(기본여행({ segmentDifficulty: [1.0] }));
+    // 120km / 12km/L × 1,700원 = 17,000 + 통행료 4,000 = 21,000
+    expect(결과.segments[0]?.commonCostWon).toBe(21000);
+    expect(결과.assumedCommonWon).toBe(21000);
+    expect(결과.assumedCommonPayerId).toBe(민수);
+    expect(결과.members.find((m) => m.memberId === 민수)?.paidWon).toBe(21000);
+    expect(결과.members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
+  });
+
+  it('결제 기록이 공통비를 다 덮으면 아무것도 가정하지 않는다', () => {
+    const 결과 = settleTrip(
+      기본여행({
+        segmentDifficulty: [1.0],
+        payments: [
+          {
+            id: 'a',
+            kind: 'fuel',
+            payerId: 지현,
+            amountWon: 17000,
+            at: '2026-09-19T10:00:00+09:00',
+          },
+          {
+            id: 'b',
+            kind: 'toll',
+            payerId: 지현,
+            amountWon: 4000,
+            at: '2026-09-19T10:00:00+09:00',
+          },
+        ],
+      }),
+    );
+    expect(결과.assumedCommonWon).toBe(0);
+    expect(결과.members.find((m) => m.memberId === 지현)?.paidWon).toBe(21000);
+    expect(결과.members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
+  });
+
+  it("commonPaidBy 'none'이면 귀속하지 않는다", () => {
+    const 결과 = settleTrip(기본여행({ segmentDifficulty: [1.0], commonPaidBy: 'none' }));
+    expect(결과.assumedCommonWon).toBe(0);
+    expect(결과.members.find((m) => m.memberId === 민수)?.paidWon).toBe(0);
+  });
+});
+
 describe('최소 송금 목록', () => {
   it('보낼 사람에서 받을 사람으로 차액만큼 배정하고 합계가 맞는다', () => {
     const 결과 = settleTrip(강릉여행());

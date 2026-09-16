@@ -75,6 +75,9 @@ export interface Settlement {
   segments: SegmentBreakdown[];
   members: MemberSettlement[];
   transfers: Transfer[];
+  /** 결제 기록이 없어 운전자가 냈다고 본 공통비. 결과 화면에 "기본값"으로 표시한다. */
+  assumedCommonWon: number;
+  assumedCommonPayerId?: MemberId;
   /** 결제 금액이 그 항목의 공통비 계산값을 넘어 결제자 자기 부담이 된 금액 (해석 12). */
   selfBorne: SelfBorne[];
   totals: {
@@ -199,7 +202,7 @@ function buildSegmentBreakdowns(input: TripInput, segments: Segment[]): SegmentB
 function creditPayments(
   input: TripInput,
   breakdowns: SegmentBreakdown[],
-): { paid: Map<MemberId, number>; selfBorne: SelfBorne[] } {
+): { paid: Map<MemberId, number>; selfBorne: SelfBorne[]; assumedWon: number } {
   const computed: Record<PaymentKind, number | undefined> = {
     fuel: breakdowns.reduce((a, s) => a + s.fuelCostWon, 0),
     toll: breakdowns.reduce((a, s) => a + s.tollWon, 0),
@@ -210,6 +213,7 @@ function creditPayments(
 
   const paid = new Map<MemberId, number>();
   const selfBorne: SelfBorne[] = [];
+  const covered: Record<'fuel' | 'toll', number> = { fuel: 0, toll: 0 };
   const kinds: PaymentKind[] = ['fuel', 'toll', 'parking', 'etc'];
 
   for (const kind of kinds) {
@@ -231,8 +235,22 @@ function creditPayments(
       const over = p.amountWon - amount;
       if (over > 0) selfBorne.push({ memberId: p.payerId, kind, amountWon: over });
     });
+    if (kind === 'fuel' || kind === 'toll') covered[kind] = credited;
   }
-  return { paid, selfBorne };
+
+  // 결제 기록으로 덮이지 않은 공통비는 운전자가 냈다고 본다.
+  // 그렇게 하지 않으면 아무도 낸 사람이 없어 차액 합계가 0이 되지 않는다.
+  const assumedWon = (computed.fuel ?? 0) - covered.fuel + ((computed.toll ?? 0) - covered.toll);
+  const payer = input.commonPaidBy ?? input.defaultDriverId;
+  if (assumedWon > 0 && payer !== 'none') {
+    paid.set(payer, (paid.get(payer) ?? 0) + assumedWon);
+  }
+  return { paid, selfBorne, assumedWon: payer === 'none' ? 0 : Math.max(0, assumedWon) };
+}
+
+/** 주유 결제 금액 = 주유량 × 단가. 금액을 UI에서 직접 곱하지 않는다. */
+export function fuelPaymentWon(liters: number, unitPriceWon: number): number {
+  return Math.round(liters * unitPriceWon);
 }
 
 /** 차액이 큰 채무자부터 큰 채권자에게 순서대로 배정하는 탐욕 방식 (해석 11). */
@@ -288,7 +306,7 @@ export function settleTrip(input: TripInput): Settlement {
     labor.set(s.driverId, (labor.get(s.driverId) ?? 0) - received);
   }
 
-  const { paid, selfBorne } = creditPayments(input, breakdowns);
+  const { paid, selfBorne, assumedWon } = creditPayments(input, breakdowns);
 
   const members: MemberSettlement[] = input.members.map((m) => {
     const commonWon = common.get(m.id) ?? 0;
@@ -317,6 +335,10 @@ export function settleTrip(input: TripInput): Settlement {
     segments: breakdowns,
     members,
     transfers: minimalTransfers(members),
+    assumedCommonWon: assumedWon,
+    ...(assumedWon > 0 && input.commonPaidBy !== 'none'
+      ? { assumedCommonPayerId: input.commonPaidBy ?? input.defaultDriverId }
+      : {}),
     selfBorne,
     totals: {
       commonCostWon,

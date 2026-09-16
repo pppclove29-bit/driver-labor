@@ -1,5 +1,10 @@
 // 노동비. 시급형이 기본, 택시형은 사용자가 고르거나 괘씸 택시모드에서만 쓴다.
 
+/** 기준 시급 기본값. 해당 연도 최저시급(2026년). */
+export const DEFAULT_HOURLY_WAGE_WON = 10320;
+/** 차량 연비 기본값. 결과 화면에서 한 번 고치면 다음 여행부터 기억한다. */
+export const DEFAULT_FUEL_EFFICIENCY_KM_PER_L = 12;
+
 export const TAXI_RATE = 0.3;
 export const TAXI_MODE_MIN_RATIO = 1.5;
 export const TAXI_MODE_MAX_RATIO = 2.0;

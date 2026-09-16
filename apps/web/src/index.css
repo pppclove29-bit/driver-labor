@@ -1,29 +1,325 @@
-/* 주간·야간 토큰은 M2에서 정리한다. M0은 읽을 수 있는 최소 스타일만. */
+/*
+ * 주간·야간 토큰. 야간은 폰 다크 모드이거나 18~06시일 때 (spec-screens.md S6N).
+ * 색의 의미: 초록 확정·기본, 노랑 주의·오류, 빨강은 괘씸 가산에만.
+ */
+
 :root {
   --sign: #0e6b47;
+  --sign-ink: #ffffff;
   --bg: #f3f4f2;
+  --card: #ffffff;
   --ink: #1e2124;
-  color-scheme: light dark;
+  --ink-dim: #5c6360;
+  --line: #dfe3e0;
+  --warn: #8a6100;
+  --warn-bg: #fdf3d7;
+  --penalty: #a6231f;
+  --penalty-bg: #fbe9e8;
+  --credit: #0e6b47;
+
+  /* 차 안 사용 전제. 모든 버튼 최소 48px, 동승자가 보는 숫자 24px 이상. */
+  --tap: 48px;
+  --big: 24px;
+  --huge: 34px;
+  --radius: 14px;
+
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --sign: #0f7a51;
-    --bg: #1b1d20;
-    --ink: #e9ecea;
-  }
+:root[data-theme='night'] {
+  /* 완전 검정 배경. OLED에서 픽셀이 꺼진다. */
+  --sign: #1f8a5f;
+  --sign-ink: #05130d;
+  --bg: #000000;
+  --card: #0d0f10;
+  --ink: #c9cfcc;
+  --ink-dim: #7d8481;
+  --line: #22262a;
+  --warn: #c8a24a;
+  --warn-bg: #241d0a;
+  --penalty: #b5615c;
+  --penalty-bg: #240f0e;
+  --credit: #4f9e7c;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  padding: 1.5rem;
   background: var(--bg);
   color: var(--ink);
   font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
-  line-height: 1.7;
+  line-height: 1.6;
   word-break: keep-all;
+  -webkit-text-size-adjust: 100%;
 }
 
-a {
-  color: var(--sign);
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* 화면 틀. 주요 버튼은 화면 하단에 고정한다. */
+.screen {
+  max-width: 520px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 16px 16px calc(var(--tap) + 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.screen__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+}
+
+.screen__title {
+  margin: 0;
+  font-size: 19px;
+}
+
+.screen__sub {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+.bottom {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+  display: flex;
+  gap: 8px;
+}
+
+/* 카드 */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.card__label {
+  margin: 0 0 4px;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+
+/* 버튼 */
+.btn {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 16px;
+}
+
+.btn--primary {
+  background: var(--sign);
+  border-color: var(--sign);
+  color: var(--sign-ink);
+  font-weight: 700;
+  flex: 1;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-dim);
+  padding: 0 8px;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 칩 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  font-size: 15px;
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--sign);
+  border-color: var(--sign);
+  color: var(--sign-ink);
+}
+
+/* 괘씸·감면 타일. 탭하면 +1, 길게 누르면 −1. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.tiles--credit {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 380px) {
+  .tiles,
+  .tiles--credit {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tile {
+  min-height: 74px;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.tile__emoji {
+  font-size: 20px;
+}
+
+.tile__count {
+  font-size: var(--big);
+  font-weight: 700;
+  color: var(--penalty);
+}
+
+.tile--credit .tile__count {
+  color: var(--credit);
+}
+
+.tile__count[data-zero='true'] {
+  visibility: hidden;
+}
+
+/* 숫자 강조 */
+.big {
+  font-size: var(--big);
+  font-weight: 700;
+}
+
+.huge {
+  font-size: var(--huge);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.dim {
+  color: var(--ink-dim);
+}
+
+.penalty {
+  color: var(--penalty);
+}
+
+/* 안내 박스. 오류에도 빨강을 쓰지 않는다(괘씸과 헷갈리지 않게). */
+.note {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+/* 목록 행 */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: var(--tap);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  width: 100%;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+/* 토스트. 되돌리기는 여기 "취소"로 한다. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tap) + 20px);
+  transform: translateX(-50%);
+  width: min(480px, calc(100% - 32px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 18%);
+  font-size: 14px;
+  z-index: 10;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field input {
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+}
+
+.split {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }

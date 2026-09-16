@@ -12,11 +12,13 @@ export {
   clampToTaxiMode,
   hourlyLabor,
   taxiLabor,
+  DEFAULT_FUEL_EFFICIENCY_KM_PER_L,
+  DEFAULT_HOURLY_WAGE_WON,
   TAXI_RATE,
   TAXI_MODE_MAX_RATIO,
   TAXI_MODE_MIN_RATIO,
 } from './labor.js';
-export { minimalTransfers, settleTrip } from './settle.js';
+export { fuelPaymentWon, minimalTransfers, settleTrip } from './settle.js';
 export type {
   LaborShare,
   MemberSettlement,

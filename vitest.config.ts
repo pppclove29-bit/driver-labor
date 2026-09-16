@@ -4,6 +4,6 @@ import { defineConfig } from 'vitest/config';
 // 기준값 테스트(docs/tasks.md)는 어떤 작업에서도 삭제하거나 기대값을 바꾸지 않는다.
 export default defineConfig({
   test: {
-    projects: ['packages/*'],
+    projects: ['packages/*', 'apps/web'],
   },
 });

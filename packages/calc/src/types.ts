@@ -105,6 +105,11 @@ export interface TripInput {
   hourlyWageWon: number;
   fuelEfficiencyKmPerL: number;
   penaltyMode: PenaltyMode;
+  /**
+   * 결제 기록으로 덮이지 않은 공통비를 누가 냈다고 볼지.
+   * 기본은 운전자(차주). 'none'이면 아무에게도 귀속하지 않아 차액 합계가 0이 아니게 된다.
+   */
+  commonPaidBy?: MemberId | 'none';
   weather: Weather;
   feelScore: FeelScore;
   /** 원활한데 40km/h 미만인 도로(도심·산길)의 거리 비율 0~1. */
