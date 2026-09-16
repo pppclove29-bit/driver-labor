@@ -18,7 +18,7 @@ export {
   TAXI_MODE_MAX_RATIO,
   TAXI_MODE_MIN_RATIO,
 } from './labor.js';
-export { fuelPaymentWon, minimalTransfers, settleTrip } from './settle.js';
+export { ESTIMATE, estimateRoute, fuelPaymentWon, minimalTransfers, settleTrip } from './settle.js';
 export type {
   LaborShare,
   MemberSettlement,

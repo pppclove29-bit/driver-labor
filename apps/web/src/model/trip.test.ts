@@ -6,7 +6,13 @@ import { createMemoryStorage } from '@dl/storage';
 import { describe, expect, it } from 'vitest';
 
 import type { AppTrip } from './trip.js';
-import { currentRiders, currentSegmentIndex, newTrip, toTripInput } from './trip.js';
+import {
+  currentRiders,
+  currentSegmentIndex,
+  newTrip,
+  toTripInput,
+  withEstimatedRoute,
+} from './trip.js';
 
 const 민수 = 'm0';
 const 지현 = 'm1';
@@ -222,5 +228,40 @@ describe('S3 빠른 정산', () => {
     expect(결과.members).toHaveLength(3);
     expect(결과.members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
     expect(결과.assumedCommonWon).toBeGreaterThan(0);
+  });
+});
+
+describe('경로 추정 스텁', () => {
+  it('운전 시간으로 거리·통행료·택시요금을 어림한다', () => {
+    const trip = newTrip({
+      id: 'e1',
+      now: '2026-09-19T09:00:00+09:00',
+      origin: '서울',
+      destination: '부산',
+      driverName: '나',
+      companionNames: ['동승자 A'],
+    });
+    trip.events.push({ type: 'arrive', at: '2026-09-19T13:00:00+09:00' });
+    const 추정 = withEstimatedRoute(trip);
+    // 240분 × 75km/h = 300km
+    expect(추정.route.distanceM).toBe(300000);
+    expect(추정.route.tollWon).toBe(12000);
+    expect(추정.route.taxiFareWon).toBe(349800);
+    expect(settleTrip(toTripInput(추정)).members.reduce((s, m) => s + m.balanceWon, 0)).toBe(0);
+  });
+
+  it('직접 고친 거리는 덮어쓰지 않는다', () => {
+    const trip = newTrip({
+      id: 'e2',
+      now: '2026-09-19T09:00:00+09:00',
+      origin: '서울',
+      destination: '부산',
+      driverName: '나',
+      companionNames: [],
+    });
+    trip.events.push({ type: 'arrive', at: '2026-09-19T13:00:00+09:00' });
+    trip.route = { ...trip.route, distanceM: 400000 };
+    trip.editedFields = ['distance'];
+    expect(withEstimatedRoute(trip).route.distanceM).toBe(400000);
   });
 });

@@ -6,7 +6,7 @@ import { clampToTaxiMode, hourlyLabor, taxiLabor } from './labor.js';
 import { scoreToMultiplier, segmentScores } from './penalty.js';
 import { buildSegments } from './segments.js';
 import { epochMin } from './time.js';
-import type { MemberId, PaymentKind, Segment, TripInput } from './types.js';
+import type { MemberId, PaymentKind, RouteInfo, Segment, TripInput } from './types.js';
 
 export interface LaborShare {
   memberId: MemberId;
@@ -246,6 +246,34 @@ function creditPayments(
     paid.set(payer, (paid.get(payer) ?? 0) + assumedWon);
   }
   return { paid, selfBorne, assumedWon: payer === 'none' ? 0 : Math.max(0, assumedWon) };
+}
+
+/**
+ * 경로 API가 붙기 전에 쓰는 임시 경로 추정.
+ * 운전 시간만 가지고 거리·통행료·택시요금을 어림한다. 결과 화면에는 "기본값"으로 표시하고
+ * 사용자가 고칠 수 있게 한다. M3에서 `POST /api/route` 응답으로 대체한다.
+ */
+export const ESTIMATE = {
+  /** 여행 평균 속도 km/h */
+  speedKmh: 75,
+  /** 고속도로 통행료 대략 원/km */
+  tollPerKm: 40,
+  /** 택시 기본요금 */
+  taxiBaseWon: 4800,
+  /** 택시 거리요금 대략 원/km */
+  taxiPerKm: 1150,
+} as const;
+
+export function estimateRoute(driveMinutes: number): RouteInfo {
+  const distanceM = Math.round((driveMinutes / 60) * ESTIMATE.speedKmh * 1000);
+  const distanceKm = distanceM / 1000;
+  return {
+    distanceM,
+    // 조회한 예상 시간이 없으므로 실제 운전 시간을 그대로 둔다(정체 요소 0).
+    expectedMinutes: driveMinutes,
+    tollWon: Math.round(distanceKm * ESTIMATE.tollPerKm),
+    taxiFareWon: Math.round(ESTIMATE.taxiBaseWon + distanceKm * ESTIMATE.taxiPerKm),
+  };
 }
 
 /** 주유 결제 금액 = 주유량 × 단가. 금액을 UI에서 직접 곱하지 않는다. */

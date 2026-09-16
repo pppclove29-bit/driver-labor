@@ -5,7 +5,7 @@ import type { Storage } from '@dl/storage';
 import { useCallback, useState } from 'react';
 
 import type { AppTrip } from './model/trip.js';
-import { newTrip } from './model/trip.js';
+import { newTrip, withEstimatedRoute } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
 import { Difficulty } from './screens/Difficulty.jsx';
 import { EtcPenalty } from './screens/EtcPenalty.jsx';
@@ -120,7 +120,7 @@ export function App({ storage }: { storage?: Storage }) {
           onSettle={(created) => {
             created.settings = { ...preferences.settings };
             created.tone = preferences.lastTone;
-            void save(created);
+            void save(withEstimatedRoute(created));
             setActiveId(created.id);
             setScreen('result');
           }}
@@ -147,11 +147,13 @@ export function App({ storage }: { storage?: Storage }) {
           trip={trip}
           onChange={update}
           onArrive={() => {
-            update({
-              ...trip,
-              status: 'arrived',
-              events: [...trip.events, { type: 'arrive', at: new Date().toISOString() }],
-            });
+            update(
+              withEstimatedRoute({
+                ...trip,
+                status: 'arrived',
+                events: [...trip.events, { type: 'arrive', at: new Date().toISOString() }],
+              }),
+            );
             setScreen('arrival');
           }}
           onOpenPayment={() => {

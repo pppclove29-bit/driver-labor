@@ -1,7 +1,12 @@
 // 앱이 들고 있는 여행 상태와, 계산 엔진 입력으로 바꾸는 변환.
 // 금액 계산은 하지 않는다. 계산은 전부 @dl/calc이 한다 (CLAUDE.md 코딩 규칙).
 
-import { DEFAULT_FUEL_EFFICIENCY_KM_PER_L, DEFAULT_HOURLY_WAGE_WON } from '@dl/calc';
+import {
+  buildSegments,
+  DEFAULT_FUEL_EFFICIENCY_KM_PER_L,
+  DEFAULT_HOURLY_WAGE_WON,
+  estimateRoute,
+} from '@dl/calc';
 import type {
   FeelScore,
   LaborMethod,
@@ -129,6 +134,20 @@ export function newTrip(params: {
     fuelUnitPriceWon: STUB_FUEL_PRICE_WON,
     route: { ...STUB_ROUTE },
   };
+}
+
+/**
+ * 도착 시점에 경로값을 운전 시간으로 어림해 넣는다.
+ * 직접 고친 값은 건드리지 않는다. 경로 API(M3)가 붙으면 이 자리가 조회 결과로 바뀐다.
+ */
+export function withEstimatedRoute(trip: AppTrip): AppTrip {
+  const edited = new Set(trip.editedFields ?? []);
+  if (edited.has('distance') || edited.has('toll') || edited.has('taxi')) return trip;
+
+  const segments = buildSegments(toTripInput(trip));
+  const driveMinutes = segments.reduce((a, s) => a + s.driveMinutes, 0);
+  if (driveMinutes <= 0) return trip;
+  return { ...trip, route: estimateRoute(driveMinutes) };
 }
 
 export function memberName(trip: AppTrip, id: MemberId): string {
