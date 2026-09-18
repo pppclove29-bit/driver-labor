@@ -7,6 +7,7 @@ import {
   DEFAULT_HOURLY_WAGE_WON,
   estimateRoute,
 } from '@dl/calc';
+import type { PlaceRef, Provider } from '../api/client.js';
 import type {
   FeelScore,
   LaborMethod,
@@ -47,6 +48,9 @@ export interface AppTrip {
   status: TripStatus;
   origin: string;
   destination: string;
+  /** 검색해서 고른 출발·도착 장소. 경로 조회에는 좌표만 나간다. 폰에만 저장한다. */
+  originPlace?: PlaceRef;
+  destinationPlace?: PlaceRef;
   members: Member[];
   driverId: MemberId;
   events: TripEvent[];
@@ -56,14 +60,33 @@ export interface AppTrip {
   feelScore: FeelScore;
   tone: Tone;
   settings: TripSettings;
-  /** 유가 스냅샷. 경로·유가 API가 붙기 전에는 개발용 기본값을 쓴다. */
+  /** 유가 스냅샷. 조회 전·실패 시에는 기본값을 쓴다. */
   fuelUnitPriceWon: number;
+  /** 유가를 오피넷 평균가로 채웠으면 그 기준 시각과 시·도. */
+  fuelPriceAt?: string;
+  fuelRegion?: string;
   /**
-   * 경로 API(M3) 전까지 쓰는 수동 값. 거리는 미터, 시간은 분, 금액은 원.
-   * M3에서 `POST /api/route` 응답으로 대체한다.
+   * 여행 경로. 거리는 미터, 시간은 분, 금액은 원.
+   * `POST /api/route` 조회값, 조회 전에는 기본값·운전 시간 어림값.
    */
   route: RouteInfo;
-  /** 하차 장소를 골라 구간별로 재조회한 경로. 개발용 스텁에서만 넣는다. */
+  /** 경로를 조회한 제공자. 계산 근거에 "조회: 카카오"로 표시한다. 없으면 기본값·어림값. */
+  routeSource?: Provider;
+  /**
+   * 경로 조회 상태. pending: 오프라인 등으로 대기, 연결되면 다시 조회.
+   * limit: 자동 조회 한도라 수동 입력. failed: 경로를 찾지 못해 수동 입력.
+   */
+  routeLookup?: 'pending' | 'done' | 'limit' | 'failed';
+  /** 조회한 경로의 정체·지체 도로 거리 비율. 계산 엔진은 아직 쓰지 않는다. */
+  routeCongestedRatio?: number;
+  /** 조회한 경로의 저속 원활 도로 비율. 난이도 "도로 유형"에 쓴다. */
+  routeSlowRoadRatio?: number;
+  /**
+   * 구간 경계(하차·합류·교대) 장소. 키는 경계 시각(epoch 분). 폰에만 저장한다.
+   * 모든 경계에 장소가 있으면 구간별로 재조회한다.
+   */
+  boundaryPlaces?: Record<string, PlaceRef>;
+  /** 하차 장소를 골라 구간별로 재조회한 경로. */
   segmentRoutes?: RouteInfo[];
   /** 난이도 직접 지정. S9b(M5) 전까지 개발용 스텁에서만 넣는다. */
   segmentDifficulty?: (number | undefined)[];
@@ -104,6 +127,8 @@ export function newTrip(params: {
   now: string;
   origin: string;
   destination: string;
+  originPlace?: PlaceRef | undefined;
+  destinationPlace?: PlaceRef | undefined;
   driverName: string;
   companionNames: string[];
 }): AppTrip {
@@ -122,6 +147,8 @@ export function newTrip(params: {
     status: 'driving',
     origin: params.origin,
     destination: params.destination,
+    ...(params.originPlace ? { originPlace: params.originPlace } : {}),
+    ...(params.destinationPlace ? { destinationPlace: params.destinationPlace } : {}),
     members,
     driverId: driver.id,
     events: [{ type: 'depart', at: params.now, memberIds: members.map((m) => m.id) }],
@@ -138,9 +165,10 @@ export function newTrip(params: {
 
 /**
  * 도착 시점에 경로값을 운전 시간으로 어림해 넣는다.
- * 직접 고친 값은 건드리지 않는다. 경로 API(M3)가 붙으면 이 자리가 조회 결과로 바뀐다.
+ * 경로를 조회했거나(routeSource) 직접 고친 값은 건드리지 않는다.
  */
 export function withEstimatedRoute(trip: AppTrip): AppTrip {
+  if (trip.routeSource) return trip;
   const edited = new Set(trip.editedFields ?? []);
   if (edited.has('distance') || edited.has('toll') || edited.has('taxi')) return trip;
 
@@ -204,10 +232,10 @@ export function toTripInput(trip: AppTrip, now?: string): TripInput {
     ...(trip.segmentDifficulty ? { segmentDifficulty: trip.segmentDifficulty } : {}),
     ...(trip.taxiModeSegments ? { taxiModeSegments: trip.taxiModeSegments } : {}),
     priceSnapshot: {
-      at: trip.createdAt,
+      at: trip.fuelPriceAt ?? trip.createdAt,
       unitPriceWon: trip.fuelUnitPriceWon,
       fuelType: '휘발유',
-      region: trip.origin,
+      region: trip.fuelRegion ?? trip.origin,
     },
     payments: trip.payments,
     penalties: trip.settings.penaltyEnabled ? trip.penalties : [],
@@ -217,5 +245,6 @@ export function toTripInput(trip: AppTrip, now?: string): TripInput {
     penaltyMode: trip.settings.penaltyMode,
     weather: trip.weather,
     feelScore: trip.feelScore,
+    ...(trip.routeSlowRoadRatio !== undefined ? { slowRoadRatio: trip.routeSlowRoadRatio } : {}),
   };
 }
