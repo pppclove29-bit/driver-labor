@@ -24,11 +24,14 @@
   // 유가 평균, 비상 스위치(auto_route·auto_places·provider), 당일 차단 목록.
   // id는 M6에서 `wrangler kv namespace create`로 만든 뒤 채운다. 로컬 dev는 이 값 그대로 동작한다.
   "kv_namespaces": [{ "binding": "CTRL", "id": "00000000000000000000000000000000" }],
-  // 일일 예산 카운터. 무료 플랜은 SQLite 기반 DO만 쓸 수 있다.
+  // 일일 예산 카운터와 경로 응답 캐시. 무료 플랜은 SQLite 기반 DO만 쓸 수 있다.
   "durable_objects": {
-    "bindings": [{ "name": "BUDGET", "class_name": "BudgetCounter" }],
+    "bindings": [
+      { "name": "BUDGET", "class_name": "BudgetCounter" },
+      { "name": "ROUTE_CACHE", "class_name": "RouteCache" },
+    ],
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BudgetCounter"] }],
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BudgetCounter", "RouteCache"] }],
   // 분당 제한 (Rate Limiting 바인딩). 무료 플랜에서 못 쓰면 이 블록을 지운다.
   // 바인딩이 없으면 세션 분당 제한은 BudgetCounter가 대신 센다.
   "ratelimits": [

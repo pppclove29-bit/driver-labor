@@ -5,80 +5,19 @@
 //
 // 요청 본문·쿼리·좌표를 로그로 출력하지 않는다 (CLAUDE.md 절대 규칙 7).
 import type { Deps } from './deps.js';
-import { fail, json } from './http.js';
-import { allow, clientIp, ipHash } from './ratelimit.js';
-import { bearerToken, issueToken, verifyToken, verifyTurnstile } from './session.js';
-import {
-  parseFuelQuery,
-  parsePlacesQuery,
-  parseRouteBody,
-  parseSessionBody,
-  readJsonBody,
-} from './validate.js';
+import { guard } from './guard.js';
+import { fail } from './http.js';
+import { handleRoute } from './routes/route.js';
+import { handleSession } from './routes/session.js';
+import { parseFuelQuery, parsePlacesQuery } from './validate.js';
 
 type Handler = (request: Request, url: URL, deps: Deps) => Promise<Response>;
 
-/** ② 세션 토큰 확인. 통과하면 세션 ID. */
-async function authorize(request: Request, deps: Deps): Promise<string | Response> {
-  const token = bearerToken(request);
-  if (!token) return fail('unauthorized');
-  const sid = await verifyToken(deps.secrets.sessionSecret, token, deps.now());
-  return sid ?? fail('unauthorized');
-}
-
-type Kind = 'route' | 'places';
-
-/** ②③④를 차례로. 통과하면 세션 ID. 외부 호출·DO는 건드리지 않는다. */
-async function guard(request: Request, deps: Deps, kind: Kind | null): Promise<string | Response> {
-  // ②
-  const sid = await authorize(request, deps);
-  if (sid instanceof Response) return sid;
-  // ③
-  const ip = await ipHash(deps.secrets.sessionSecret, clientIp(request), deps.now());
-  if (await deps.control.blocked(sid, ip)) return fail('forbidden');
-  if (kind === null) return sid;
-  const enabled =
-    kind === 'route' ? await deps.control.autoRoute() : await deps.control.autoPlaces();
-  if (!enabled) return fail('auto_lookup_unavailable');
-  // ④
-  const { limiters } = deps;
-  const [bySession, byIp] =
-    kind === 'route'
-      ? [limiters.routeSession, limiters.routeIp]
-      : [limiters.placesSession, limiters.placesIp];
-  if (!(await allow(bySession, `${kind}:s:${sid}`))) return fail('rate_limited');
-  if (!(await allow(byIp, `${kind}:ip:${ip}`))) return fail('rate_limited');
-  return sid;
-}
-
 const notYet = async (): Promise<Response> => fail('not_implemented');
-
-async function handleSession(request: Request, _url: URL, deps: Deps): Promise<Response> {
-  // ①
-  const turnstileToken = parseSessionBody(await readJsonBody(request));
-  if (turnstileToken === null) return fail('invalid_input');
-  const ip = await ipHash(deps.secrets.sessionSecret, clientIp(request), deps.now());
-  // ③ 차단된 IP
-  if (await deps.control.blocked(null, ip)) return fail('forbidden');
-  // ④ 세션 대량 발급 방지: IP 분당 2회
-  if (!(await allow(deps.limiters.sessionIp, `session:${ip}`))) return fail('rate_limited');
-  // Turnstile 검증 (Cloudflare, 무료·무제한)
-  const result = await verifyTurnstile(deps.upstream, deps.secrets.turnstileSecret, turnstileToken);
-  if (result === 'error') return fail('auto_lookup_unavailable');
-  if (result === 'fail') return fail('unauthorized');
-  return json(await issueToken(deps.secrets.sessionSecret, deps.now()));
-}
 
 const handlers: Record<string, Partial<Record<string, Handler>>> = {
   '/api/session': { POST: handleSession },
-  '/api/route': {
-    POST: async (request, _url, deps) => {
-      if (parseRouteBody(await readJsonBody(request)) === null) return fail('invalid_input');
-      const sid = await guard(request, deps, 'route');
-      if (sid instanceof Response) return sid;
-      return notYet();
-    },
-  },
+  '/api/route': { POST: handleRoute },
   '/api/places': {
     GET: async (request, url, deps) => {
       if (parsePlacesQuery(url) === null) return fail('invalid_input');
@@ -103,9 +42,9 @@ export async function handleApi(request: Request, deps: Deps): Promise<Response>
   if (!methods) return fail('not_found');
   const handler = methods[request.method];
   if (!handler) return fail('method_not_allowed');
-  if (!deps.secrets.sessionSecret) {
+  if (!deps.secrets.sessionSecret || !deps.secrets.cacheSecret) {
     // 배포 설정 누락. 비밀 값 이름만 남긴다.
-    console.error('missing_secret', 'SESSION_SECRET');
+    console.error('missing_secret');
     return fail('auto_lookup_unavailable');
   }
   return handler(request, url, deps);

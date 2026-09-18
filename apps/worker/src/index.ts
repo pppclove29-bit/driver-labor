@@ -3,6 +3,7 @@
 // 요청 본문·쿼리·좌표를 로그로 출력하지 않는다 (CLAUDE.md 절대 규칙 7).
 import { handleApi } from './app.js';
 import { BudgetCounter } from './budget/BudgetCounter.js';
+import { RouteCache } from './cache/RouteCache.js';
 import { Control } from './control.js';
 import type { Deps } from './deps.js';
 import { fixtureUpstream } from './providers/fixtures.js';
@@ -12,10 +13,14 @@ interface Env {
   readonly ASSETS: Fetcher;
   readonly CTRL: KVNamespace;
   readonly BUDGET: DurableObjectNamespace<BudgetCounter>;
+  readonly ROUTE_CACHE: DurableObjectNamespace<RouteCache>;
   /** `live`(기본) 또는 `fixtures`. 로컬 개발은 .dev.vars에서 fixtures로 둔다. */
   readonly UPSTREAM?: string;
   readonly TURNSTILE_SECRET?: string;
   readonly SESSION_SECRET?: string;
+  readonly CACHE_SECRET?: string;
+  readonly KAKAO_REST_KEY?: string;
+  readonly TMAP_APP_KEY?: string;
   readonly RL_SESSION_IP?: RateLimit;
   readonly RL_ROUTE_SESSION?: RateLimit;
   readonly RL_ROUTE_IP?: RateLimit;
@@ -31,9 +36,13 @@ function depsFrom(env: Env): Deps {
   return {
     control,
     budget: env.BUDGET.getByName('global'),
+    routeCache: env.ROUTE_CACHE.getByName('route'),
     secrets: {
       turnstileSecret: env.TURNSTILE_SECRET ?? '',
       sessionSecret: env.SESSION_SECRET ?? '',
+      cacheSecret: env.CACHE_SECRET ?? '',
+      kakaoKey: env.KAKAO_REST_KEY ?? '',
+      tmapKey: env.TMAP_APP_KEY ?? '',
     },
     upstream: env.UPSTREAM === 'fixtures' ? fixtureUpstream : liveUpstream,
     now: () => Date.now(),
@@ -47,7 +56,7 @@ function depsFrom(env: Env): Deps {
   };
 }
 
-export { BudgetCounter };
+export { BudgetCounter, RouteCache };
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {

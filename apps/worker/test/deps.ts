@@ -1,5 +1,6 @@
 // 테스트용 Deps. 기본은 fixtures upstream, 고정 시각, 분당 제한 없음.
 import { BudgetCounter } from '../src/budget/BudgetCounter.js';
+import { RouteCache } from '../src/cache/RouteCache.js';
 import { Control } from '../src/control.js';
 import type { Deps } from '../src/deps.js';
 import { fixtureUpstream } from '../src/providers/fixtures.js';
@@ -11,12 +12,16 @@ export const NOW = Date.parse('2026-09-18T01:00:00Z');
 export const SECRETS = {
   turnstileSecret: 'test-turnstile-secret',
   sessionSecret: 'test-session-secret',
+  cacheSecret: 'test-cache-secret',
+  kakaoKey: 'test-kakao-key',
+  tmapKey: 'test-tmap-key',
 } as const;
 
 export function makeDeps(overrides: Partial<Deps> = {}, kv = new FakeKV()): Deps {
   return {
     control: new Control(kv.asKV(), () => NOW),
     budget: new BudgetCounter(fakeCtx(), {}),
+    routeCache: new RouteCache(fakeCtx(), {}),
     secrets: SECRETS,
     upstream: fixtureUpstream,
     now: () => NOW,
