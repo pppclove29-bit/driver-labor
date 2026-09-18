@@ -1,0 +1,98 @@
+{
+  "documents": [
+    {
+      "address_name": "강원특별자치도 강릉시 안현동 1",
+      "category_group_code": "AT4",
+      "category_group_name": "관광명소",
+      "category_name": "여행 > 관광,명소 > 관광명소",
+      "distance": "",
+      "id": "100000",
+      "phone": "033-000-0000",
+      "place_name": "경포해변",
+      "place_url": "http://place.map.kakao.com/100000",
+      "road_address_name": "강원특별자치도 강릉시 창해로 514",
+      "x": "128.908588",
+      "y": "37.805521"
+    },
+    {
+      "address_name": "강원특별자치도 강릉시 운정동 1",
+      "category_group_code": "AT4",
+      "category_group_name": "관광명소",
+      "category_name": "여행 > 관광,명소 > 관광명소",
+      "distance": "",
+      "id": "100001",
+      "phone": "033-000-0001",
+      "place_name": "경포호",
+      "place_url": "http://place.map.kakao.com/100001",
+      "road_address_name": "",
+      "x": "128.894372",
+      "y": "37.795540"
+    },
+    {
+      "address_name": "강원특별자치도 강릉시 저동 94",
+      "category_group_code": "AT4",
+      "category_group_name": "관광명소",
+      "category_name": "여행 > 관광,명소 > 관광명소",
+      "distance": "",
+      "id": "100002",
+      "phone": "033-000-0002",
+      "place_name": "경포대",
+      "place_url": "http://place.map.kakao.com/100002",
+      "road_address_name": "강원특별자치도 강릉시 경포로 365",
+      "x": "128.894080",
+      "y": "37.786540"
+    },
+    {
+      "address_name": "강원특별자치도 강릉시 교동 1",
+      "category_group_code": "AT4",
+      "category_group_name": "교통,수송",
+      "category_name": "여행 > 관광,명소 > 교통,수송",
+      "distance": "",
+      "id": "100003",
+      "phone": "033-000-0003",
+      "place_name": "강릉역 KTX",
+      "place_url": "http://place.map.kakao.com/100003",
+      "road_address_name": "강원특별자치도 강릉시 용지로 176",
+      "x": "128.900285",
+      "y": "37.764180"
+    },
+    {
+      "address_name": "강원특별자치도 강릉시 견소동 1",
+      "category_group_code": "AT4",
+      "category_group_name": "관광명소",
+      "category_name": "여행 > 관광,명소 > 관광명소",
+      "distance": "",
+      "id": "100004",
+      "phone": "033-000-0004",
+      "place_name": "안목해변",
+      "place_url": "http://place.map.kakao.com/100004",
+      "road_address_name": "강원특별자치도 강릉시 창해로14번길 20",
+      "x": "128.947430",
+      "y": "37.771820"
+    },
+    {
+      "address_name": "강원특별자치도 강릉시 주문진읍 주문리 1",
+      "category_group_code": "AT4",
+      "category_group_name": "관광명소",
+      "category_name": "여행 > 관광,명소 > 관광명소",
+      "distance": "",
+      "id": "100005",
+      "phone": "033-000-0005",
+      "place_name": "주문진항",
+      "place_url": "http://place.map.kakao.com/100005",
+      "road_address_name": "강원특별자치도 강릉시 주문진읍 해안로 1730",
+      "x": "128.827070",
+      "y": "37.893440"
+    }
+  ],
+  "meta": {
+    "is_end": false,
+    "pageable_count": 45,
+    "same_name": {
+      "keyword": "강릉",
+      "region": [],
+      "selected_region": ""
+    },
+    "total_count": 1450
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "trans_id": "fixture-directions-wonju-gangneung",
+  "routes": [
+    {
+      "result_code": 0,
+      "result_msg": "길찾기 성공",
+      "summary": {
+        "origin": {
+          "name": "",
+          "x": 127.811,
+          "y": 37.328
+        },
+        "destination": {
+          "name": "",
+          "x": 128.9086,
+          "y": 37.8055
+        },
+        "waypoints": [],
+        "priority": "RECOMMEND",
+        "bound": {
+          "min_x": 127.811,
+          "min_y": 37.328,
+          "max_x": 128.9086,
+          "max_y": 37.8055
+        },
+        "fare": {
+          "taxi": 132800,
+          "toll": 7500
+        },
+        "distance": 131208,
+        "duration": 5700
+      },
+      "sections": [
+        {
+          "distance": 131208,
+          "duration": 5700,
+          "bound": {
+            "min_x": 127.811,
+            "min_y": 37.328,
+            "max_x": 128.9086,
+            "max_y": 37.8055
+          },
+          "roads": [
+            {
+              "name": "영동고속도로",
+              "distance": 106000,
+              "duration": 4000,
+              "traffic_speed": 96,
+              "traffic_state": 4,
+              "vertexes": [
+                127.811,
+                37.328,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "동해고속도로",
+              "distance": 12000,
+              "duration": 480,
+              "traffic_speed": 90,
+              "traffic_state": 4,
+              "vertexes": [
+                127.811,
+                37.328,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "경포로",
+              "distance": 9000,
+              "duration": 1010,
+              "traffic_speed": 32,
+              "traffic_state": 4,
+              "vertexes": [
+                127.811,
+                37.328,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "난설헌로",
+              "distance": 4208,
+              "duration": 210,
+              "traffic_speed": 0,
+              "traffic_state": 0,
+              "vertexes": [
+                127.811,
+                37.328,
+                128.9086,
+                37.8055
+              ]
+            }
+          ],
+          "guides": [
+            {
+              "name": "출발지",
+              "x": 127.811,
+              "y": 37.328,
+              "distance": 0,
+              "duration": 0,
+              "type": 100,
+              "guidance": "출발지",
+              "road_index": -1
+            },
+            {
+              "name": "목적지",
+              "x": 128.9086,
+              "y": 37.8055,
+              "distance": 131208,
+              "duration": 5700,
+              "type": 101,
+              "guidance": "목적지",
+              "road_index": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

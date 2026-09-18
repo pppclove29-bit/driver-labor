@@ -1,0 +1,162 @@
+{
+  "trans_id": "fixture-directions-seoul-gangneung",
+  "routes": [
+    {
+      "result_code": 0,
+      "result_msg": "길찾기 성공",
+      "summary": {
+        "origin": {
+          "name": "",
+          "x": 127.0276,
+          "y": 37.4979
+        },
+        "destination": {
+          "name": "",
+          "x": 128.9086,
+          "y": 37.8055
+        },
+        "waypoints": [],
+        "priority": "RECOMMEND",
+        "bound": {
+          "min_x": 127.0276,
+          "min_y": 37.4979,
+          "max_x": 128.9086,
+          "max_y": 37.8055
+        },
+        "fare": {
+          "taxi": 231500,
+          "toll": 12400
+        },
+        "distance": 228214,
+        "duration": 10380
+      },
+      "sections": [
+        {
+          "distance": 228214,
+          "duration": 10380,
+          "bound": {
+            "min_x": 127.0276,
+            "min_y": 37.4979,
+            "max_x": 128.9086,
+            "max_y": 37.8055
+          },
+          "roads": [
+            {
+              "name": "테헤란로",
+              "distance": 1800,
+              "duration": 540,
+              "traffic_speed": 12,
+              "traffic_state": 1,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "강남대로",
+              "distance": 2400,
+              "duration": 390,
+              "traffic_speed": 22,
+              "traffic_state": 2,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "경부고속도로",
+              "distance": 8000,
+              "duration": 640,
+              "traffic_speed": 45,
+              "traffic_state": 3,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "영동고속도로",
+              "distance": 190000,
+              "duration": 7200,
+              "traffic_speed": 95,
+              "traffic_state": 4,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "동해고속도로",
+              "distance": 12000,
+              "duration": 480,
+              "traffic_speed": 90,
+              "traffic_state": 4,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "경포로",
+              "distance": 9000,
+              "duration": 1010,
+              "traffic_speed": 32,
+              "traffic_state": 4,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            },
+            {
+              "name": "난설헌로",
+              "distance": 5014,
+              "duration": 120,
+              "traffic_speed": 0,
+              "traffic_state": 0,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                128.9086,
+                37.8055
+              ]
+            }
+          ],
+          "guides": [
+            {
+              "name": "출발지",
+              "x": 127.0276,
+              "y": 37.4979,
+              "distance": 0,
+              "duration": 0,
+              "type": 100,
+              "guidance": "출발지",
+              "road_index": -1
+            },
+            {
+              "name": "목적지",
+              "x": 128.9086,
+              "y": 37.8055,
+              "distance": 228214,
+              "duration": 10380,
+              "type": 101,
+              "guidance": "목적지",
+              "road_index": 6
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

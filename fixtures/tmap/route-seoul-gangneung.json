@@ -1,0 +1,341 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0276,
+          37.4979
+        ]
+      },
+      "properties": {
+        "totalDistance": 229880,
+        "totalTime": 10620,
+        "totalFare": 12400,
+        "taxiFare": 233900,
+        "index": 0,
+        "pointIndex": 0,
+        "name": "",
+        "description": "영동고속도로 방면으로 출발",
+        "direction": "",
+        "nearPoiName": "",
+        "nearPoiX": "0.0",
+        "nearPoiY": "0.0",
+        "intersectionName": "",
+        "facilityType": "11",
+        "facilityName": "",
+        "turnType": 200,
+        "pointType": "S"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.0276,
+            37.4979
+          ],
+          [
+            127.03,
+            37.499
+          ],
+          [
+            127.04,
+            37.502
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            2,
+            4,
+            12
+          ]
+        ]
+      },
+      "properties": {
+        "index": 1,
+        "lineIndex": 0,
+        "name": "테헤란로",
+        "description": "테헤란로, 1800m",
+        "distance": 1800,
+        "time": 540,
+        "roadType": 3,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.04,
+            37.502
+          ],
+          [
+            127.05,
+            37.51
+          ],
+          [
+            127.06,
+            37.52
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            2,
+            3,
+            22
+          ]
+        ]
+      },
+      "properties": {
+        "index": 2,
+        "lineIndex": 1,
+        "name": "강남대로",
+        "description": "강남대로, 2400m",
+        "distance": 2400,
+        "time": 390,
+        "roadType": 3,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.06,
+            37.52
+          ],
+          [
+            127.1,
+            37.5
+          ],
+          [
+            127.12,
+            37.48
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            2,
+            2,
+            45
+          ]
+        ]
+      },
+      "properties": {
+        "index": 3,
+        "lineIndex": 2,
+        "name": "경부고속도로",
+        "description": "경부고속도로, 8000m",
+        "distance": 8000,
+        "time": 640,
+        "roadType": 0,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            127.12,
+            37.48
+          ],
+          [
+            127.5,
+            37.4
+          ],
+          [
+            128,
+            37.5
+          ],
+          [
+            128.5,
+            37.7
+          ],
+          [
+            128.85,
+            37.78
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            2,
+            1,
+            95
+          ],
+          [
+            2,
+            4,
+            1,
+            92
+          ]
+        ]
+      },
+      "properties": {
+        "index": 4,
+        "lineIndex": 3,
+        "name": "영동고속도로",
+        "description": "영동고속도로, 191200m",
+        "distance": 191200,
+        "time": 7440,
+        "roadType": 0,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            128.85,
+            37.78
+          ],
+          [
+            128.88,
+            37.79
+          ],
+          [
+            128.9,
+            37.8
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            2,
+            1,
+            90
+          ]
+        ]
+      },
+      "properties": {
+        "index": 5,
+        "lineIndex": 4,
+        "name": "동해고속도로",
+        "description": "동해고속도로, 12000m",
+        "distance": 12000,
+        "time": 480,
+        "roadType": 0,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            128.9,
+            37.8
+          ],
+          [
+            128.905,
+            37.803
+          ],
+          [
+            128.9086,
+            37.8055
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            1,
+            1,
+            32
+          ],
+          [
+            1,
+            2,
+            4,
+            10
+          ]
+        ]
+      },
+      "properties": {
+        "index": 6,
+        "lineIndex": 5,
+        "name": "경포로",
+        "description": "경포로, 9480m",
+        "distance": 9480,
+        "time": 1010,
+        "roadType": 3,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            128.9086,
+            37.8055
+          ],
+          [
+            128.9087,
+            37.8056
+          ]
+        ],
+        "traffic": [
+          [
+            0,
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      "properties": {
+        "index": 7,
+        "lineIndex": 6,
+        "name": "창해로",
+        "description": "창해로, 5000m",
+        "distance": 5000,
+        "time": 120,
+        "roadType": 3,
+        "facilityType": "11"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.9086,
+          37.8055
+        ]
+      },
+      "properties": {
+        "index": 8,
+        "pointIndex": 1,
+        "name": "",
+        "description": "도착",
+        "direction": "",
+        "nearPoiName": "",
+        "nearPoiX": "0.0",
+        "nearPoiY": "0.0",
+        "intersectionName": "",
+        "facilityType": "",
+        "facilityName": "",
+        "turnType": 201,
+        "pointType": "E"
+      }
+    }
+  ]
+}

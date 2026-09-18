@@ -1,0 +1,136 @@
+{
+  "trans_id": "fixture-directions-seoul-wonju",
+  "routes": [
+    {
+      "result_code": 0,
+      "result_msg": "길찾기 성공",
+      "summary": {
+        "origin": {
+          "name": "",
+          "x": 127.0276,
+          "y": 37.4979
+        },
+        "destination": {
+          "name": "",
+          "x": 127.811,
+          "y": 37.328
+        },
+        "waypoints": [],
+        "priority": "RECOMMEND",
+        "bound": {
+          "min_x": 127.0276,
+          "min_y": 37.328,
+          "max_x": 127.811,
+          "max_y": 37.4979
+        },
+        "fare": {
+          "taxi": 102300,
+          "toll": 4900
+        },
+        "distance": 97512,
+        "duration": 4620
+      },
+      "sections": [
+        {
+          "distance": 97512,
+          "duration": 4620,
+          "bound": {
+            "min_x": 127.0276,
+            "min_y": 37.328,
+            "max_x": 127.811,
+            "max_y": 37.4979
+          },
+          "roads": [
+            {
+              "name": "테헤란로",
+              "distance": 1800,
+              "duration": 540,
+              "traffic_speed": 12,
+              "traffic_state": 1,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                127.811,
+                37.328
+              ]
+            },
+            {
+              "name": "강남대로",
+              "distance": 2400,
+              "duration": 390,
+              "traffic_speed": 22,
+              "traffic_state": 2,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                127.811,
+                37.328
+              ]
+            },
+            {
+              "name": "경부고속도로",
+              "distance": 8000,
+              "duration": 640,
+              "traffic_speed": 45,
+              "traffic_state": 3,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                127.811,
+                37.328
+              ]
+            },
+            {
+              "name": "영동고속도로",
+              "distance": 82000,
+              "duration": 2710,
+              "traffic_speed": 98,
+              "traffic_state": 4,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                127.811,
+                37.328
+              ]
+            },
+            {
+              "name": "문막로",
+              "distance": 3312,
+              "duration": 340,
+              "traffic_speed": 35,
+              "traffic_state": 4,
+              "vertexes": [
+                127.0276,
+                37.4979,
+                127.811,
+                37.328
+              ]
+            }
+          ],
+          "guides": [
+            {
+              "name": "출발지",
+              "x": 127.0276,
+              "y": 37.4979,
+              "distance": 0,
+              "duration": 0,
+              "type": 100,
+              "guidance": "출발지",
+              "road_index": -1
+            },
+            {
+              "name": "목적지",
+              "x": 127.811,
+              "y": 37.328,
+              "distance": 97512,
+              "duration": 4620,
+              "type": 101,
+              "guidance": "목적지",
+              "road_index": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
