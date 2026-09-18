@@ -26,14 +26,41 @@ async function authorize(request: Request, deps: Deps): Promise<string | Respons
   return sid ?? fail('unauthorized');
 }
 
+type Kind = 'route' | 'places';
+
+/** ②③④를 차례로. 통과하면 세션 ID. 외부 호출·DO는 건드리지 않는다. */
+async function guard(request: Request, deps: Deps, kind: Kind | null): Promise<string | Response> {
+  // ②
+  const sid = await authorize(request, deps);
+  if (sid instanceof Response) return sid;
+  // ③
+  const ip = await ipHash(deps.secrets.sessionSecret, clientIp(request), deps.now());
+  if (await deps.control.blocked(sid, ip)) return fail('forbidden');
+  if (kind === null) return sid;
+  const enabled =
+    kind === 'route' ? await deps.control.autoRoute() : await deps.control.autoPlaces();
+  if (!enabled) return fail('auto_lookup_unavailable');
+  // ④
+  const { limiters } = deps;
+  const [bySession, byIp] =
+    kind === 'route'
+      ? [limiters.routeSession, limiters.routeIp]
+      : [limiters.placesSession, limiters.placesIp];
+  if (!(await allow(bySession, `${kind}:s:${sid}`))) return fail('rate_limited');
+  if (!(await allow(byIp, `${kind}:ip:${ip}`))) return fail('rate_limited');
+  return sid;
+}
+
 const notYet = async (): Promise<Response> => fail('not_implemented');
 
 async function handleSession(request: Request, _url: URL, deps: Deps): Promise<Response> {
   // ①
   const turnstileToken = parseSessionBody(await readJsonBody(request));
   if (turnstileToken === null) return fail('invalid_input');
-  // ④ 세션 대량 발급 방지: IP 분당 2회
   const ip = await ipHash(deps.secrets.sessionSecret, clientIp(request), deps.now());
+  // ③ 차단된 IP
+  if (await deps.control.blocked(null, ip)) return fail('forbidden');
+  // ④ 세션 대량 발급 방지: IP 분당 2회
   if (!(await allow(deps.limiters.sessionIp, `session:${ip}`))) return fail('rate_limited');
   // Turnstile 검증 (Cloudflare, 무료·무제한)
   const result = await verifyTurnstile(deps.upstream, deps.secrets.turnstileSecret, turnstileToken);
@@ -47,7 +74,7 @@ const handlers: Record<string, Partial<Record<string, Handler>>> = {
   '/api/route': {
     POST: async (request, _url, deps) => {
       if (parseRouteBody(await readJsonBody(request)) === null) return fail('invalid_input');
-      const sid = await authorize(request, deps);
+      const sid = await guard(request, deps, 'route');
       if (sid instanceof Response) return sid;
       return notYet();
     },
@@ -55,7 +82,7 @@ const handlers: Record<string, Partial<Record<string, Handler>>> = {
   '/api/places': {
     GET: async (request, url, deps) => {
       if (parsePlacesQuery(url) === null) return fail('invalid_input');
-      const sid = await authorize(request, deps);
+      const sid = await guard(request, deps, 'places');
       if (sid instanceof Response) return sid;
       return notYet();
     },
@@ -63,7 +90,7 @@ const handlers: Record<string, Partial<Record<string, Handler>>> = {
   '/api/fuel/avg': {
     GET: async (request, url, deps) => {
       if (parseFuelQuery(url) === null) return fail('invalid_input');
-      const sid = await authorize(request, deps);
+      const sid = await guard(request, deps, null);
       if (sid instanceof Response) return sid;
       return notYet();
     },

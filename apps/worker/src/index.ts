@@ -2,12 +2,14 @@
 //
 // 요청 본문·쿼리·좌표를 로그로 출력하지 않는다 (CLAUDE.md 절대 규칙 7).
 import { handleApi } from './app.js';
+import { Control } from './control.js';
 import type { Deps } from './deps.js';
 import { fixtureUpstream } from './providers/fixtures.js';
 import { liveUpstream } from './upstream.js';
 
 interface Env {
   readonly ASSETS: Fetcher;
+  readonly CTRL: KVNamespace;
   /** `live`(기본) 또는 `fixtures`. 로컬 개발은 .dev.vars에서 fixtures로 둔다. */
   readonly UPSTREAM?: string;
   readonly TURNSTILE_SECRET?: string;
@@ -19,8 +21,13 @@ interface Env {
   readonly RL_PLACES_IP?: RateLimit;
 }
 
+// isolate마다 하나. KV 값 메모리 캐시(60초)를 요청 사이에 공유한다.
+let control: Control | undefined;
+
 function depsFrom(env: Env): Deps {
+  control ??= new Control(env.CTRL, () => Date.now());
   return {
+    control,
     secrets: {
       turnstileSecret: env.TURNSTILE_SECRET ?? '',
       sessionSecret: env.SESSION_SECRET ?? '',

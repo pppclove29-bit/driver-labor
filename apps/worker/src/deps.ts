@@ -1,4 +1,5 @@
 // 핸들러가 쓰는 바깥 세계. index.ts가 Env로 만들고, 테스트는 대역으로 만든다.
+import type { Control } from './control.js';
 import type { Limiters } from './ratelimit.js';
 import type { Upstream } from './upstream.js';
 
@@ -13,4 +14,5 @@ export interface Deps {
   readonly upstream: Upstream;
   readonly now: () => number;
   readonly limiters: Limiters;
+  readonly control: Control;
 }
