@@ -7,9 +7,10 @@
 import type { Deps } from './deps.js';
 import { guard } from './guard.js';
 import { fail } from './http.js';
+import { handlePlaces } from './routes/places.js';
 import { handleRoute } from './routes/route.js';
 import { handleSession } from './routes/session.js';
-import { parseFuelQuery, parsePlacesQuery } from './validate.js';
+import { parseFuelQuery } from './validate.js';
 
 type Handler = (request: Request, url: URL, deps: Deps) => Promise<Response>;
 
@@ -18,14 +19,7 @@ const notYet = async (): Promise<Response> => fail('not_implemented');
 const handlers: Record<string, Partial<Record<string, Handler>>> = {
   '/api/session': { POST: handleSession },
   '/api/route': { POST: handleRoute },
-  '/api/places': {
-    GET: async (request, url, deps) => {
-      if (parsePlacesQuery(url) === null) return fail('invalid_input');
-      const sid = await guard(request, deps, 'places');
-      if (sid instanceof Response) return sid;
-      return notYet();
-    },
-  },
+  '/api/places': { GET: handlePlaces },
   '/api/fuel/avg': {
     GET: async (request, url, deps) => {
       if (parseFuelQuery(url) === null) return fail('invalid_input');

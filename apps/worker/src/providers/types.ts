@@ -45,3 +45,15 @@ export const ratio = (part: number, total: number): number =>
 export const secondsToMinutes = (s: number): number => Math.round(s / 60);
 
 export type RouteAdapter = (from: Point, to: Point) => Promise<RouteLeg>;
+
+/** 장소 검색 결과 최대 개수. */
+export const PLACES_MAX = 5;
+
+/** 좌표가 숫자가 아니면 null. */
+export function toPlace(name: unknown, address: unknown, lat: unknown, lng: unknown): Place | null {
+  const la = Number(lat);
+  const ln = Number(lng);
+  if (typeof name !== 'string' || !name || !Number.isFinite(la) || !Number.isFinite(ln))
+    return null;
+  return { name, address: typeof address === 'string' ? address : '', lat: la, lng: ln };
+}

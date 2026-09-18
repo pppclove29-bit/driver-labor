@@ -13,6 +13,8 @@ export async function fetchJson(upstream: Upstream, request: Request): Promise<u
     throw new ProviderError('unavailable');
   }
   if (res.status === 400) throw new ProviderError('no_result');
+  // TMAP POI는 결과가 없으면 204를 준다.
+  if (res.status === 204) return null;
   if (!res.ok) throw new ProviderError('unavailable');
   try {
     return (await res.json()) as unknown;

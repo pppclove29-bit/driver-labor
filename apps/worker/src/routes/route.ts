@@ -5,12 +5,12 @@ import type { Provider } from '../budget/limits.js';
 import { ROUTE_CACHE_TTL_MS } from '../cache/RouteCache.js';
 import { hmacHex } from '../crypto.js';
 import type { Deps } from '../deps.js';
-import { guard, reserveFailure } from '../guard.js';
+import { guard } from '../guard.js';
 import { fail, json } from '../http.js';
+import { reserveAndCall } from '../lookup.js';
 import { kakaoRoute } from '../providers/kakao.js';
 import { tmapRoute } from '../providers/tmap.js';
-import { ProviderError, type RouteLeg } from '../providers/types.js';
-import { SESSION_PER_MINUTE } from '../ratelimit.js';
+import type { RouteLeg } from '../providers/types.js';
 import { parseRouteBody, type Point, readJsonBody } from '../validate.js';
 
 export interface RouteResponse {
@@ -23,23 +23,6 @@ export const roundPoint = (p: Point): Point => ({
   lat: Math.round(p.lat * 1e4) / 1e4,
   lng: Math.round(p.lng * 1e4) / 1e4,
 });
-
-async function lookup(
-  deps: Deps,
-  provider: Provider,
-  points: Point[],
-): Promise<RouteLeg[] | ProviderError> {
-  const adapter =
-    provider === 'kakao'
-      ? kakaoRoute(deps.upstream, deps.secrets.kakaoKey)
-      : tmapRoute(deps.upstream, deps.secrets.tmapKey);
-  try {
-    return await Promise.all(points.slice(1).map((to, i) => adapter(points[i]!, to)));
-  } catch (e) {
-    if (e instanceof ProviderError) return e;
-    throw e;
-  }
-}
 
 export async function handleRoute(request: Request, _url: URL, deps: Deps): Promise<Response> {
   // ①
@@ -58,47 +41,17 @@ export async function handleRoute(request: Request, _url: URL, deps: Deps): Prom
   const cached = await deps.routeCache.get(key);
   if (cached !== null) return json(JSON.parse(cached) as RouteResponse);
 
-  // ⑥
-  const units = points.length - 1;
-  const mode = await deps.control.provider();
-  const perMinute = deps.limiters.routeSession ? {} : { perMinute: SESSION_PER_MINUTE.route };
-  const reserved = await deps.budget.reserve({
-    kind: 'route',
-    sessionId: sid,
-    units,
-    mode,
-    ...perMinute,
+  // ⑥⑦
+  const result = await reserveAndCall(deps, 'route', sid, points.length - 1, (provider) => {
+    const adapter =
+      provider === 'kakao'
+        ? kakaoRoute(deps.upstream, deps.secrets.kakaoKey)
+        : tmapRoute(deps.upstream, deps.secrets.tmapKey);
+    return Promise.all(points.slice(1).map((to, i) => adapter(points[i]!, to)));
   });
-  if (!reserved.ok) return reserveFailure(reserved);
+  if (result instanceof Response) return result;
 
-  // ⑦ 카카오가 장애·차단이면 TMAP으로 다시 (TMAP 예산을 따로 예약)
-  let provider = reserved.provider;
-  let result = await lookup(deps, provider, points);
-  if (
-    result instanceof ProviderError &&
-    result.kind === 'unavailable' &&
-    provider === 'kakao' &&
-    mode === 'auto'
-  ) {
-    console.error('upstream_unavailable', 'kakao_route');
-    const retry = await deps.budget.reserve({
-      kind: 'route',
-      sessionId: sid,
-      units,
-      mode: 'tmap',
-      retry: true,
-    });
-    if (!retry.ok) return fail('auto_lookup_unavailable');
-    provider = 'tmap';
-    result = await lookup(deps, provider, points);
-  }
-  if (result instanceof ProviderError) {
-    if (result.kind === 'no_result') return fail('route_not_found');
-    console.error('upstream_unavailable', `${provider}_route`);
-    return fail('auto_lookup_unavailable');
-  }
-
-  const body: RouteResponse = { provider, legs: result };
+  const body: RouteResponse = { provider: result.provider, legs: result.value };
   await deps.routeCache.put(key, JSON.stringify(body), ROUTE_CACHE_TTL_MS);
   return json(body);
 }

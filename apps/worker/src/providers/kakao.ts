@@ -3,12 +3,15 @@ import type { Upstream } from '../upstream.js';
 import type { Point } from '../validate.js';
 import { fetchJson, num } from './http.js';
 import {
+  type Place,
+  PLACES_MAX,
   ProviderError,
   ratio,
   type RouteAdapter,
   type RouteLeg,
   secondsToMinutes,
   SLOW_ROAD_KMH,
+  toPlace,
 } from './types.js';
 
 /**
@@ -74,4 +77,44 @@ export function kakaoRoute(upstream: Upstream, key: string): RouteAdapter {
     );
     return reduceKakaoDirections(body);
   };
+}
+
+interface KakaoKeyword {
+  documents?: {
+    place_name?: unknown;
+    road_address_name?: unknown;
+    address_name?: unknown;
+    x?: unknown;
+    y?: unknown;
+  }[];
+}
+
+/** 이름·주소(도로명 우선)·좌표만 남긴다. 전화번호·카테고리·장소 URL은 버린다. */
+export function reduceKakaoPlaces(body: unknown): Place[] {
+  const docs = (body as KakaoKeyword | null)?.documents ?? [];
+  return docs
+    .map((d) =>
+      toPlace(
+        d.place_name,
+        typeof d.road_address_name === 'string' && d.road_address_name
+          ? d.road_address_name
+          : d.address_name,
+        d.y,
+        d.x,
+      ),
+    )
+    .filter((p): p is Place => p !== null)
+    .slice(0, PLACES_MAX);
+}
+
+/** 카카오 로컬 키워드 검색(주력). 하드 상한 하루 50,000건. */
+export async function kakaoPlaces(upstream: Upstream, key: string, q: string): Promise<Place[]> {
+  const url = new URL('https://dapi.kakao.com/v2/local/search/keyword.json');
+  url.searchParams.set('query', q);
+  url.searchParams.set('size', String(PLACES_MAX));
+  const body = await fetchJson(
+    upstream,
+    new Request(url, { headers: { authorization: `KakaoAK ${key}` } }),
+  );
+  return reduceKakaoPlaces(body);
 }

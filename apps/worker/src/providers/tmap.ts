@@ -3,12 +3,15 @@
 import type { Upstream } from '../upstream.js';
 import { fetchJson, num } from './http.js';
 import {
+  type Place,
+  PLACES_MAX,
   ProviderError,
   ratio,
   type RouteAdapter,
   type RouteLeg,
   secondsToMinutes,
   SLOW_ROAD_KMH,
+  toPlace,
 } from './types.js';
 
 /**
@@ -82,4 +85,52 @@ export function tmapRoute(upstream: Upstream, key: string): RouteAdapter {
     );
     return reduceTmapRoute(body);
   };
+}
+
+interface TmapPoi {
+  name?: unknown;
+  noorLat?: unknown;
+  noorLon?: unknown;
+  frontLat?: unknown;
+  frontLon?: unknown;
+  upperAddrName?: unknown;
+  middleAddrName?: unknown;
+  lowerAddrName?: unknown;
+  firstNo?: unknown;
+  secondNo?: unknown;
+  newAddressList?: { newAddress?: { fullAddressRoad?: unknown }[] };
+}
+
+const text = (v: unknown): string => (typeof v === 'string' ? v : '');
+
+function tmapAddress(p: TmapPoi): string {
+  const road = text(p.newAddressList?.newAddress?.[0]?.fullAddressRoad);
+  if (road) return road;
+  const lot = [text(p.firstNo), text(p.secondNo)].filter(Boolean).join('-');
+  return [text(p.upperAddrName), text(p.middleAddrName), text(p.lowerAddrName), lot]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/** 이름·주소(도로명 우선)·좌표만 남긴다. 전화번호·업종은 버린다. */
+export function reduceTmapPlaces(body: unknown): Place[] {
+  const pois =
+    (body as { searchPoiInfo?: { pois?: { poi?: TmapPoi[] } } } | null)?.searchPoiInfo?.pois?.poi ??
+    [];
+  return pois
+    .map((p) => toPlace(p.name, tmapAddress(p), p.noorLat ?? p.frontLat, p.noorLon ?? p.frontLon))
+    .filter((p): p is Place => p !== null)
+    .slice(0, PLACES_MAX);
+}
+
+/** TMAP POI 검색(예비). 하드 상한 하루 18,000건. */
+export async function tmapPlaces(upstream: Upstream, key: string, q: string): Promise<Place[]> {
+  const url = new URL('https://apis.openapi.sk.com/tmap/pois');
+  url.searchParams.set('version', '1');
+  url.searchParams.set('searchKeyword', q);
+  url.searchParams.set('count', String(PLACES_MAX));
+  url.searchParams.set('reqCoordType', 'WGS84GEO');
+  url.searchParams.set('resCoordType', 'WGS84GEO');
+  const body = await fetchJson(upstream, new Request(url, { headers: { appKey: key } }));
+  return reduceTmapPlaces(body);
 }
