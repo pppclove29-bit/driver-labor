@@ -13,6 +13,7 @@ import { kstDay, kstHour } from '../time.js';
 import {
   type Counter,
   DAILY_LIMITS,
+  type DailyOnly,
   HOURLY_LIMITS,
   type Kind,
   type Provider,
@@ -57,7 +58,14 @@ export interface UsageStats {
 
 const emptyDay = (day: string, h: number): DayState => ({
   day,
-  counts: { kakao_route: 0, kakao_places: 0, tmap_route: 0, tmap_places: 0, opinet: 0 },
+  counts: {
+    kakao_route: 0,
+    kakao_places: 0,
+    tmap_route: 0,
+    tmap_places: 0,
+    opinet: 0,
+    turnstile: 0,
+  },
   hour: { h, route: 0, places: 0 },
   sessionsCapped: 0,
   alerted: {},
@@ -136,11 +144,12 @@ export class BudgetCounter extends DurableObject {
     return { ok: true, provider };
   }
 
-  /** 오피넷 호출 1건 예약 (Cron 유가 갱신). */
-  async reserveOpinet(): Promise<boolean> {
+  /** 하루 상한만 있는 호출 1건 예약. 오피넷(Cron 유가 갱신), Turnstile(세션 발급). */
+  async reserveDaily(counter: DailyOnly): Promise<boolean> {
     const state = await this.load(Date.now());
-    if (state.counts.opinet + 1 > DAILY_LIMITS.opinet) return false;
-    state.counts.opinet += 1;
+    const used = state.counts[counter] ?? 0;
+    if (used + 1 > DAILY_LIMITS[counter]) return false;
+    state.counts[counter] = used + 1;
     await this.save(state);
     return true;
   }
@@ -164,4 +173,4 @@ export class BudgetCounter extends DurableObject {
 }
 
 /** 핸들러가 쓰는 예산 인터페이스. 운영은 DO 스텁, 테스트는 인스턴스를 직접 넣는다. */
-export type BudgetPort = Pick<BudgetCounter, 'reserve' | 'reserveOpinet' | 'stats' | 'markAlerted'>;
+export type BudgetPort = Pick<BudgetCounter, 'reserve' | 'reserveDaily' | 'stats' | 'markAlerted'>;

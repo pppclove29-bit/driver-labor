@@ -44,6 +44,25 @@ describe('② 세션 토큰', () => {
     expect(statuses).toEqual([200, 200, 429]);
   });
 
+  it('Turnstile 하루 상한에 닿으면 503, siteverify를 부르지 않는다', async () => {
+    const { upstream, calls } = recordingUpstream(fixtureUpstream);
+    const deps = makeDeps({ upstream });
+    const exhausted: typeof deps.budget.reserveDaily = async () => false;
+    const res = await handleApi(
+      postJson('/api/session', { turnstileToken: 'ok' }),
+      makeDeps({ upstream, budget: Object.assign(deps.budget, { reserveDaily: exhausted }) }),
+    );
+    expect(res.status).toBe(503);
+    expect(calls).toEqual([]);
+  });
+
+  it('세션 발급 1번에 Turnstile 예산 1건', async () => {
+    const deps = makeDeps();
+    await handleApi(postJson('/api/session', { turnstileToken: 'ok' }), deps);
+    await handleApi(postJson('/api/session', { turnstileToken: 'invalid' }), deps);
+    expect((await deps.budget.stats()).counts.turnstile).toBe(2);
+  });
+
   it('분당 제한에 걸리면 Turnstile을 부르지 않는다', async () => {
     const { upstream, calls } = recordingUpstream(fixtureUpstream);
     const limiter = new FakeLimiter(0).asRateLimit();

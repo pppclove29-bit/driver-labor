@@ -98,7 +98,7 @@ describe('로그에 요청 본문·좌표·검색어가 없다', () => {
       alertWebhookUrl: 'https://discord.com/api/webhooks/fixture',
     };
     await refreshFuel(cron, NOW);
-    for (let i = 0; i < 5; i++) await budget.reserveOpinet();
+    for (let i = 0; i < 5; i++) await budget.reserveDaily('opinet');
     await checkUsage({
       ...cron,
       budget: Object.assign(budget, {

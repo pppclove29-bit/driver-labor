@@ -254,6 +254,7 @@ Rate Limiting 바인딩은 Cloudflare 위치별로 대략 세는 방식이라 �
 | 차단 목록 형식 | `{"sessions": ["세션 ID"], "ipHashes": ["해시"]}`. 당일 만료(`--ttl`)로 넣는다. IP 해시는 `SESSION_SECRET=… node apps/worker/scripts/hash-ip.mjs <IP>` |
 | secret | `TURNSTILE_SECRET`, `SESSION_SECRET`, `CACHE_SECRET`, `KAKAO_REST_KEY`, `TMAP_APP_KEY`, `OPINET_KEY`, `ALERT_WEBHOOK_URL`(디스코드). 없으면 /api는 503 |
 | 바인딩 | DO `BUDGET`(BudgetCounter)·`ROUTE_CACHE`(RouteCache), Rate Limiting 5개. 무료 플랜에서 Rate Limiting을 못 쓰면 wrangler 설정에서 지우면 되고, 세션 분당 제한은 DO가 센다 |
+| 하루 상한(그 밖) | 오피넷 50건(Cron), Turnstile siteverify 20,000건(세션 발급). 넘으면 각각 갱신 건너뜀·503 |
 | Cron | `0 * * * *` 하나. 매시 사용률 알림, KST 0·6·12·18시 유가 갱신 |
 | 로그 | `console.error`로 오류 코드만(`upstream_unavailable` 등). 요청 본문·검색어·좌표·IP는 남기지 않는다(`test/no-log.test.ts`) |
 | 로컬 개발 | `pnpm dev:worker` → `.dev.vars`(UPSTREAM=fixtures)로 fixtures 응답. `/__scheduled?cron=0+*+*+*+*`로 Cron 실행 |

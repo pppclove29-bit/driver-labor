@@ -14,7 +14,9 @@ export async function handleSession(request: Request, _url: URL, deps: Deps): Pr
   if (await deps.control.blocked(null, ip)) return fail('forbidden');
   // ④ 세션 대량 발급 방지: IP 분당 2회
   if (!(await allow(deps.limiters.sessionIp, `session:${ip}`))) return fail('rate_limited');
-  // Turnstile 검증 (Cloudflare, 무료·무제한)
+  // ⑥ Turnstile 검증도 외부 호출이므로 하루 상한을 거친다 (절대 규칙 6)
+  if (!(await deps.budget.reserveDaily('turnstile'))) return fail('auto_lookup_unavailable');
+  // ⑦ Turnstile 검증 (Cloudflare, 무료)
   const result = await verifyTurnstile(deps.upstream, deps.secrets.turnstileSecret, turnstileToken);
   if (result === 'error') return fail('auto_lookup_unavailable');
   if (result === 'fail') return fail('unauthorized');

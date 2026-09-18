@@ -148,7 +148,15 @@ describe('⑥ 일일 예산 (Durable Object)', () => {
   });
 
   it('오피넷 하루 50건', async () => {
-    for (let i = 0; i < 50; i++) expect(await budget.reserveOpinet()).toBe(true);
-    expect(await budget.reserveOpinet()).toBe(false);
+    for (let i = 0; i < 50; i++) expect(await budget.reserveDaily('opinet')).toBe(true);
+    expect(await budget.reserveDaily('opinet')).toBe(false);
+  });
+
+  it('Turnstile(세션 발급) 하루 20,000건, 다음 날 다시 열린다', async () => {
+    for (let i = 0; i < 20_000; i++) await budget.reserveDaily('turnstile');
+    expect(await budget.reserveDaily('turnstile')).toBe(false);
+    expect((await budget.stats()).counts.turnstile).toBe(20_000);
+    vi.setSystemTime(DAY_START + 24 * HOUR);
+    expect(await budget.reserveDaily('turnstile')).toBe(true);
   });
 });

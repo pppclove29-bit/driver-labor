@@ -20,6 +20,7 @@ const LABEL: Record<Counter, string> = {
   tmap_route: 'TMAP 경로',
   tmap_places: 'TMAP POI',
   opinet: '오피넷',
+  turnstile: '세션 발급(Turnstile)',
 };
 
 export interface CronDeps {
@@ -34,7 +35,7 @@ export interface CronDeps {
 }
 
 export async function refreshFuel(deps: CronDeps, scheduledMs: number): Promise<void> {
-  if (!(await deps.budget.reserveOpinet())) {
+  if (!(await deps.budget.reserveDaily('opinet'))) {
     console.error('budget_exhausted', 'opinet');
     return;
   }
@@ -52,7 +53,7 @@ export async function checkUsage(deps: CronDeps): Promise<void> {
   const lines: string[] = [];
   const marks: [AlertKey, number][] = [];
   for (const counter of Object.keys(LABEL) as Counter[]) {
-    const count = stats.counts[counter];
+    const count = stats.counts[counter] ?? 0;
     const limit = stats.limits[counter];
     const pct = (count / limit) * 100;
     const level = ALERT_LEVELS.filter((l) => pct >= l).pop();
