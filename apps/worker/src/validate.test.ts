@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { handleApi } from './app.js';
+import { handleApi as handle } from './app.js';
+import { makeDeps } from '../test/deps.js';
 import { get, postJson } from '../test/requests.js';
+
+const handleApi = (request: Request) => handle(request, makeDeps());
 
 const gangnam = { lat: 37.4979, lng: 127.0276 };
 const gyeongpo = { lat: 37.8055, lng: 128.9086 };

@@ -2,9 +2,39 @@
 //
 // 요청 본문·쿼리·좌표를 로그로 출력하지 않는다 (CLAUDE.md 절대 규칙 7).
 import { handleApi } from './app.js';
+import type { Deps } from './deps.js';
+import { fixtureUpstream } from './providers/fixtures.js';
+import { liveUpstream } from './upstream.js';
 
 interface Env {
   readonly ASSETS: Fetcher;
+  /** `live`(기본) 또는 `fixtures`. 로컬 개발은 .dev.vars에서 fixtures로 둔다. */
+  readonly UPSTREAM?: string;
+  readonly TURNSTILE_SECRET?: string;
+  readonly SESSION_SECRET?: string;
+  readonly RL_SESSION_IP?: RateLimit;
+  readonly RL_ROUTE_SESSION?: RateLimit;
+  readonly RL_ROUTE_IP?: RateLimit;
+  readonly RL_PLACES_SESSION?: RateLimit;
+  readonly RL_PLACES_IP?: RateLimit;
+}
+
+function depsFrom(env: Env): Deps {
+  return {
+    secrets: {
+      turnstileSecret: env.TURNSTILE_SECRET ?? '',
+      sessionSecret: env.SESSION_SECRET ?? '',
+    },
+    upstream: env.UPSTREAM === 'fixtures' ? fixtureUpstream : liveUpstream,
+    now: () => Date.now(),
+    limiters: {
+      sessionIp: env.RL_SESSION_IP,
+      routeSession: env.RL_ROUTE_SESSION,
+      routeIp: env.RL_ROUTE_IP,
+      placesSession: env.RL_PLACES_SESSION,
+      placesIp: env.RL_PLACES_IP,
+    },
+  };
 }
 
 export default {
@@ -12,7 +42,7 @@ export default {
     const { pathname } = new URL(request.url);
 
     if (pathname.startsWith('/api/')) {
-      return handleApi(request);
+      return handleApi(request, depsFrom(env));
     }
 
     // run_worker_first가 /api/* 만 지정하므로 여기까지 오는 것은
