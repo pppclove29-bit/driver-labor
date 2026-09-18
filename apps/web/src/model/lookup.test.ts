@@ -7,6 +7,7 @@ import {
   boundaryKey,
   fetchSegmentRoutes,
   fetchTripLookups,
+  routeNotice,
   segmentRoutePoints,
   sidoFromAddress,
 } from './lookup.js';
@@ -104,6 +105,13 @@ describe('경로 조회 반영', () => {
 
   it('오프라인(waiting) → pending(연결되면 다시 조회)', () => {
     expect(applyTripRoute(trip(), { ok: false, reason: 'waiting' }).routeLookup).toBe('pending');
+  });
+
+  it('화면 안내: 503이면 한도 안내(수동 입력), 대기면 조회 대기, 성공·입력 문제면 없음', () => {
+    expect(routeNotice(applyTripRoute(trip(), { ok: false, reason: 'limit' }))).toBe('limit');
+    expect(routeNotice(applyTripRoute(trip(), { ok: false, reason: 'waiting' }))).toBe('waiting');
+    expect(routeNotice(applyTripRoute(trip(), { ok: false, reason: 'invalid' }))).toBeNull();
+    expect(routeNotice(applyTripRoute(trip(), { ok: true, value: leg(1000) }))).toBeNull();
   });
 
   it('직접 고친 거리·통행료는 덮어쓰지 않는다', () => {

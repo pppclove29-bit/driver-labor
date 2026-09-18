@@ -33,5 +33,7 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    // `pnpm dev:web`으로 화면만 띄울 때 /api는 로컬 wrangler dev(fixtures 모드)로 보낸다.
+    proxy: { '/api': 'http://localhost:8788' },
   },
 });

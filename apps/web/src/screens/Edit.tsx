@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import { km, won } from '../model/format.js';
+import { LOOKUP_LIMIT_MESSAGE, routeNotice } from '../model/lookup.js';
 import { memberName } from '../model/trip.js';
 import type { AppTrip } from '../model/trip.js';
 import { Card, DefaultTag, Screen } from '../ui/parts.jsx';
@@ -67,6 +68,8 @@ export function Edit({
 
   const sourceOf = (field: string, fallback: 'default' | 'auto'): 'default' | 'auto' | 'manual' =>
     touched.has(field) ? 'manual' : fallback;
+  // 경로를 조회했으면 거리·통행료·택시요금은 "자동".
+  const routeSource = trip.routeSource ? 'auto' : 'default';
 
   return (
     <Screen
@@ -101,11 +104,16 @@ export function Edit({
       </Card>
 
       <Card label="거리와 경로">
+        {routeNotice(trip) === 'limit' ? (
+          <div className="note" style={{ marginBottom: 12 }}>
+            {LOOKUP_LIMIT_MESSAGE}
+          </div>
+        ) : null}
         <NumberField
           label="여행 거리"
           value={trip.route.distanceM / 1000}
           suffix="km"
-          source={sourceOf('distance', 'default')}
+          source={sourceOf('distance', routeSource)}
           onChange={(value) => {
             onChange(
               edited({
@@ -120,7 +128,7 @@ export function Edit({
           label="통행료"
           value={trip.route.tollWon}
           suffix="원"
-          source={sourceOf('toll', 'default')}
+          source={sourceOf('toll', routeSource)}
           onChange={(value) => {
             onChange(
               edited({
@@ -135,7 +143,7 @@ export function Edit({
           label="택시 예상요금"
           value={trip.route.taxiFareWon}
           suffix="원"
-          source={sourceOf('taxi', 'default')}
+          source={sourceOf('taxi', routeSource)}
           onChange={(value) => {
             onChange(
               edited({
@@ -187,7 +195,7 @@ export function Edit({
           label="유가"
           value={trip.fuelUnitPriceWon}
           suffix="원/L"
-          source={sourceOf('fuelPrice', 'default')}
+          source={sourceOf('fuelPrice', trip.fuelPriceAt ? 'auto' : 'default')}
           onChange={(value) => {
             onChange(
               edited({

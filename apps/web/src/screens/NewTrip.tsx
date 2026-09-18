@@ -3,23 +3,37 @@
 
 import { useState } from 'react';
 
+import type { PlaceRef } from '../api/client.js';
 import { Card, Chip, Screen } from '../ui/parts.jsx';
+import { PlaceSearch } from '../ui/PlaceSearch.jsx';
 
 const COMPANION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 
+export interface DepartParams {
+  origin: string;
+  destination: string;
+  originPlace?: PlaceRef | undefined;
+  destinationPlace?: PlaceRef | undefined;
+  companions: string[];
+}
+
 export function NewTrip({
   origin,
+  originPlace,
   recentCompanions,
   onBack,
   onDepart,
 }: {
   origin: string;
+  originPlace?: PlaceRef | undefined;
   recentCompanions: string[];
   onBack: () => void;
-  onDepart: (params: { origin: string; destination: string; companions: string[] }) => void;
+  onDepart: (params: DepartParams) => void;
 }) {
   const [destination, setDestination] = useState('');
+  const [destinationPlace, setDestinationPlace] = useState<PlaceRef>();
   const [from, setFrom] = useState(origin);
+  const [fromPlace, setFromPlace] = useState<PlaceRef | undefined>(originPlace);
   const [picked, setPicked] = useState<string[]>([]);
   const [anonymous, setAnonymous] = useState(0);
 
@@ -40,7 +54,13 @@ export function NewTrip({
           className="btn btn--primary"
           disabled={!canDepart}
           onClick={() => {
-            onDepart({ origin: from.trim() || '집', destination: destination.trim(), companions });
+            onDepart({
+              origin: from.trim() || '집',
+              destination: destination.trim(),
+              originPlace: fromPlace,
+              destinationPlace,
+              companions,
+            });
           }}
         >
           출발
@@ -48,29 +68,31 @@ export function NewTrip({
       }
     >
       <Card label="어디로 가나요">
-        <div className="field">
-          <input
-            value={destination}
-            placeholder="도착지"
-            onChange={(e) => {
-              setDestination(e.target.value);
-            }}
-          />
-        </div>
+        <PlaceSearch
+          value={destination}
+          place={destinationPlace}
+          placeholder="도착지"
+          onChange={(text, place) => {
+            setDestination(text);
+            setDestinationPlace(place);
+          }}
+        />
         {!canDepart ? <p className="screen__sub">어디로 가는지 알려주세요.</p> : null}
       </Card>
 
       <Card label="출발지">
-        <div className="field">
-          <input
-            value={from}
-            placeholder="집"
-            onChange={(e) => {
-              setFrom(e.target.value);
-            }}
-          />
-        </div>
-        <p className="screen__sub">기기 현재 위치로 채우지 않습니다.</p>
+        <PlaceSearch
+          value={from}
+          place={fromPlace}
+          placeholder="집"
+          onChange={(text, place) => {
+            setFrom(text);
+            setFromPlace(place);
+          }}
+        />
+        <p className="screen__sub">
+          기기 현재 위치로 채우지 않습니다. 출발지와 도착지를 목록에서 고르면 경로를 조회합니다.
+        </p>
       </Card>
 
       <Card label="같이 가는 사람">

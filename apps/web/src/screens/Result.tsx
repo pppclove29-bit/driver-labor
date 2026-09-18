@@ -7,11 +7,19 @@ import { useState } from 'react';
 import { buildResultLink } from '../model/link.js';
 
 import { duration, km, signedWon, won } from '../model/format.js';
+import { LOOKUP_LIMIT_MESSAGE, LOOKUP_WAITING_MESSAGE, routeNotice } from '../model/lookup.js';
 import { memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip, Tone } from '../model/trip.js';
 import { justification, penaltyReason, receiptTitle, shareText, TONES } from '../model/tone.js';
 import { AdCard } from '../ui/AdCard.jsx';
 import { Card, DefaultTag, Screen } from '../ui/parts.jsx';
+
+/** 계산 근거의 경로 출처. 두 회사의 택시요금·통행료 추정값은 조금 다를 수 있다. */
+function sourceLabel(trip: AppTrip): string {
+  if (trip.routeSource === 'kakao') return '카카오';
+  if (trip.routeSource === 'tmap') return 'TMAP';
+  return '기본값(운전 시간으로 어림)';
+}
 
 export function Result({
   trip,
@@ -67,9 +75,9 @@ export function Result({
   const defaultsLeft = [
     ...(edited.has('efficiency') ? [] : ['연비']),
     ...(edited.has('wage') ? [] : ['기준 시급']),
-    ...(edited.has('distance') ? [] : ['거리']),
-    ...(edited.has('toll') ? [] : ['통행료']),
-    ...(edited.has('fuelPrice') ? [] : ['유가']),
+    ...(edited.has('distance') || trip.routeSource ? [] : ['거리']),
+    ...(edited.has('toll') || trip.routeSource ? [] : ['통행료']),
+    ...(edited.has('fuelPrice') || trip.fuelPriceAt ? [] : ['유가']),
   ];
   const overDistance =
     result.segments.reduce((a, s) => a + s.driveMinutes, 0) > input.route.expectedMinutes * 1.3;
@@ -168,6 +176,16 @@ export function Result({
         <div className="note">이미 공유한 링크는 예전 결과예요. 새 링크를 공유하세요.</div>
       ) : null}
 
+      {routeNotice(trip) === 'limit' ? (
+        <div className="note">
+          {LOOKUP_LIMIT_MESSAGE} 거리·통행료는 고치기에서 넣으면 금액이 바로 바뀝니다.
+        </div>
+      ) : null}
+
+      {routeNotice(trip) === 'waiting' ? (
+        <div className="note">{LOOKUP_WAITING_MESSAGE}</div>
+      ) : null}
+
       {overDistance ? (
         <div className="note">경로보다 멀리 돌았나요? 고치기에서 거리를 바꿔 보세요.</div>
       ) : null}
@@ -196,6 +214,10 @@ export function Result({
 
       {showBasis ? (
         <Card label="구간별">
+          <p className="dim" style={{ margin: 0 }}>
+            조회: {sourceLabel(trip)} · 유가 {won(trip.fuelUnitPriceWon)}/L
+            {trip.fuelPriceAt ? ` (${trip.fuelRegion ?? ''} 평균)` : ' (기본값)'}
+          </p>
           {result.segments.map((s) => (
             <div key={s.index} style={{ borderBottom: '1px solid var(--line)', padding: '8px 0' }}>
               <p style={{ margin: 0 }}>

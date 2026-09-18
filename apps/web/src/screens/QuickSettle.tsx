@@ -3,9 +3,11 @@
 
 import { useState } from 'react';
 
+import type { PlaceRef } from '../api/client.js';
 import { newTrip } from '../model/trip.js';
 import type { AppTrip } from '../model/trip.js';
 import { Card, Chip, Screen } from '../ui/parts.jsx';
+import { PlaceSearch } from '../ui/PlaceSearch.jsx';
 
 const REST_CHIPS = [
   { minutes: 0, label: '안 쉼' },
@@ -21,15 +23,18 @@ function todayAt(time: string, date: string): string {
 
 export function QuickSettle({
   origin,
+  originPlace,
   onBack,
   onSettle,
 }: {
   origin: string;
+  originPlace?: PlaceRef | undefined;
   onBack: () => void;
   onSettle: (trip: AppTrip) => void;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [destination, setDestination] = useState('');
+  const [destinationPlace, setDestinationPlace] = useState<PlaceRef>();
   const [date, setDate] = useState(today);
   const [departTime, setDepartTime] = useState('09:00');
   const [arriveTime, setArriveTime] = useState('12:00');
@@ -46,6 +51,8 @@ export function QuickSettle({
       now: departAt,
       origin,
       destination: destination.trim(),
+      originPlace,
+      destinationPlace,
       driverName: '나',
       // 이름 대신 동승자 A, B, C로 만든다. 이름은 결과 화면에서 바꾼다.
       companionNames: Array.from(
@@ -75,15 +82,15 @@ export function QuickSettle({
       }
     >
       <Card label="어디로 갔나요">
-        <div className="field">
-          <input
-            value={destination}
-            placeholder="도착지"
-            onChange={(e) => {
-              setDestination(e.target.value);
-            }}
-          />
-        </div>
+        <PlaceSearch
+          value={destination}
+          place={destinationPlace}
+          placeholder="도착지"
+          onChange={(text, place) => {
+            setDestination(text);
+            setDestinationPlace(place);
+          }}
+        />
       </Card>
 
       <Card label="몇 명이 탔나요">

@@ -2,8 +2,10 @@
 // 필수 탭은 여행 한 건에 약 5회 (spec-screens.md "입력 최소화").
 
 import type { Storage } from '@dl/storage';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { api } from './api/index.js';
+import { fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
 import { newTrip, withEstimatedRoute } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
@@ -11,7 +13,7 @@ import { Difficulty } from './screens/Difficulty.jsx';
 import { EtcPenalty } from './screens/EtcPenalty.jsx';
 import { Edit } from './screens/Edit.jsx';
 import { Home } from './screens/Home.jsx';
-import { NewTrip } from './screens/NewTrip.jsx';
+import { NewTrip, type DepartParams } from './screens/NewTrip.jsx';
 import { PenaltyReview } from './screens/PenaltyReview.jsx';
 import { QuickSettle } from './screens/QuickSettle.jsx';
 import { Timeline } from './screens/Timeline.jsx';
@@ -38,7 +40,7 @@ type ScreenId =
 
 export function App({ storage }: { storage?: Storage }) {
   useTheme();
-  const { ready, trips, preferences, save, savePreferences } = useTrips(storage);
+  const { ready, trips, preferences, save, patch, savePreferences } = useTrips(storage);
   const [screen, setScreen] = useState<ScreenId>('home');
   const [activeId, setActiveId] = useState<string>();
   const [toast, setToast] = useState<ToastState>();
@@ -56,6 +58,28 @@ export function App({ storage }: { storage?: Storage }) {
     [save],
   );
 
+  /** 출발(또는 빠른 정산) 직후 경로 1회·유가 1회 조회. 결과는 그 사이 바뀐 최신 여행에 얹는다. */
+  const lookUp = useCallback(
+    (t: AppTrip) => {
+      void fetchTripLookups(api, t).then((apply) => patch(t.id, apply));
+    },
+    [patch],
+  );
+
+  // 오프라인이라 미룬 조회(조회 대기)는 앱을 열 때와 연결이 돌아올 때 다시 한다.
+  useEffect(() => {
+    if (!ready) return;
+    const retry = (): void => {
+      for (const t of trips) if (t.routeLookup === 'pending') lookUp(t);
+    };
+    retry();
+    window.addEventListener('online', retry);
+    return () => {
+      window.removeEventListener('online', retry);
+    };
+    // 준비됐을 때 한 번과 online 이벤트에서만. trips가 바뀔 때마다 다시 부르지 않는다.
+  }, [ready]);
+
   const open = (t: AppTrip): void => {
     setActiveId(t.id);
     setScreen(t.status === 'settled' ? 'result' : t.status === 'arrived' ? 'arrival' : 'record');
@@ -66,25 +90,31 @@ export function App({ storage }: { storage?: Storage }) {
   const startTrip = ({
     origin,
     destination,
+    originPlace,
+    destinationPlace,
     companions,
-  }: {
-    origin: string;
-    destination: string;
-    companions: string[];
-  }): void => {
+  }: DepartParams): void => {
     const created = newTrip({
       id: `t${String(Date.now())}`,
       now: new Date().toISOString(),
       origin,
       destination,
+      originPlace,
+      destinationPlace,
       driverName: '나',
       companionNames: companions,
     });
     created.settings = { ...preferences.settings };
     created.tone = preferences.lastTone;
-    void save(created);
+    void save(created).then(() => {
+      lookUp(created);
+    });
+    const prefs = { ...preferences };
+    // 출발지를 글자로만 바꿨으면 예전 장소 좌표를 버린다.
+    if (originPlace) prefs.recentOriginPlace = originPlace;
+    else delete prefs.recentOriginPlace;
     void savePreferences({
-      ...preferences,
+      ...prefs,
       recentOrigin: origin,
       recentCompanions: [
         ...new Set([
@@ -102,6 +132,7 @@ export function App({ storage }: { storage?: Storage }) {
       return (
         <NewTrip
           origin={preferences.recentOrigin}
+          originPlace={preferences.recentOriginPlace}
           recentCompanions={preferences.recentCompanions}
           onBack={() => {
             setScreen('home');
@@ -114,13 +145,17 @@ export function App({ storage }: { storage?: Storage }) {
       return (
         <QuickSettle
           origin={preferences.recentOrigin}
+          originPlace={preferences.recentOriginPlace}
           onBack={() => {
             setScreen('home');
           }}
           onSettle={(created) => {
             created.settings = { ...preferences.settings };
             created.tone = preferences.lastTone;
-            void save(withEstimatedRoute(created));
+            const estimated = withEstimatedRoute(created);
+            void save(estimated).then(() => {
+              lookUp(estimated);
+            });
             setActiveId(created.id);
             setScreen('result');
           }}

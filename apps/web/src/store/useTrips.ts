@@ -2,8 +2,9 @@
 // 저장은 IndexedDB(폰) 뿐이다. 여행 내용은 서버로 보내지 않는다 (CLAUDE.md 절대 규칙 1).
 
 import { createIndexedDbStorage, type Storage } from '@dl/storage';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import type { PlaceRef } from '../api/client.js';
 import type { AppTrip, TripSettings } from '../model/trip.js';
 import { DEFAULT_SETTINGS } from '../model/trip.js';
 
@@ -12,6 +13,8 @@ export interface Preferences {
   /** 최근 함께한 사람 이름. 동승자 칩에 쓴다. */
   recentCompanions: string[];
   recentOrigin: string;
+  /** 최근 출발지를 검색해서 골랐으면 그 장소. 폰에만 저장한다. */
+  recentOriginPlace?: PlaceRef;
   lastTone: AppTrip['tone'];
 }
 
@@ -27,6 +30,8 @@ export interface TripStore {
   trips: AppTrip[];
   preferences: Preferences;
   save: (trip: AppTrip) => Promise<void>;
+  /** 저장된 최신 여행에 변경을 얹는다. 조회처럼 늦게 끝나는 작업이 그 사이 입력을 덮어쓰지 않게. */
+  patch: (id: string, change: (latest: AppTrip) => AppTrip) => Promise<void>;
   remove: (id: string) => Promise<void>;
   savePreferences: (next: Preferences) => Promise<void>;
 }
@@ -35,6 +40,8 @@ export function useTrips(storage?: Storage): TripStore {
   const db = useMemo(() => storage ?? createIndexedDbStorage(), [storage]);
   const [ready, setReady] = useState(false);
   const [trips, setTrips] = useState<AppTrip[]>([]);
+  const latest = useRef<AppTrip[]>([]);
+  latest.current = trips;
   const [preferences, setPreferences] = useState<Preferences>(DEFAULT_PREFERENCES);
 
   useEffect(() => {
@@ -57,11 +64,22 @@ export function useTrips(storage?: Storage): TripStore {
       setTrips((prev) => {
         const next = prev.filter((t) => t.id !== trip.id);
         next.push(trip);
-        return next.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        const sorted = next.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        latest.current = sorted;
+        return sorted;
       });
       await db.put('trips', trip.id, trip);
     },
     [db],
+  );
+
+  const patch = useCallback(
+    async (id: string, change: (trip: AppTrip) => AppTrip) => {
+      const current = latest.current.find((t) => t.id === id);
+      if (!current) return;
+      await save(change(current));
+    },
+    [save],
   );
 
   const remove = useCallback(
@@ -80,5 +98,5 @@ export function useTrips(storage?: Storage): TripStore {
     [db],
   );
 
-  return { ready, trips, preferences, save, remove, savePreferences };
+  return { ready, trips, preferences, save, patch, remove, savePreferences };
 }

@@ -19,6 +19,17 @@ import type { AppTrip } from './trip.js';
 export const LOOKUP_LIMIT_MESSAGE = '오늘 자동 조회 한도에 닿았어요. 직접 입력해 주세요.';
 export const LOOKUP_WAITING_MESSAGE = '조회 대기 중이에요. 연결되면 다시 조회합니다.';
 
+/**
+ * 결과·고치기 화면에 띄울 경로 조회 안내.
+ * limit: 한도 안내 + 거리·통행료 수동 입력. waiting: 조회 대기(연결되면 다시 조회).
+ */
+export function routeNotice(trip: AppTrip): 'limit' | 'waiting' | null {
+  if (trip.routeSource) return null;
+  if (trip.routeLookup === 'limit') return 'limit';
+  if (trip.routeLookup === 'pending') return 'waiting';
+  return null;
+}
+
 /** 오피넷 시·도 코드. 주소 첫 단어로 판단한다(서버에는 코드만 간다). */
 const SIDO: [RegExp, string, string][] = [
   [/^서울/, '01', '서울'],
