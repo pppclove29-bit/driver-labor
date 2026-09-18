@@ -33,7 +33,12 @@ function kakaoDirections(url: URL): Response {
   if (origin === destination) {
     return json({
       trans_id: 'fixture-same-point',
-      routes: [{ result_code: 104, result_msg: '출발지와 도착지가 5 m 이내로 설정된 경우 경로를 탐색할 수 없음' }],
+      routes: [
+        {
+          result_code: 104,
+          result_msg: '출발지와 도착지가 5 m 이내로 설정된 경우 경로를 탐색할 수 없음',
+        },
+      ],
     });
   }
   if (near(origin, FIXTURE_POINTS.gangnam) && near(destination, FIXTURE_POINTS.wonju)) {
@@ -61,7 +66,9 @@ export const fixtureUpstream: Upstream = async (request) => {
       const form = await request.formData();
       const token = form.get('response');
       const ok = typeof token === 'string' && token.length > 0 && token !== 'invalid';
-      return json(ok ? { success: true } : { success: false, 'error-codes': ['invalid-input-response'] });
+      return json(
+        ok ? { success: true } : { success: false, 'error-codes': ['invalid-input-response'] },
+      );
     }
     case 'discord.com/api/webhooks/fixture':
       return new Response(null, { status: 204 });
