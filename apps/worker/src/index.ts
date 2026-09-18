@@ -5,6 +5,8 @@ import { handleApi } from './app.js';
 import { BudgetCounter } from './budget/BudgetCounter.js';
 import { RouteCache } from './cache/RouteCache.js';
 import { Control } from './control.js';
+import { runCron } from './cron.js';
+import { FuelReader } from './fuel.js';
 import type { Deps } from './deps.js';
 import { fixtureUpstream } from './providers/fixtures.js';
 import { liveUpstream } from './upstream.js';
@@ -21,6 +23,9 @@ interface Env {
   readonly CACHE_SECRET?: string;
   readonly KAKAO_REST_KEY?: string;
   readonly TMAP_APP_KEY?: string;
+  readonly OPINET_KEY?: string;
+  /** 디스코드 웹훅 URL */
+  readonly ALERT_WEBHOOK_URL?: string;
   readonly RL_SESSION_IP?: RateLimit;
   readonly RL_ROUTE_SESSION?: RateLimit;
   readonly RL_ROUTE_IP?: RateLimit;
@@ -30,10 +35,15 @@ interface Env {
 
 // isolate마다 하나. KV 값 메모리 캐시(60초)를 요청 사이에 공유한다.
 let control: Control | undefined;
+let fuel: FuelReader | undefined;
+
+const upstreamFrom = (env: Env) => (env.UPSTREAM === 'fixtures' ? fixtureUpstream : liveUpstream);
 
 function depsFrom(env: Env): Deps {
   control ??= new Control(env.CTRL, () => Date.now());
+  fuel ??= new FuelReader(env.CTRL, () => Date.now());
   return {
+    fuel,
     control,
     budget: env.BUDGET.getByName('global'),
     routeCache: env.ROUTE_CACHE.getByName('route'),
@@ -44,7 +54,7 @@ function depsFrom(env: Env): Deps {
       kakaoKey: env.KAKAO_REST_KEY ?? '',
       tmapKey: env.TMAP_APP_KEY ?? '',
     },
-    upstream: env.UPSTREAM === 'fixtures' ? fixtureUpstream : liveUpstream,
+    upstream: upstreamFrom(env),
     now: () => Date.now(),
     limiters: {
       sessionIp: env.RL_SESSION_IP,
@@ -69,5 +79,20 @@ export default {
     // run_worker_first가 /api/* 만 지정하므로 여기까지 오는 것은
     // 정적 자산에서 찾지 못한 경로뿐이다.
     return env.ASSETS.fetch(request);
+  },
+
+  async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(
+      runCron(
+        {
+          upstream: upstreamFrom(env),
+          kv: env.CTRL,
+          budget: env.BUDGET.getByName('global'),
+          opinetKey: env.OPINET_KEY ?? '',
+          alertWebhookUrl: env.ALERT_WEBHOOK_URL ?? '',
+        },
+        controller.scheduledTime,
+      ),
+    );
   },
 } satisfies ExportedHandler<Env>;

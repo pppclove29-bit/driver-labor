@@ -2,6 +2,7 @@
 import type { BudgetPort } from './budget/BudgetCounter.js';
 import type { CachePort } from './cache/RouteCache.js';
 import type { Control } from './control.js';
+import type { FuelReader } from './fuel.js';
 import type { Limiters } from './ratelimit.js';
 import type { Upstream } from './upstream.js';
 
@@ -24,4 +25,5 @@ export interface Deps {
   readonly control: Control;
   readonly budget: BudgetPort;
   readonly routeCache: CachePort;
+  readonly fuel: FuelReader;
 }

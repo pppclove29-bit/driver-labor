@@ -2,6 +2,7 @@
 import { BudgetCounter } from '../src/budget/BudgetCounter.js';
 import { RouteCache } from '../src/cache/RouteCache.js';
 import { Control } from '../src/control.js';
+import { FuelReader } from '../src/fuel.js';
 import type { Deps } from '../src/deps.js';
 import { fixtureUpstream } from '../src/providers/fixtures.js';
 import { fakeCtx, FakeKV } from './fakes.js';
@@ -20,6 +21,7 @@ export const SECRETS = {
 export function makeDeps(overrides: Partial<Deps> = {}, kv = new FakeKV()): Deps {
   return {
     control: new Control(kv.asKV(), () => NOW),
+    fuel: new FuelReader(kv.asKV(), () => NOW),
     budget: new BudgetCounter(fakeCtx(), {}),
     routeCache: new RouteCache(fakeCtx(), {}),
     secrets: SECRETS,

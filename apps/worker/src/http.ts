@@ -9,8 +9,7 @@ export type ErrorCode =
   | 'route_not_found' // 422 제공자가 경로를 못 찾음(출발·도착이 너무 가까움 등)
   | 'rate_limited' // 429 ④ 분당 제한
   | 'session_limit' // 429 ⑥ 세션 하루 한도
-  | 'auto_lookup_unavailable' // 503 예산 소진·비상 스위치·제공자 모두 장애
-  | 'not_implemented'; // 501
+  | 'auto_lookup_unavailable'; // 503 예산 소진·비상 스위치·제공자 모두 장애
 
 const STATUS: Record<ErrorCode, number> = {
   invalid_input: 400,
@@ -22,7 +21,6 @@ const STATUS: Record<ErrorCode, number> = {
   rate_limited: 429,
   session_limit: 429,
   auto_lookup_unavailable: 503,
-  not_implemented: 501,
 };
 
 export const json = (body: unknown, status = 200): Response =>

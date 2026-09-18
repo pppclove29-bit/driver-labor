@@ -32,6 +32,8 @@
     ],
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BudgetCounter", "RouteCache"] }],
+  // 매시 정각: 사용률 알림, KST 0·6·12·18시에는 유가 갱신도 (무료 계정당 Cron 5개 중 1개).
+  "triggers": { "crons": ["0 * * * *"] },
   // 분당 제한 (Rate Limiting 바인딩). 무료 플랜에서 못 쓰면 이 블록을 지운다.
   // 바인딩이 없으면 세션 분당 제한은 BudgetCounter가 대신 센다.
   "ratelimits": [

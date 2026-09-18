@@ -5,29 +5,19 @@
 //
 // 요청 본문·쿼리·좌표를 로그로 출력하지 않는다 (CLAUDE.md 절대 규칙 7).
 import type { Deps } from './deps.js';
-import { guard } from './guard.js';
 import { fail } from './http.js';
+import { handleFuelAvg } from './routes/fuel.js';
 import { handlePlaces } from './routes/places.js';
 import { handleRoute } from './routes/route.js';
 import { handleSession } from './routes/session.js';
-import { parseFuelQuery } from './validate.js';
 
 type Handler = (request: Request, url: URL, deps: Deps) => Promise<Response>;
-
-const notYet = async (): Promise<Response> => fail('not_implemented');
 
 const handlers: Record<string, Partial<Record<string, Handler>>> = {
   '/api/session': { POST: handleSession },
   '/api/route': { POST: handleRoute },
   '/api/places': { GET: handlePlaces },
-  '/api/fuel/avg': {
-    GET: async (request, url, deps) => {
-      if (parseFuelQuery(url) === null) return fail('invalid_input');
-      const sid = await guard(request, deps, null);
-      if (sid instanceof Response) return sid;
-      return notYet();
-    },
-  },
+  '/api/fuel/avg': { GET: handleFuelAvg },
 };
 
 export async function handleApi(request: Request, deps: Deps): Promise<Response> {
