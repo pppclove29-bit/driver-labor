@@ -90,6 +90,7 @@ export default {
           budget: env.BUDGET.getByName('global'),
           opinetKey: env.OPINET_KEY ?? '',
           alertWebhookUrl: env.ALERT_WEBHOOK_URL ?? '',
+          refreshFuelEveryRun: env.UPSTREAM === 'fixtures',
         },
         controller.scheduledTime,
       ),

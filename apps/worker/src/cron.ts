@@ -29,6 +29,8 @@ export interface CronDeps {
   readonly opinetKey: string;
   /** 디스코드 웹훅 URL (secret). 없으면 알림을 보내지 않는다. */
   readonly alertWebhookUrl: string;
+  /** fixtures 모드(로컬 dev)에서는 시각과 상관없이 매번 유가를 채운다. */
+  readonly refreshFuelEveryRun?: boolean;
 }
 
 export async function refreshFuel(deps: CronDeps, scheduledMs: number): Promise<void> {
@@ -85,6 +87,8 @@ export async function checkUsage(deps: CronDeps): Promise<void> {
 }
 
 export async function runCron(deps: CronDeps, scheduledMs: number): Promise<void> {
-  if (FUEL_REFRESH_HOURS.includes(kstHour(scheduledMs))) await refreshFuel(deps, scheduledMs);
+  if (deps.refreshFuelEveryRun || FUEL_REFRESH_HOURS.includes(kstHour(scheduledMs))) {
+    await refreshFuel(deps, scheduledMs);
+  }
   await checkUsage(deps);
 }

@@ -1,0 +1,18 @@
+# 로컬 개발용 값. `pnpm dev:worker`가 .dev.vars가 없으면 이 파일을 복사한다.
+# 유가표는 Cron이 채운다. 로컬에서는 http://localhost:8788/__scheduled?cron=0+*+*+*+* 를 한 번 열면
+# fixtures 유가가 들어간다(fixtures 모드는 시각과 상관없이 매번 갱신).
+# .dev.vars는 커밋하지 않는다(.gitignore). 운영 값은 `wrangler secret put`으로만 넣는다.
+
+# 외부 API 대신 fixtures/ 샘플 응답을 쓴다 (CLAUDE.md 절대 규칙 8).
+UPSTREAM=fixtures
+
+# Cloudflare Turnstile 공개 테스트 secret (항상 통과). fixtures 모드에서는 쓰이지 않는다.
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+SESSION_SECRET=local-dev-session-secret
+CACHE_SECRET=local-dev-cache-secret
+
+# fixtures 모드에서는 비워 둔다. 실제 키를 여기에 넣지 않는다.
+KAKAO_REST_KEY=
+TMAP_APP_KEY=
+OPINET_KEY=
+ALERT_WEBHOOK_URL=https://discord.com/api/webhooks/fixture
