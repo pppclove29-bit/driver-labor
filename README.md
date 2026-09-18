@@ -34,7 +34,7 @@ docs/decisions.md와 충돌하거나 애매한 부분이 있으면 먼저 질문
 | `docs/architecture.md` | 시스템 설계 |
 | `docs/decisions.md` | 결정, 확인 사항, 광고, 로드맵 |
 | `mockups/final.html` | 전체 기획서·목업 원본 |
-| `fixtures/` | 외부 API 샘플 응답을 둘 곳 (M3에서 작성) |
+| `fixtures/` | 외부 API 샘플 응답 (카카오·TMAP·오피넷) |
 
 ## 사람이 직접 해야 하는 일
 
