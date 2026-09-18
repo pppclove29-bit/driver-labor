@@ -3,11 +3,29 @@
 
 import type { TripEvent } from '@dl/calc';
 import { buildSegments } from '@dl/calc';
+import { useState } from 'react';
 
+import type { PlaceRef } from '../api/client.js';
 import { clock, duration, km, won } from '../model/format.js';
+import { boundaryKey } from '../model/lookup.js';
 import { currentRiders, memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip } from '../model/trip.js';
 import { Card, Screen } from '../ui/parts.jsx';
+import { PlaceSearch } from '../ui/PlaceSearch.jsx';
+
+/** 구간 경계가 되는 기록. 여기에만 장소를 붙인다. */
+const isBoundary = (e: TripEvent): boolean =>
+  e.type === 'dropoff' || e.type === 'pickup' || e.type === 'driverChange';
+
+/** 경계 장소를 새 키로 옮기거나 지운다. */
+function movePlace(trip: AppTrip, fromAt: string, toAt: string | null): AppTrip {
+  const places = { ...(trip.boundaryPlaces ?? {}) };
+  const place = places[boundaryKey(fromAt)];
+  if (!place) return trip;
+  delete places[boundaryKey(fromAt)];
+  if (toAt) places[boundaryKey(toAt)] = place;
+  return { ...trip, boundaryPlaces: places };
+}
 
 function label(trip: AppTrip, event: TripEvent): string {
   switch (event.type) {
@@ -31,12 +49,34 @@ function label(trip: AppTrip, event: TripEvent): string {
 export function Timeline({
   trip,
   onChange,
+  onPlacesChange,
   onBack,
 }: {
   trip: AppTrip;
   onChange: (next: AppTrip) => void;
+  /** 경계 장소나 경계 시각이 바뀌면 구간별 재조회(또는 재조회 값 지우기). */
+  onPlacesChange: (next: AppTrip) => void;
   onBack: () => void;
 }) {
+  const [searching, setSearching] = useState<string>();
+  const [query, setQuery] = useState('');
+  const canRequery = Boolean(trip.originPlace && trip.destinationPlace);
+
+  /** 저장하고, 경계 장소가 걸려 있으면 재조회. */
+  const commit = (next: AppTrip, placesTouched: boolean): void => {
+    onChange(next);
+    if (placesTouched) onPlacesChange(next);
+  };
+
+  const pickPlace = (at: string, place: PlaceRef): void => {
+    setSearching(undefined);
+    setQuery('');
+    commit({ ...trip, boundaryPlaces: { ...trip.boundaryPlaces, [boundaryKey(at)]: place } }, true);
+  };
+
+  const clearPlace = (at: string): void => {
+    commit(movePlace(trip, at, null), true);
+  };
   const sorted = [...trip.events].sort((a, b) => a.at.localeCompare(b.at));
   const segments = buildSegments(toTripInput(trip));
   const riders = currentRiders(trip);
@@ -49,20 +89,29 @@ export function Timeline({
     const [h, m] = time.split(':');
     base.setHours(Number(h), Number(m), 0, 0);
     const at = base.toISOString();
-    onChange({
-      ...trip,
-      events: trip.events.map((e) => (e === target ? { ...e, at } : e)),
-    });
+    const moved = isBoundary(target) ? movePlace(trip, target.at, at) : trip;
+    commit(
+      { ...moved, events: trip.events.map((e) => (e === target ? { ...e, at } : e)) },
+      isBoundary(target) && Boolean(trip.boundaryPlaces || trip.segmentRoutes),
+    );
   };
 
   const remove = (index: number): void => {
     const target = sorted[index];
     if (!target || target.type === 'depart' || target.type === 'arrive') return;
-    onChange({ ...trip, events: trip.events.filter((e) => e !== target) });
+    const moved = isBoundary(target) ? movePlace(trip, target.at, null) : trip;
+    commit(
+      { ...moved, events: trip.events.filter((e) => e !== target) },
+      isBoundary(target) && Boolean(trip.boundaryPlaces || trip.segmentRoutes),
+    );
   };
 
   const addEvent = (event: TripEvent): void => {
-    onChange({ ...trip, events: [...trip.events, event] });
+    // 경계가 늘면 재조회 값의 구간 수가 맞지 않으므로 다시 판단한다.
+    commit(
+      { ...trip, events: [...trip.events, event] },
+      isBoundary(event) && Boolean(trip.segmentRoutes),
+    );
   };
 
   // 새 기록은 여행 한가운데 시각으로 넣고, 사용자가 시각을 고친다.
@@ -85,33 +134,77 @@ export function Timeline({
       }
     >
       <Card label="기록">
-        {sorted.map((event, index) => (
-          <div key={`${event.type}-${event.at}-${String(index)}`} className="row">
-            <span>
-              <input
-                type="time"
-                value={clock(event.at)}
-                style={{ minHeight: 44, marginRight: 8 }}
-                onChange={(e) => {
-                  setTime(index, e.target.value);
-                }}
-              />
-              {label(trip, event)}
-            </span>
-            {event.type !== 'depart' && event.type !== 'arrive' ? (
-              <button
-                type="button"
-                className="btn btn--ghost"
-                aria-label="기록 지우기"
-                onClick={() => {
-                  remove(index);
-                }}
-              >
-                ✕
-              </button>
-            ) : null}
-          </div>
-        ))}
+        {sorted.map((event, index) => {
+          const key = `${event.type}-${event.at}-${String(index)}`;
+          const place = isBoundary(event)
+            ? trip.boundaryPlaces?.[boundaryKey(event.at)]
+            : undefined;
+          return (
+            <div key={key}>
+              <div className="row">
+                <span>
+                  <input
+                    type="time"
+                    value={clock(event.at)}
+                    style={{ minHeight: 44, marginRight: 8 }}
+                    onChange={(e) => {
+                      setTime(index, e.target.value);
+                    }}
+                  />
+                  {label(trip, event)}
+                </span>
+                {event.type !== 'depart' && event.type !== 'arrive' ? (
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    aria-label="기록 지우기"
+                    onClick={() => {
+                      remove(index);
+                    }}
+                  >
+                    ✕
+                  </button>
+                ) : null}
+              </div>
+              {isBoundary(event) && canRequery ? (
+                <div className="chips" style={{ margin: '6px 0' }}>
+                  <button
+                    type="button"
+                    className="chip"
+                    aria-pressed={Boolean(place)}
+                    onClick={() => {
+                      setSearching(searching === key ? undefined : key);
+                      setQuery('');
+                    }}
+                  >
+                    📍 {place ? place.name : '장소 고르기'}
+                  </button>
+                  {place ? (
+                    <button
+                      type="button"
+                      className="chip"
+                      onClick={() => {
+                        clearPlace(event.at);
+                      }}
+                    >
+                      장소 지우기
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+              {searching === key ? (
+                <PlaceSearch
+                  value={query}
+                  placeholder="휴게소·역 이름"
+                  onChange={(text, picked) => {
+                    if (picked) pickPlace(event.at, picked);
+                    else setQuery(text);
+                  }}
+                />
+              ) : null}
+            </div>
+          );
+        })}
       </Card>
 
       <Card label="기록 추가">
@@ -169,7 +262,11 @@ export function Timeline({
           </div>
         ))}
         <p className="screen__sub">
-          하차 장소를 고르면 경로를 다시 조회해 구간 거리를 확정합니다. 장소 검색은 다음 단계에서.
+          {!canRequery
+            ? '출발지·도착지를 목록에서 고른 여행만 구간 경로를 다시 조회할 수 있어요. 지금은 운전 시간 비율로 거리를 나눕니다.'
+            : trip.segmentRoutes?.length === segments.length
+              ? '하차 장소로 구간 경로를 다시 조회했어요.'
+              : '하차·합류·교대 장소를 모두 고르면 구간 경로를 다시 조회해 거리를 확정합니다. 고르지 않으면 운전 시간 비율로 나눕니다.'}
         </p>
       </Card>
     </Screen>

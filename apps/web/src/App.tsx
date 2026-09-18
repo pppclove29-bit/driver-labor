@@ -5,7 +5,7 @@ import type { Storage } from '@dl/storage';
 import { useCallback, useEffect, useState } from 'react';
 
 import { api } from './api/index.js';
-import { fetchTripLookups } from './model/lookup.js';
+import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
 import { newTrip, withEstimatedRoute } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
@@ -62,6 +62,14 @@ export function App({ storage }: { storage?: Storage }) {
   const lookUp = useCallback(
     (t: AppTrip) => {
       void fetchTripLookups(api, t).then((apply) => patch(t.id, apply));
+    },
+    [patch],
+  );
+
+  /** 하차 장소를 고르거나 지우면 구간별 재조회. */
+  const lookUpSegments = useCallback(
+    (t: AppTrip) => {
+      void fetchSegmentRoutes(api, t).then((apply) => patch(t.id, apply));
     },
     [patch],
   );
@@ -265,6 +273,7 @@ export function App({ storage }: { storage?: Storage }) {
         <Timeline
           trip={trip}
           onChange={update}
+          onPlacesChange={lookUpSegments}
           onBack={() => {
             setScreen('arrival');
           }}

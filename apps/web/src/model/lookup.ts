@@ -2,7 +2,7 @@
 // 금액은 계산하지 않는다. 조회값을 계산 엔진 입력(RouteInfo·유가 단가)으로 옮길 뿐이다.
 
 import type { RouteInfo } from '@dl/calc';
-import { buildSegments } from '@dl/calc';
+import { buildSegments, epochMin } from '@dl/calc';
 
 import type {
   ApiClient,
@@ -137,7 +137,7 @@ export async function fetchTripLookups(
 }
 
 /** 경계 시각(epoch 분) 키. buildSegments와 같은 단위. */
-export const boundaryKey = (at: string): string => String(Math.floor(Date.parse(at) / 60000));
+export const boundaryKey = (at: string): string => String(epochMin(at));
 
 /**
  * 구간별 재조회 좌표: 출발 → 경계 장소들 → 도착.
