@@ -32,7 +32,8 @@ docs/decisions.md와 충돌하거나 애매한 부분이 있으면 먼저 질문
 | `docs/spec-calc.md` | 계산 명세 |
 | `docs/spec-screens.md` | 화면 명세 (S1~S11 동작 규칙) |
 | `docs/architecture.md` | 시스템 설계 |
-| `docs/decisions.md` | 결정, 확인 사항, 광고, 로드맵 |
+| `docs/decisions.md` | 결정, 확인 사항, 로드맵 |
+| `docs/store-release.md` | 스토어 출시 준비(키스토어, 등록정보 문구, 데이터 보안, 개인정보처리방침 초안) |
 | `mockups/final.html` | 전체 기획서·목업 원본 |
 | `fixtures/` | 외부 API 샘플 응답 (카카오·TMAP·오피넷) |
 
