@@ -3,10 +3,12 @@
 import { buildSegments, computeDifficulty, settleTrip } from '@dl/calc';
 import type { FeelScore, Weather } from '@dl/calc';
 
+import type { PlaceRef } from '../api/client.js';
 import { duration, won } from '../model/format.js';
 import { memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip } from '../model/trip.js';
 import { Card, Chip, Screen } from '../ui/parts.jsx';
+import { PlaceSearch } from '../ui/PlaceSearch.jsx';
 
 /** 도착 요약의 체감 3단계는 1·3·5점으로 저장한다 (해석 7). */
 const FEEL_CHIPS: { score: FeelScore; label: string }[] = [
@@ -23,6 +25,8 @@ const WEATHER_CHIPS: { id: Weather; label: string }[] = [
 export function Arrival({
   trip,
   onChange,
+  onPlace,
+  onPeople,
   onSettle,
   onBack,
   onOpenPenalties,
@@ -31,6 +35,9 @@ export function Arrival({
 }: {
   trip: AppTrip;
   onChange: (next: AppTrip) => void;
+  /** 출발지·도착지 입력. 목록에서 고르면 경로·유가를 조회한다. */
+  onPlace: (which: 'origin' | 'destination', text: string, place?: PlaceRef) => void;
+  onPeople: (people: number) => void;
   onSettle: () => void;
   onBack: () => void;
   onOpenPenalties: () => void;
@@ -63,14 +70,75 @@ export function Arrival({
   return (
     <Screen
       title="도착했어요"
-      sub={`${trip.origin} → ${trip.destination}`}
+      sub={
+        trip.destination
+          ? `${trip.origin} → ${trip.destination}`
+          : '어디에 도착했는지만 알려 주세요'
+      }
       onBack={onBack}
       bottom={
-        <button type="button" className="btn btn--primary" onClick={onSettle}>
+        <button
+          type="button"
+          className="btn btn--primary"
+          disabled={trip.destination.trim().length === 0}
+          onClick={onSettle}
+        >
           정산하기
         </button>
       }
     >
+      <Card label="어디에 도착했나요">
+        <PlaceSearch
+          value={trip.destination}
+          place={trip.destinationPlace}
+          placeholder="도착지"
+          onChange={(text, place) => {
+            onPlace('destination', text, place);
+          }}
+        />
+        <p className="card__label" style={{ marginTop: 10 }}>
+          출발지
+        </p>
+        <PlaceSearch
+          value={trip.origin}
+          place={trip.originPlace}
+          placeholder="집"
+          onChange={(text, place) => {
+            onPlace('origin', text, place);
+          }}
+        />
+        <p className="screen__sub">
+          목록에서 고르면 거리·통행료·유가를 조회합니다. 이름만 적어도 정산은 됩니다.
+        </p>
+      </Card>
+
+      <Card label="몇 명이 탔나요">
+        <div className="split">
+          <span className="big">{trip.members.length}명</span>
+          <span className="chips">
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                onPeople(trip.members.length - 1);
+              }}
+            >
+              −
+            </button>
+            <button
+              type="button"
+              className="chip"
+              onClick={() => {
+                onPeople(trip.members.length + 1);
+              }}
+            >
+              +
+            </button>
+          </span>
+        </div>
+        <p className="screen__sub">운전자는 나. 이름은 결과 화면에서 바꿉니다.</p>
+      </Card>
+
       <Card label="자동으로 채운 값">
         <div className="split">
           <span>
@@ -83,10 +151,6 @@ export function Arrival({
           <span>구간</span>
           <span>{segments.length}개 · 타임라인 ›</span>
         </button>
-        <div className="split">
-          <span>탑승</span>
-          <span>{trip.members.length}명</span>
-        </div>
         <button type="button" className="row" onClick={onOpenPenalties}>
           <span>괘씸 기록</span>
           <span className={penaltyCount > 0 ? 'penalty' : 'dim'}>{penaltyCount}건 보기 ›</span>

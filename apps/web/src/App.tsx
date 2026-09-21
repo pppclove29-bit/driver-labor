@@ -13,7 +13,7 @@ import { keepStorage } from './model/persist.js';
 import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
 import { departAt } from './model/meter.js';
-import { newTrip, withEstimatedRoute } from './model/trip.js';
+import { newTrip, setPeopleCount, withEstimatedRoute } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
 import { Difficulty } from './screens/Difficulty.jsx';
 import { EtcPenalty } from './screens/EtcPenalty.jsx';
@@ -237,6 +237,30 @@ export function App({ storage }: { storage?: Storage }) {
         <Arrival
           trip={trip}
           onChange={update}
+          onPlace={(which, text, place) => {
+            const next = { ...trip };
+            if (which === 'destination') {
+              next.destination = text;
+              if (place) next.destinationPlace = place;
+              else delete next.destinationPlace;
+            } else {
+              next.origin = text;
+              if (place) next.originPlace = place;
+              else delete next.originPlace;
+            }
+            update(next);
+            // 장소를 고른 시점에 경로·유가를 조회한다(출발 전에는 조회하지 않는다).
+            if (place) lookUp(next);
+            if (which === 'origin') {
+              const prefs = { ...preferences, recentOrigin: text };
+              if (place) prefs.recentOriginPlace = place;
+              else delete prefs.recentOriginPlace;
+              void savePreferences(prefs);
+            }
+          }}
+          onPeople={(people) => {
+            update(setPeopleCount(trip, people));
+          }}
           onBack={() => {
             setScreen('timeline');
           }}

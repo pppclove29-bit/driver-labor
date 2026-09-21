@@ -279,3 +279,36 @@ export function toTripInput(trip: AppTrip, now?: string): TripInput {
     ...(trip.routeSlowRoadRatio !== undefined ? { slowRoadRatio: trip.routeSlowRoadRatio } : {}),
   };
 }
+
+/** 동승자 수를 맞춘다(운전자 포함 인원). 이름을 넣은 사람은 뒤에서부터 지우지 않는다. */
+export function setPeopleCount(trip: AppTrip, people: number): AppTrip {
+  const target = Math.max(1, Math.min(10, Math.round(people)));
+  const members = [...trip.members];
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+  while (members.length > target) {
+    // 이름을 넣지 않은 사람부터 지운다.
+    const removable = [...members].reverse().find((m) => !m.isOwner && /^동승자 /.test(m.name));
+    const victim = removable ?? members.at(-1);
+    if (!victim || victim.isOwner) break;
+    members.splice(members.indexOf(victim), 1);
+  }
+  while (members.length < target) {
+    const i = members.length - 1;
+    members.push({
+      id: `m${String(members.length)}`,
+      name: `동승자 ${letters[i] ?? String(i)}`,
+      isOwner: false,
+      canDrive: false,
+    });
+  }
+  const ids = members.map((m) => m.id);
+  const kept = new Set(ids);
+  return {
+    ...trip,
+    members,
+    // 출발 멤버 목록을 맞추고, 지운 사람의 기록도 함께 정리한다.
+    events: trip.events.map((e) => (e.type === 'depart' ? { ...e, memberIds: ids } : e)),
+    penalties: trip.penalties.filter((p) => kept.has(p.memberId)),
+    payments: trip.payments.filter((p) => kept.has(p.payerId)),
+  };
+}
