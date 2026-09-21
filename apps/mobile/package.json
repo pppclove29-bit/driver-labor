@@ -1,0 +1,19 @@
+{
+  "name": "@dl/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "pnpm --filter @dl/web build:app && cap sync android",
+    "open": "cap open android",
+    "apk": "JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" android/gradlew -p android assembleDebug",
+    "install:emulator": "JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" android/gradlew -p android installDebug"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2"
+  }
+}

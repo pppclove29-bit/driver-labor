@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/app": "8.1.1",
+    "@capacitor/core": "8.5.2",
     "@dl/calc": "workspace:*",
     "@dl/link-codec": "workspace:*",
     "@dl/storage": "workspace:*",
