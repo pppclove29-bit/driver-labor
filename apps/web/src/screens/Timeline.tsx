@@ -6,7 +6,7 @@ import { buildSegments } from '@dl/calc';
 import { useState } from 'react';
 
 import type { PlaceRef } from '../api/client.js';
-import { clock, duration, km, won } from '../model/format.js';
+import { clock, duration, km, timeValue, won } from '../model/format.js';
 import { boundaryKey } from '../model/lookup.js';
 import { currentRiders, memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip } from '../model/trip.js';
@@ -148,7 +148,7 @@ export function Timeline({
                 <span>
                   <input
                     type="time"
-                    value={clock(event.at)}
+                    value={timeValue(event.at)}
                     style={{ minHeight: 44, marginRight: 8 }}
                     onChange={(e) => {
                       setTime(index, e.target.value);

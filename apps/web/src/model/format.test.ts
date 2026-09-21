@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { clock, day, duration, km, signedWon, won } from './format.js';
+import { clock, day, duration, km, signedWon, timeValue, won } from './format.js';
 
 describe('표기', () => {
   it('금액은 천 단위 쉼표 + 원', () => {
@@ -29,9 +29,23 @@ describe('표기', () => {
     expect(km(950)).toBe('1km');
   });
 
-  it('시각·날짜는 기기 시간대로 읽는다', () => {
-    const at = new Date(2026, 8, 21, 9, 5);
-    expect(clock(at.toISOString())).toBe('09:05');
-    expect(day(at.toISOString())).toBe('9월 21일');
+  it('입력칸 값은 로캘과 무관하게 24시간 HH:mm', () => {
+    const morning = new Date(2026, 8, 21, 9, 5);
+    const evening = new Date(2026, 8, 21, 16, 53);
+    expect(timeValue(morning.toISOString())).toBe('09:05');
+    expect(timeValue(evening.toISOString())).toBe('16:53');
+  });
+
+  it('화면에 보이는 시각은 폰 로캘을 따른다(입력칸 표기와 맞추려고)', () => {
+    const evening = new Date(2026, 8, 21, 16, 53).toISOString();
+    expect(clock(evening, 'en-US')).toBe('4:53 PM');
+    // 24시간제 로캘은 24시간으로
+    expect(clock(evening, 'de-DE')).toBe('16:53');
+    // 한국어는 오전·오후 표기(Node ICU 데이터에 따라 "오후"/"PM"이 섞일 수 있어 시각만 확인)
+    expect(clock(evening, 'ko-KR')).toContain('4:53');
+  });
+
+  it('날짜는 한국어 표기', () => {
+    expect(day(new Date(2026, 8, 21, 9, 5).toISOString())).toBe('9월 21일');
   });
 });

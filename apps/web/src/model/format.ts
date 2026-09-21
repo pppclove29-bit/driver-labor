@@ -22,11 +22,22 @@ export function km(meters: number): string {
   return `${(meters / 1000).toLocaleString('ko-KR', { maximumFractionDigits: 1 })}km`;
 }
 
-export function clock(iso: string): string {
+/**
+ * `<input type="time">`에 넣는 값. 폰 로캘과 무관하게 24시간 HH:mm이어야 한다.
+ */
+export function timeValue(iso: string): string {
   const d = new Date(iso);
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${hh}:${mm}`;
+}
+
+/**
+ * 화면에 보여주는 시각. 폰 로캘을 따른다.
+ * 시각 입력칸이 로캘대로(오후 4:53 / 4:53 PM) 그리므로 표시도 같은 방식으로 맞춘다.
+ */
+export function clock(iso: string, locale?: string): string {
+  return new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
 }
 
 export function day(iso: string): string {

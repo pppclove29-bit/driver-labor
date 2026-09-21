@@ -114,7 +114,7 @@ export function PaymentSheet({
             />
           </div>
           <p className="screen__sub">
-            단가를 넣으면 이후 구간 기름값에 적용됩니다. 주유소 검색은 다음 단계에서.
+            단가를 넣으면 이후 구간 기름값에 적용됩니다. 금액만 넣어도 됩니다.
           </p>
         </Card>
       ) : null}
