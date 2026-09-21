@@ -28,9 +28,10 @@
 - `packages/calc` 계산 엔진, 순수 함수, 외부 의존성 없음, Vitest
 - `packages/link-codec` 결과 링크 압축·해제·스키마 검증
 - `packages/storage` 저장소 인터페이스 (웹 구현: IndexedDB)
-- `apps/web` PWA (Vite + React)
+- `apps/web` 앱 화면 (Vite + React). Capacitor가 그대로 담는다
+- `apps/mobile` Capacitor 설정과 안드로이드 프로젝트 (앱 ID `kr.driverlabor.app`)
 - `apps/result` 결과 보기 정적 페이지 (Vite, 외부 스크립트 없음)
-- `apps/worker` Cloudflare Worker (/api, Durable Object 예산 카운터, KV, Cron, 정적 자산 서빙)
+- `apps/worker` Cloudflare Worker (/api, Durable Object 예산 카운터, KV, Cron, `/r`과 소개·정책 페이지 서빙)
 
 ## 코딩 규칙
 - 금액은 원 단위 정수. 1원 미만은 반올림, 반올림 차이는 운전자 몫에서 흡수(차액 합계 항상 0)
@@ -51,9 +52,10 @@ Node 22.11 이상이 필요하다(`.nvmrc` = 22.22.2). `nvm use`로 맞춘 뒤 �
 | `pnpm typecheck` | 전체 패키지 `tsc --noEmit` |
 | `pnpm lint` | ESLint (절대 규칙 3·7을 `no-restricted-properties`·`no-console`로 강제) |
 | `pnpm format` | Prettier 전체 적용 |
-| `pnpm dev:web` | PWA 개발 서버 (`apps/web`) |
+| `pnpm dev:web` | 화면 개발 서버 (`apps/web`). `/api`는 로컬 `wrangler dev`로 프록시 |
 | `pnpm dev:result` | 결과 보기 페이지 개발 서버 (`apps/result`) |
 | `pnpm dev:worker` | web·result 빌드 → 자산 수집 → `wrangler dev`. `/`에 web, `/r`에 result |
+| `pnpm --filter @dl/mobile dev` | 에뮬레이터용 앱 빌드·설치 (JDK 21 필요) |
 | `pnpm build` | web → result → worker 순서로 빌드 (worker는 `wrangler deploy --dry-run`) |
 
 - `apps/worker`에서 `pnpm run assets`는 빌드된 web·result를 `dist-assets/`로 모은다(`/` = web, `/r` = result). `dev`·`build`가 먼저 실행하므로 따로 부를 일은 없다.
