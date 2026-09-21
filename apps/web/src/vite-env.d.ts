@@ -9,3 +9,6 @@ interface ImportMetaEnv {
   /** Turnstile sitekey. 비어 있으면 개발은 고정 토큰, 빌드는 공개 테스트 키 */
   readonly VITE_TURNSTILE_SITEKEY?: string;
 }
+
+/** apps/mobile/version.json에서 빌드할 때 넣는 값. 예: "1.0.0 (1)" */
+declare const __APP_VERSION__: string;

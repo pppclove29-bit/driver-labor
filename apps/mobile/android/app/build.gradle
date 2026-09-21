@@ -1,3 +1,8 @@
+import groovy.json.JsonSlurper
+
+// 버전은 apps/mobile/version.json 한 곳에서 관리한다.
+def appVersion = new JsonSlurper().parse(file("../../version.json"))
+
 apply plugin: 'com.android.application'
 
 android {
@@ -7,8 +12,8 @@ android {
         applicationId "kr.driverlabor.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersion.versionCode
+        versionName appVersion.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

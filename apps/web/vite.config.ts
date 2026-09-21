@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -8,7 +10,16 @@ import { VitePWA } from 'vite-plugin-pwa';
 //   `vite build --mode app-dev` 에뮬레이터용 앱 빌드(.env.app-dev)
 // 앱 타깃(app*)은 서비스 워커를 빼고 자산만 만든다. 앱은 화면을 내장하므로
 // 캐시가 두 겹이 되면 업데이트가 꼬인다.
+// 버전은 apps/mobile/version.json 한 곳에서 관리한다. 화면 맨 아래에 표시해
+// 사용자가 알려온 문제를 어느 빌드인지 맞춰 볼 수 있게 한다.
+const version = JSON.parse(
+  readFileSync(new URL('../mobile/version.json', import.meta.url), 'utf8'),
+) as { versionName: string; versionCode: number };
+
 export default defineConfig(({ mode }) => ({
+  define: {
+    __APP_VERSION__: JSON.stringify(`${version.versionName} (${String(version.versionCode)})`),
+  },
   plugins: [
     react(),
     ...(mode.startsWith('app')

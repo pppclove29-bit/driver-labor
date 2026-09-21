@@ -1,6 +1,7 @@
 // S1 홈. 여행 중에 앱을 다시 열었을 때 한 번에 기록 화면(S6)으로 돌아가는 것이 가장 중요한 일.
 
 import type { AppTrip } from '../model/trip.js';
+import { appVersion } from '../config.js';
 import { day } from '../model/format.js';
 import { STORAGE_LINE } from '../model/notice.js';
 import { Card, Screen } from '../ui/parts.jsx';
@@ -88,6 +89,12 @@ export function Home({
         </span>
         <span className="dim">빠른 정산 ›</span>
       </button>
+
+      {appVersion() ? (
+        <p className="screen__sub" style={{ textAlign: 'center', margin: 0 }}>
+          v{appVersion()}
+        </p>
+      ) : null}
     </Screen>
   );
 }

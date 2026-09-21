@@ -19,3 +19,7 @@ export const apiBase = (env: BuildEnv = import.meta.env): string =>
 /** 결과 링크(`/r#…`)의 주소. 앱에서는 localhost가 아니라 배포 주소여야 한다. */
 export const resultBase = (env: BuildEnv = import.meta.env, origin?: string): string =>
   (env.VITE_RESULT_BASE ?? '').trim() || (origin ?? currentOrigin());
+
+/** 앱 버전 표시용 문자열. 빌드할 때 apps/mobile/version.json에서 넣는다. */
+export const appVersion = (): string =>
+  typeof __APP_VERSION__ === 'undefined' ? '' : __APP_VERSION__;

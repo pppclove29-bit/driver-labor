@@ -12,6 +12,8 @@
 
 - 안드로이드 빌드에는 JDK 21이 필요하다. 스크립트가 `JAVA_HOME`을 Android Studio의 JBR로 잡는다.
 - 에뮬레이터: `~/Library/Android/sdk/emulator/emulator -avd fearless_test`
+- **버전은 `version.json` 한 곳에서 관리한다.** Gradle과 화면 표시가 같은 값을 쓴다.
+  스토어에 올리는 빌드마다 `versionCode`를 1 올리고, 화면·계산이 바뀌면 `versionName`도 올린다.
 - 앱 타깃 빌드(`--mode app`)는 서비스 워커(PWA)를 빼고 자산만 만든다. 앱은 화면을 내장한다.
 - 루트 `pnpm build`(web·result·worker)와 앱 빌드는 분리한다. 앱 빌드는 JDK가 필요하다.
 - **혼합 콘텐츠 예외는 개발 빌드에만.** 앱 화면은 `https://localhost`인데 로컬 Worker는 평문
