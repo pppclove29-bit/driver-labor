@@ -26,4 +26,6 @@ export interface Deps {
   readonly budget: BudgetPort;
   readonly routeCache: CachePort;
   readonly fuel: FuelReader;
+  /** CORS 허용 출처. 앱 WebView와 개발 주소만. */
+  readonly allowedOrigins: string[];
 }

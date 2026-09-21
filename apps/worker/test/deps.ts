@@ -28,6 +28,7 @@ export function makeDeps(overrides: Partial<Deps> = {}, kv = new FakeKV()): Deps
     upstream: fixtureUpstream,
     now: () => NOW,
     limiters: {},
+    allowedOrigins: ['https://localhost'],
     ...overrides,
   };
 }

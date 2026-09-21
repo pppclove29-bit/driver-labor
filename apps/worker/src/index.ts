@@ -5,6 +5,7 @@ import { handleApi } from './app.js';
 import { BudgetCounter } from './budget/BudgetCounter.js';
 import { RouteCache } from './cache/RouteCache.js';
 import { Control } from './control.js';
+import { DEFAULT_ALLOWED_ORIGINS, parseAllowedOrigins } from './cors.js';
 import { runCron } from './cron.js';
 import { FuelReader } from './fuel.js';
 import type { Deps } from './deps.js';
@@ -18,6 +19,8 @@ interface Env {
   readonly ROUTE_CACHE: DurableObjectNamespace<RouteCache>;
   /** `live`(기본) 또는 `fixtures`. 로컬 개발은 .dev.vars에서 fixtures로 둔다. */
   readonly UPSTREAM?: string;
+  /** CORS 허용 출처. 쉼표로 구분. 비워 두면 앱 WebView(https://localhost)만 허용한다. */
+  readonly ALLOWED_ORIGINS?: string;
   readonly TURNSTILE_SECRET?: string;
   readonly SESSION_SECRET?: string;
   readonly CACHE_SECRET?: string;
@@ -44,6 +47,7 @@ function depsFrom(env: Env): Deps {
   fuel ??= new FuelReader(env.CTRL, () => Date.now());
   return {
     fuel,
+    allowedOrigins: [...DEFAULT_ALLOWED_ORIGINS, ...parseAllowedOrigins(env.ALLOWED_ORIGINS)],
     control,
     budget: env.BUDGET.getByName('global'),
     routeCache: env.ROUTE_CACHE.getByName('route'),

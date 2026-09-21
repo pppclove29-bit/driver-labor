@@ -24,7 +24,11 @@
   // 운영은 실제 외부 API. 로컬 .dev.vars에서 fixtures로 바꾼다.
   // 비밀 값(TURNSTILE_SECRET, SESSION_SECRET, CACHE_SECRET, KAKAO_REST_KEY, TMAP_APP_KEY,
   // OPINET_KEY, ALERT_WEBHOOK_URL)은 여기에 쓰지 않고 `wrangler secret put`으로만 넣는다.
-  "vars": { "UPSTREAM": "live" },
+  "vars": {
+    "UPSTREAM": "live",
+    // 앱 WebView(https://localhost)는 기본 허용. 개발용 주소를 더할 때만 채운다.
+    "ALLOWED_ORIGINS": "",
+  },
   // 유가 평균, 비상 스위치(auto_route·auto_places·provider), 당일 차단 목록.
   // id는 M6에서 `wrangler kv namespace create`로 만든 뒤 채운다. 로컬 dev는 이 값 그대로 동작한다.
   "kv_namespaces": [{ "binding": "CTRL", "id": "00000000000000000000000000000000" }],
