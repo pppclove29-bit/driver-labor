@@ -7,9 +7,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { AppTrip } from './trip.js';
 import {
-  arrivalAt,
   currentRiders,
   currentSegmentIndex,
+  migrateTrip,
   newTrip,
   toTripInput,
   withEstimatedRoute,
@@ -267,22 +267,19 @@ describe('경로 추정 스텁', () => {
   });
 });
 
-describe('도착 시각', () => {
-  const trip = newTrip({
-    id: 't-arrive',
-    now: '2026-09-21T09:00:00.000Z',
-    origin: '집',
-    destination: '강릉',
-    driverName: '나',
-    companionNames: ['동승자 A'],
+describe('저장소에서 읽은 여행 옮기기', () => {
+  const base = () =>
+    newTrip({ id: 'm1', now: '2026-09-21T09:00:00.000Z', origin: '집', driverName: '나' });
+
+  it('옛 상태 driving은 running으로 바꾼다', () => {
+    const old = { ...base(), status: 'driving' as unknown as AppTrip['status'] };
+    expect(migrateTrip(old).status).toBe('running');
   });
 
-  it('출발과 같은 분에 눌러도 최소 1분은 준다', () => {
-    expect(arrivalAt(trip, new Date('2026-09-21T09:00:00.000Z'))).toBe('2026-09-21T09:01:00.000Z');
-    expect(arrivalAt(trip, new Date('2026-09-21T09:00:40.000Z'))).toBe('2026-09-21T09:01:00.000Z');
-  });
-
-  it('1분이 지났으면 실제 시각', () => {
-    expect(arrivalAt(trip, new Date('2026-09-21T11:30:00.000Z'))).toBe('2026-09-21T11:30:00.000Z');
+  it('이미 지금 형식이면 같은 객체를 그대로 돌려준다', () => {
+    const trip = base();
+    expect(migrateTrip(trip)).toBe(trip);
+    const settled = { ...trip, status: 'settled' as const };
+    expect(migrateTrip(settled)).toBe(settled);
   });
 });

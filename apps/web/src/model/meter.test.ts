@@ -29,11 +29,22 @@ describe('미터기', () => {
     expect(needsArrivalTime(trip(), at(ASK_ARRIVAL_AFTER_MS))).toBe(true);
   });
 
+  it('시작 기록이 없으면 경과 0분, 도착 시각도 묻지 않는다', () => {
+    const noDepart = { ...trip(), events: [] };
+    expect(elapsedMinutes(noDepart, at(60 * 60_000))).toBe(0);
+    expect(needsArrivalTime(noDepart, at(60 * 60_000))).toBe(false);
+    // 시작 기록이 없으면 지금 시각을 그대로 쓴다
+    expect(arrivalFor(noDepart, at(0))).toBe(new Date(Date.parse(START)).toISOString());
+  });
+
   it('도착은 출발보다 뒤여야 하고, 24시간을 넘으면 한 번 더 확인한다', () => {
     expect(checkArrival(START, '2026-09-21T12:00:00.000Z')).toBe('ok');
     expect(checkArrival(START, START)).toBe('before-depart');
     expect(checkArrival(START, '2026-09-21T08:00:00.000Z')).toBe('before-depart');
     expect(checkArrival(START, '2026-09-22T10:00:00.000Z')).toBe('too-long');
+    // 정확히 24시간은 아직 확인 대상이 아니다(경계)
+    expect(checkArrival(START, '2026-09-22T09:00:00.000Z')).toBe('ok');
+    expect(checkArrival(START, '2026-09-22T09:00:00.001Z')).toBe('too-long');
     expect(checkArrival(START, '엉터리')).toBe('before-depart');
   });
 });

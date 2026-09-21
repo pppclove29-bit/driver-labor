@@ -36,6 +36,20 @@ describe('인원 맞추기', () => {
 
   it('운전자 혼자보다 적게는 못 줄이고, 10명을 넘지 않는다', () => {
     expect(setPeopleCount(base(), 0).members).toHaveLength(1);
+    expect(setPeopleCount(base(), -5).members).toHaveLength(1);
     expect(setPeopleCount(base(), 99).members).toHaveLength(10);
+    // 경로 조회 상한(지점 11개 = 구간 10개)과 같은 10명까지
+    expect(setPeopleCount(base(), 10).members).toHaveLength(10);
+  });
+
+  it('이름을 다 넣었으면 마지막 사람부터 지우고 운전자는 남긴다', () => {
+    let t = setPeopleCount(base(), 3);
+    t = {
+      ...t,
+      members: t.members.map((m) => (m.isOwner ? m : { ...m, name: `${m.id} 이름` })),
+    };
+    const smaller = setPeopleCount(t, 1);
+    expect(smaller.members).toHaveLength(1);
+    expect(smaller.members[0]?.isOwner).toBe(true);
   });
 });

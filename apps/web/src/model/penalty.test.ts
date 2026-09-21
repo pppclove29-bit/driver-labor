@@ -51,6 +51,13 @@ describe('도착 후 괘씸 입력', () => {
     expect(t.penalties).toHaveLength(0);
   });
 
+  it('분 입력은 음수·소수를 받지 않는다', () => {
+    const minus = setPenaltyMinutes(base(), 0, 'm1', 'frontSeatSleep', -30, 's1');
+    expect(minus.penalties).toHaveLength(0);
+    const rounded = setPenaltyMinutes(base(), 0, 'm1', 'frontSeatSleep', 24.6, 's2');
+    expect(minutesOf(rounded, 0, 'm1', 'frontSeatSleep')).toBe(25);
+  });
+
   it('용서한 기록은 세지 않는다', () => {
     const t = addPenalty(base(), 0, 'm1', 'litter', 'p1');
     const forgiven = { ...t, penalties: t.penalties.map((p) => ({ ...p, forgiven: true })) };
