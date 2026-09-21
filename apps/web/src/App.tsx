@@ -67,7 +67,7 @@ export function App({ storage }: { storage?: Storage }) {
     [save],
   );
 
-  /** 출발(또는 빠른 정산) 직후 경로 1회·유가 1회 조회. 결과는 그 사이 바뀐 최신 여행에 얹는다. */
+  /** 도착지를 고른 시점(또는 지난 여행 입력) 경로 1회·유가 1회 조회. 결과는 그 사이 바뀐 최신 여행에 얹는다. */
   const lookUp = useCallback(
     (t: AppTrip) => {
       void fetchTripLookups(api, t).then((apply) => patch(t.id, apply));
