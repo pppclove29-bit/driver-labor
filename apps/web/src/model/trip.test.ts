@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AppTrip } from './trip.js';
 import {
+  arrivalAt,
   currentRiders,
   currentSegmentIndex,
   newTrip,
@@ -263,5 +264,25 @@ describe('경로 추정 스텁', () => {
     trip.route = { ...trip.route, distanceM: 400000 };
     trip.editedFields = ['distance'];
     expect(withEstimatedRoute(trip).route.distanceM).toBe(400000);
+  });
+});
+
+describe('도착 시각', () => {
+  const trip = newTrip({
+    id: 't-arrive',
+    now: '2026-09-21T09:00:00.000Z',
+    origin: '집',
+    destination: '강릉',
+    driverName: '나',
+    companionNames: ['동승자 A'],
+  });
+
+  it('출발과 같은 분에 눌러도 최소 1분은 준다', () => {
+    expect(arrivalAt(trip, new Date('2026-09-21T09:00:00.000Z'))).toBe('2026-09-21T09:01:00.000Z');
+    expect(arrivalAt(trip, new Date('2026-09-21T09:00:40.000Z'))).toBe('2026-09-21T09:01:00.000Z');
+  });
+
+  it('1분이 지났으면 실제 시각', () => {
+    expect(arrivalAt(trip, new Date('2026-09-21T11:30:00.000Z'))).toBe('2026-09-21T11:30:00.000Z');
   });
 });

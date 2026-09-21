@@ -115,7 +115,12 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       return call(path, init, true);
     }
     if (!res.ok) return failed(failureOf(res.status));
-    return { ok: true, value: (await res.json()) as T };
+    try {
+      return { ok: true, value: (await res.json()) as T };
+    } catch {
+      // JSON이 아닌 응답(중간 프록시·잘못된 주소). 조회 대기로 본다.
+      return failed('waiting');
+    }
   }
 
   return {

@@ -178,6 +178,17 @@ export function withEstimatedRoute(trip: AppTrip): AppTrip {
   return { ...trip, route: estimateRoute(driveMinutes) };
 }
 
+/**
+ * 도착 시각. 출발과 같은 분에 도착을 누르면 여행 길이가 0이 되어 구간을 만들 수 없다
+ * (`buildSegments`가 "도착이 출발보다 빠르다"로 막는다). 최소 1분으로 본다.
+ */
+export function arrivalAt(trip: AppTrip, now: Date): string {
+  const depart = trip.events.find((e) => e.type === 'depart')?.at;
+  if (!depart) return now.toISOString();
+  const least = Date.parse(depart) + 60_000;
+  return new Date(Math.max(now.getTime(), least)).toISOString();
+}
+
 export function memberName(trip: AppTrip, id: MemberId): string {
   return trip.members.find((m) => m.id === id)?.name ?? '?';
 }

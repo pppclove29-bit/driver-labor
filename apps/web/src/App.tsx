@@ -9,7 +9,7 @@ import { api } from './api/index.js';
 import { backTarget, type ScreenId } from './model/navigation.js';
 import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
-import { newTrip, withEstimatedRoute } from './model/trip.js';
+import { arrivalAt, newTrip, withEstimatedRoute } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
 import { Difficulty } from './screens/Difficulty.jsx';
 import { EtcPenalty } from './screens/EtcPenalty.jsx';
@@ -197,7 +197,7 @@ export function App({ storage }: { storage?: Storage }) {
               withEstimatedRoute({
                 ...trip,
                 status: 'arrived',
-                events: [...trip.events, { type: 'arrive', at: new Date().toISOString() }],
+                events: [...trip.events, { type: 'arrive', at: arrivalAt(trip, new Date()) }],
               }),
             );
             setScreen('arrival');
