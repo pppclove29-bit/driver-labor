@@ -28,3 +28,9 @@ describe('미터기', () => {
     expect(checkArrival(START, '엉터리')).toBe('before-depart');
   });
 });
+
+describe('운전 시간 출처', () => {
+  it('시작 버튼으로 만든 여행은 앱이 잰 값', () => {
+    expect(trip().timeSource).toBe('app');
+  });
+});

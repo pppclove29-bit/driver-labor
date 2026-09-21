@@ -73,7 +73,10 @@ export function Arrival({
     >
       <Card label="자동으로 채운 값">
         <div className="split">
-          <span>운전 시간</span>
+          <span>
+            운전 시간{' '}
+            {trip.timeSource === 'manual' ? <span className="tag">✎ 직접 입력</span> : null}
+          </span>
           <span className="big">{duration(driveMinutes)}</span>
         </div>
         <button type="button" className="row" onClick={onOpenTimeline}>

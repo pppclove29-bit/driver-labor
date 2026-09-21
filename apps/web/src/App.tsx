@@ -20,6 +20,7 @@ import { EtcPenalty } from './screens/EtcPenalty.jsx';
 import { Edit } from './screens/Edit.jsx';
 import { Home } from './screens/Home.jsx';
 import { Notice } from './screens/Notice.jsx';
+import { ArrivalTime } from './screens/ArrivalTime.jsx';
 import { Start } from './screens/Start.jsx';
 import { PenaltyReview } from './screens/PenaltyReview.jsx';
 import { QuickSettle } from './screens/QuickSettle.jsx';
@@ -182,6 +183,27 @@ export function App({ storage }: { storage?: Storage }) {
             setScreen('quick');
           }}
           onOpen={open}
+        />
+      );
+    }
+    if (screen === 'arriveTime') {
+      return (
+        <ArrivalTime
+          startedAt={departAt(trip) ?? trip.createdAt}
+          now={new Date()}
+          onConfirm={(arriveIso) => {
+            update({
+              ...trip,
+              status: 'arrived',
+              // 사람이 넣은 도착 시각. 결과에 "직접 입력"으로 표시한다.
+              timeSource: 'manual',
+              events: [...trip.events, { type: 'arrive', at: arriveIso }],
+            });
+            setScreen('arrival');
+          }}
+          onBack={() => {
+            setScreen('home');
+          }}
         />
       );
     }

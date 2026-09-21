@@ -66,6 +66,8 @@ export function QuickSettle({
     }
     trip.events.push({ type: 'arrive', at: arriveAt });
     trip.status = 'settled';
+    // 사람이 넣은 시각이라 결과에 "직접 입력"으로 표시한다.
+    trip.timeSource = 'manual';
     trip.settledAt = new Date().toISOString();
     onSettle(trip);
   };

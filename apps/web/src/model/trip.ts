@@ -74,6 +74,11 @@ export interface AppTrip {
    * `POST /api/route` 조회값, 조회 전에는 기본값·운전 시간 어림값.
    */
   route: RouteInfo;
+  /**
+   * 운전 시간의 출처. app: 시작·완료를 눌러 앱이 잼. manual: 사람이 시각을 넣음
+   * (지난 여행 입력, 늦은 완료). 결과에 "직접 입력" 표시를 붙일지 정한다.
+   */
+  timeSource?: 'app' | 'manual';
   /** 경로를 조회한 제공자. 계산 근거에 "조회: 카카오"로 표시한다. 없으면 기본값·어림값. */
   routeSource?: Provider;
   /**
@@ -150,6 +155,7 @@ export function newTrip(params: {
     id: params.id,
     createdAt: params.now,
     status: 'running',
+    timeSource: 'app',
     origin: params.origin,
     destination: params.destination ?? '',
     ...(params.originPlace ? { originPlace: params.originPlace } : {}),
