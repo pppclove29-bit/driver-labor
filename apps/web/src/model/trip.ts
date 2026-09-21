@@ -110,7 +110,7 @@ export interface AppTrip {
    * (CLAUDE.md 절대 규칙 1, spec-screens.md S6a).
    */
   penaltyMemos?: Record<string, string>;
-  /** 계산을 처음 등록한 시각. 광고는 이때 1번만 (decisions.md 광고 규칙). */
+  /** 계산을 처음 등록한 시각. */
   settledAt?: string;
   /** 결과 링크를 발급한 시각. 이후 값을 고치면 "새 링크를 공유하세요" 안내를 띄운다. */
   sharedAt?: string;
@@ -118,7 +118,6 @@ export interface AppTrip {
   editedAt?: string;
   /** 직접 입력으로 바뀐 항목. 결과 영수증의 "기본값" 표시를 끈다. */
   editedFields?: string[];
-  adDismissed?: boolean;
 }
 
 /** 경로 API가 붙기 전 기본 경로값. 결과 화면에 "기본값"으로 표시한다. */

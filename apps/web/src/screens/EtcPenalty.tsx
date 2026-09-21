@@ -1,9 +1,11 @@
-// S6a 기타 괘씸 기록. 점수표는 고정하되 "표에 없는데 괘씸하다"는 순간을 받아준다.
+// S9d 기타 괘씸. 점수표는 고정하되 "표에 없는데 괘씸하다"는 순간을 받아준다.
 // 제한이 화면에 그대로 보이게 한다. 메모는 폰에만 저장한다.
 
 import { useState } from 'react';
 
-import { currentRiders, currentSegmentIndex, memberName } from '../model/trip.js';
+import { buildSegments } from '@dl/calc';
+
+import { memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip } from '../model/trip.js';
 import { Card, Screen } from '../ui/parts.jsx';
 
@@ -12,18 +14,23 @@ const PER_SEGMENT = 2;
 
 export function EtcPenalty({
   trip,
+  segment,
   defaultTarget,
   onBack,
   onSave,
 }: {
   trip: AppTrip;
+  /** 어느 구간에 넣을지. S9a에서 고른 구간. */
+  segment: number;
   defaultTarget?: string;
   onBack: () => void;
   onSave: (next: AppTrip) => void;
 }) {
-  const segment = currentSegmentIndex(trip);
-  const driverId = trip.driverId;
-  const companions = currentRiders(trip).filter((id) => id !== driverId);
+  const segments = buildSegments(toTripInput(trip));
+  const current = segments[Math.min(segment, segments.length - 1)];
+  const companions = (current?.passengerIds ?? trip.members.map((m) => m.id)).filter(
+    (id) => id !== (current?.driverId ?? trip.driverId),
+  );
   const [target, setTarget] = useState(defaultTarget ?? companions[0] ?? '');
   const [memo, setMemo] = useState('');
 

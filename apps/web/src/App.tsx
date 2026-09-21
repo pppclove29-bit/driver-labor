@@ -22,7 +22,7 @@ import { Home } from './screens/Home.jsx';
 import { Notice } from './screens/Notice.jsx';
 import { ArrivalTime } from './screens/ArrivalTime.jsx';
 import { Start } from './screens/Start.jsx';
-import { PenaltyReview } from './screens/PenaltyReview.jsx';
+import { Penalties } from './screens/Penalties.jsx';
 import { QuickSettle } from './screens/QuickSettle.jsx';
 import { Timeline } from './screens/Timeline.jsx';
 import { PaymentSheet } from './screens/PaymentSheet.jsx';
@@ -37,6 +37,7 @@ export function App({ storage }: { storage?: Storage }) {
   const [screen, setScreen] = useState<ScreenId>('home');
   const [activeId, setActiveId] = useState<string>();
   const [toast, setToast] = useState<ToastState>();
+  const [etcTarget, setEtcTarget] = useState<{ segment: number; member: string }>();
 
   const trip = trips.find((t) => t.id === activeId);
 
@@ -289,8 +290,10 @@ export function App({ storage }: { storage?: Storage }) {
       return (
         <EtcPenalty
           trip={trip}
+          segment={etcTarget?.segment ?? 0}
+          {...(etcTarget ? { defaultTarget: etcTarget.member } : {})}
           onBack={() => {
-            setScreen('timeline');
+            setScreen('penalties');
           }}
           onSave={(next) => {
             update(next);
@@ -314,9 +317,13 @@ export function App({ storage }: { storage?: Storage }) {
     }
     if (screen === 'penalties') {
       return (
-        <PenaltyReview
+        <Penalties
           trip={trip}
           onChange={update}
+          onOpenEtc={(segment, member) => {
+            setEtcTarget({ segment, member });
+            setScreen('etc');
+          }}
           onBack={() => {
             setScreen('arrival');
           }}

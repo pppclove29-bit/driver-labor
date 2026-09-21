@@ -15,7 +15,6 @@ import { LOOKUP_LIMIT_MESSAGE, LOOKUP_WAITING_MESSAGE, routeNotice } from '../mo
 import { memberName, toTripInput } from '../model/trip.js';
 import type { AppTrip, Tone } from '../model/trip.js';
 import { justification, penaltyReason, receiptTitle, shareText, TONES } from '../model/tone.js';
-import { AdCard } from '../ui/AdCard.jsx';
 import { Card, DefaultTag, Screen } from '../ui/parts.jsx';
 
 /** 계산 근거의 경로 출처. 두 회사의 택시요금·통행료 추정값은 조금 다를 수 있다. */
@@ -287,14 +286,6 @@ export function Result({
 
       {note ? <p className="screen__sub">{note}</p> : null}
       <p className="screen__sub">링크의 # 뒤 결과는 서버로 가지 않습니다.</p>
-
-      {trip.settledAt && !trip.adDismissed ? (
-        <AdCard
-          onClose={() => {
-            onChange({ ...trip, adDismissed: true });
-          }}
-        />
-      ) : null}
     </Screen>
   );
 }
