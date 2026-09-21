@@ -15,10 +15,11 @@
 
 | 항목 | 누가 | 상태 |
 |---|---|---|
-| 업로드 키스토어 생성·보관, Play 앱 서명 켜기 | 사람 | 남음 |
-| release 서명 설정(`build.gradle`)과 `.gitignore` | 코드 | 남음 |
-| 서명된 AAB 빌드(`bundleRelease`) | 코드+사람 | 남음 |
-| **개인정보처리방침 공개 URL** | 사람(배포 승인) | 페이지는 만들었다. Worker 배포가 남았다 |
+| 업로드 키스토어 생성·보관 | 사람 | **완료(2026-09-21)** |
+| Play 앱 서명 켜기 | 사람 | 남음(Play Console에서 앱 만들 때) |
+| release 서명 설정(`build.gradle`)과 `.gitignore` | 코드 | **완료** |
+| 서명된 AAB 빌드(`bundleRelease`) | 코드 | **완료.** 지문 대조까지 확인 |
+| **개인정보처리방침 공개 URL** | — | **완료: `https://driver-labor.pppclove29.workers.dev/privacy`** |
 | 데이터 보안 양식 작성 | 사람 | 답변 확정(3장). 입력만 남음 |
 | 스토어 등록정보 최소분: 아이콘 512×512, 스크린샷 2장, 짧은·자세한 설명 | 사람(아이콘)·에이전트(스크린샷) | 문구 초안 있음. 스크린샷은 배포 뒤 촬영 |
 | 앱 이름·패키지명·기본 언어 | 사람 | 확정(오늘 운전 완료 / kr.driverlabor.app / 한국어) |
@@ -86,6 +87,32 @@
    ```
 
 4. Play Console에서 앱을 만들 때 **Play 앱 서명**을 켠다(새 앱은 기본값).
+
+### 지금 상태 (2026-09-21)
+
+- 키스토어: `~/keys/driverlabor-upload.jks`, 별칭 `driverlabor` (RSA 2048, 10000일). 저장소 밖이다.
+- `~/.gradle/gradle.properties`에 네 값을 넣어 연결했다. **비밀번호는 문서·로그·커밋 어디에도 적지 않는다.**
+- 서명된 AAB를 만들어 지문을 대조했다(아래 "검증" 참고).
+
+| 항목 | 값 |
+|---|---|
+| 산출물 | `apps/mobile/android/app/build/outputs/bundle/release/app-release.aab` |
+| 크기 | 약 3.0MB (3,130,644 바이트) |
+| versionCode / versionName | 1 / 1.0.0 (`apps/mobile/version.json`) |
+| 서명 인증서 | `CN=driverlabor, OU=Personal, O=Personal, L=Seoul, ST=Seoul, C=KR` |
+| SHA1 | `FD:97:ED:B6:5A:3E:8A:92:7F:5F:32:75:AC:B1:B6:6F:2A:B8:F5:80` (사람이 알려준 지문과 일치) |
+
+### 검증
+
+```bash
+cd apps/mobile
+pnpm run aab   # 릴리스 동기화 + bundleRelease
+KT="/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool"
+"$KT" -printcert -jarfile android/app/build/outputs/bundle/release/app-release.aab | grep -E "소유자|SHA1"
+```
+
+SHA1이 업로드 키의 지문과 같아야 한다. 다르면 `gradle.properties` 값이 안 잡힌 것이고,
+그 경우 서명 없이 빌드되므로 Play가 업로드를 거부한다(`META-INF/*.RSA`가 없으면 미서명이다).
 
 ### 코드로 하는 일
 
