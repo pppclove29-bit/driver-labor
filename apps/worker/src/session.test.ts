@@ -33,6 +33,15 @@ describe('② 세션 토큰', () => {
     expect(down.status).toBe(503);
   });
 
+  it('Turnstile secret이 없으면 Cloudflare를 부르지 않고 401', async () => {
+    const { upstream, calls } = recordingUpstream(fixtureUpstream);
+    const deps = makeDeps({ upstream, secrets: { ...SECRETS, turnstileSecret: '' } });
+    const res = await handleApi(postJson('/api/session', { turnstileToken: 'ok' }), deps);
+    // 503(한도 도달처럼 보임)이 아니라 401이어야 앱이 "조회 대기"로 넘어간다.
+    expect(res.status).toBe(401);
+    expect(calls).toEqual([]);
+  });
+
   it('세션 발급은 IP 분당 2회', async () => {
     const deps = makeDeps({ limiters: { sessionIp: new FakeLimiter(2).asRateLimit() } });
     const statuses: number[] = [];

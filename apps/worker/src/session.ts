@@ -55,6 +55,9 @@ export async function verifyTurnstile(
   secret: string,
   token: string,
 ): Promise<TurnstileResult> {
+  // secret이 없으면 검증할 방법이 없다. Cloudflare를 부르지 않고 바로 거절한다.
+  // (빈 secret으로 호출하면 400이 와서 "한도 도달"처럼 보이는 503이 된다.)
+  if (!secret) return 'fail';
   const form = new FormData();
   form.set('secret', secret);
   form.set('response', token);
