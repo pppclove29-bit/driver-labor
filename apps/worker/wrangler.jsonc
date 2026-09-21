@@ -32,8 +32,8 @@
     "ALLOWED_ORIGINS": "",
   },
   // 유가 평균, 비상 스위치(auto_route·auto_places·provider), 당일 차단 목록.
-  // id는 M6에서 `wrangler kv namespace create`로 만든 뒤 채운다. 로컬 dev는 이 값 그대로 동작한다.
-  "kv_namespaces": [{ "binding": "CTRL", "id": "00000000000000000000000000000000" }],
+  // 2026-09-21에 `wrangler kv namespace create CTRL`로 만들었다(계정 pppclove29@gmail.com).
+  "kv_namespaces": [{ "binding": "CTRL", "id": "d0f039a55c6a435288f207cea8a2e9ab" }],
   // 일일 예산 카운터와 경로 응답 캐시. 무료 플랜은 SQLite 기반 DO만 쓸 수 있다.
   "durable_objects": {
     "bindings": [

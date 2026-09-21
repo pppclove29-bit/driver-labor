@@ -57,7 +57,7 @@
    npx wrangler kv namespace create CTRL
    ```
 
-   출력된 `id`를 알려주면 에이전트가 `wrangler.jsonc`의 자리표시(`00000000000000000000000000000000`)를 바꾼다. 사람이 직접 고쳐도 된다.
+   **완료(2026-09-21): `d0f039a55c6a435288f207cea8a2e9ab`.** `wrangler.jsonc`에 반영했다.
 3. 배포에 필요한 secret 두 개를 넣는다(외부 API 키가 아니라 이 앱이 스스로 쓰는 값이다).
 
    ```bash
