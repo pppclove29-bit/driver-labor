@@ -80,9 +80,9 @@
 
 | 값 | 누가 | 메모 |
 |---|---|---|
-| Worker 이름(= 주소) | 사람 | 지금 `driver-labor` → `https://driver-labor.<계정>.workers.dev` |
-| 개인정보처리방침 시행일 | 사람 | 공개일로 |
-| 문의 이메일 | 사람 | 앱 전용 주소를 새로 만들기로 함. 정해지면 `apps/site/privacy.html`에 채운다 |
+| Worker 이름(= 주소) | — | **확정: `driver-labor`** → `https://driver-labor.<계정>.workers.dev` |
+| 개인정보처리방침 시행일 | — | 2026-09-21로 넣었다. 실제 공개일이 다르면 고친다 |
+| 문의 이메일 | — | **확정: musikga1116@gmail.com** (세 앱 공용). 페이지에 채웠다 |
 
 ## 3. 배포 명령과 순서
 
@@ -127,6 +127,6 @@ pnpm run deploy    # 실제 배포 (assets + Worker + DO + Cron)
 | `ALLOWED_ORIGINS` | 기본값(`https://localhost`)으로 충분. 웹에서 테스트할 주소가 생기면 추가 | 코드 |
 | Turnstile 위젯 호스트 | 실제 키를 받은 뒤 등록 | 사람 |
 | 스토어 등록정보 | 개인정보처리방침 URL = `https://<주소>/privacy` | 사람 |
-| `apps/site/privacy.html` | 시행일, 문의 이메일 | 코드(값 확정 후) |
+| `apps/site/privacy.html` | 실제 공개일이 2026-09-21과 다르면 시행일만 | 코드 |
 
 이 값들을 채운 뒤 릴리스 AAB를 만들어야 앱에서 자동 조회와 결과 링크가 제 주소를 가리킨다.
