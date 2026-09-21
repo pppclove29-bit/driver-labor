@@ -13,7 +13,7 @@
     "dev:web": "pnpm --filter @dl/web dev",
     "dev:result": "pnpm --filter @dl/result dev",
     "dev:worker": "pnpm --filter @dl/worker dev",
-    "build": "pnpm --filter @dl/web build && pnpm --filter @dl/result build && pnpm --filter @dl/worker build",
+    "build": "pnpm --filter @dl/result build && pnpm --filter @dl/worker build",
     "typecheck": "pnpm -r --no-bail exec tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."

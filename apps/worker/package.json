@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "assets": "node scripts/collect-assets.mjs",
-    "dev": "pnpm --filter @dl/web build && pnpm --filter @dl/result build && pnpm run assets && node scripts/ensure-dev-vars.mjs && wrangler dev --test-scheduled",
+    "dev": "pnpm --filter @dl/result build && pnpm run assets && node scripts/ensure-dev-vars.mjs && wrangler dev --test-scheduled",
     "build": "pnpm run assets && wrangler deploy --dry-run --outdir .wrangler/build",
     "deploy": "pnpm run assets && wrangler deploy"
   },

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0E6B47" />
+    <title>개인정보처리방침 — 오늘 운전 완료</title>
+    <meta
+      name="description"
+      content="여행 기록은 폰에만 저장합니다. 서버로 가는 값은 장소 검색어, 고른 장소 좌표, 시·도 코드, 사람 확인 토큰뿐입니다."
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header><a href="/">오늘 운전 완료</a></header>
+      <nav>
+        <a href="/guide">사용 가이드</a>
+        <a href="/calc">계산 방법</a>
+        <a href="/privacy">개인정보처리방침</a>
+      </nav>
+
+      <h1>개인정보처리방침</h1>
+      <p class="dim">시행일: (배포일에 채운다) · 앱: 오늘 운전 완료 (kr.driverlabor.app)</p>
+
+      <section>
+        <h2>1. 개요</h2>
+        <p>
+          이 앱은 로그인이 없고 여행 기록을 서버에 저장하지 않습니다. 기록은 사용자의 기기에만
+          남습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. 기기에만 저장하는 것</h2>
+        <p>
+          여행 날짜와 시각, 도착지 이름, 멤버 이름, 금액, 괘씸·결제 기록, 앱 설정. 앱을 지우면 함께
+          사라지며 별도의 백업 기능을 제공하지 않습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>3. 서버로 전송하는 것과 이유</h2>
+        <table>
+          <tr>
+            <th>값</th>
+            <th>이유</th>
+            <th>보관</th>
+          </tr>
+          <tr>
+            <td>장소 검색어</td>
+            <td>장소를 찾기 위해</td>
+            <td>저장하지 않음</td>
+          </tr>
+          <tr>
+            <td>사용자가 고른 장소의 좌표</td>
+            <td>거리·통행료·택시 예상요금 조회</td>
+            <td>
+              조회 결과를 최대 6시간 캐시. 캐시 키는 좌표를 비밀 값과 섞은 해시라 좌표 원문은 남지
+              않음
+            </td>
+          </tr>
+          <tr>
+            <td>시·도 코드와 유종</td>
+            <td>지역 평균 유가 조회</td>
+            <td>저장하지 않음</td>
+          </tr>
+          <tr>
+            <td>사람 확인 토큰(Cloudflare Turnstile)</td>
+            <td>자동 프로그램의 남용 방지</td>
+            <td>저장하지 않음</td>
+          </tr>
+        </table>
+        <p>
+          위 값은 조회를 위해 외부 서비스(카카오모빌리티, 카카오 로컬, TMAP, 한국석유공사 오피넷,
+          Cloudflare)에 전달됩니다. 사용자의 IP 주소는 이 회사들에 전달되지 않습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>4. 수집하지 않는 것</h2>
+        <p>
+          기기 위치(위치 권한을 요청하지 않습니다), 연락처, 계정 정보, 광고 식별자, 결제 정보.
+          광고를 넣지 않습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. 보관 기간</h2>
+        <p>
+          서버는 사용자 데이터를 보관하지 않습니다. 조회 응답 캐시는 최대 6시간이며 개인을 알아볼 수
+          없습니다. 오류 로그에는 오류 코드만 남기고 요청 내용·검색어·좌표는 남기지 않습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>6. 결과 링크</h2>
+        <p>
+          정산 결과를 공유하면 금액과 이름이 링크 주소의 <code>#</code> 뒤에 담깁니다. 이 부분은
+          브라우저가 서버로 전송하지 않으므로 서버 기록에 남지 않습니다. 링크를 누구에게 보낼지는
+          사용자가 정합니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. 아동</h2>
+        <p>만 14세 미만을 대상으로 하지 않습니다.</p>
+      </section>
+
+      <section>
+        <h2>8. 이용자의 권리와 문의</h2>
+        <p>
+          서버에 개인정보가 없어 열람·정정·삭제 요청의 대상이 되는 정보가 없습니다. 앱을 삭제하면
+          모든 기록이 지워집니다. 문의: (배포일에 이메일을 채운다)
+        </p>
+      </section>
+
+      <section>
+        <h2>9. 변경 고지</h2>
+        <p>방침이 바뀌면 이 페이지에 변경 날짜와 함께 올립니다.</p>
+      </section>
+
+      <footer>
+        <p><a href="/">처음으로</a></p>
+      </footer>
+    </main>
+  </body>
+</html>

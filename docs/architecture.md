@@ -68,7 +68,7 @@ Worker 안에서 제공자별 응답을 같은 형식(구간별 거리, 시간, 
 | `GET /api/fuel/stations` (2차) | 사용자가 고른 지점 좌표(소수점 2자리, 약 1km 단위로 뭉갬), 유종           | 주변 주유소와 가격                                                                                                            | 기기 현재 위치는 쓰지 않음. 오피넷 좌표계(KATEC)로 변환 후 조회, 10분 캐시                 |
 | `/r#v1.…`                      | 링크 조각의 압축 결과                                                     | 영수증 화면                                                                                                                   | Worker 정적 자산으로 서빙                                                                  |
 | `OPTIONS /api/*`               | 사전 요청                                                                 | CORS 허용 헤더                                                                                                                | 앱 WebView 출처(`https://localhost`)와 개발 주소만 허용                                    |
-| `/`                            | —                                                                         | 앱 소개·사용 가이드·계산 방법·개인정보처리방침                                                                                | 정적 자산. 입력 화면은 앱이 들고 있어 웹으로 서빙하지 않는다                               |
+| `/`, `/guide`, `/calc`, `/privacy` | —                                                                     | 앱 소개·사용 가이드·계산 방법·개인정보처리방침 (`apps/site`)                                                                  | 정적 자산. 입력 화면은 앱이 들고 있어 웹으로 서빙하지 않는다                               |
 
 ### 결과 링크 구조
 
@@ -262,6 +262,7 @@ Rate Limiting 바인딩은 Cloudflare 위치별로 대략 세는 방식이라 �
 | Cron | `0 * * * *` 하나. 매시 사용률 알림, KST 0·6·12·18시 유가 갱신 |
 | 로그 | `console.error`로 오류 코드만(`upstream_unavailable` 등). 요청 본문·검색어·좌표·IP는 남기지 않는다(`test/no-log.test.ts`) |
 | 로컬 개발 | `pnpm dev:worker` → `.dev.vars`(UPSTREAM=fixtures)로 fixtures 응답. `/__scheduled?cron=0+*+*+*+*`로 Cron 실행 |
+| 정적 자산 | `apps/site`(소개·정책 페이지)가 `/`, `apps/result` 빌드가 `/r`. `html_handling: drop-trailing-slash`라 `/r#…` 링크가 넘김 없이 열린다 |
 | CORS | 기본 허용은 앱 WebView(`https://localhost`). 개발 주소는 `ALLOWED_ORIGINS`에 쉼표로 더한다. 사전 요청(OPTIONS)은 예산·세션을 건드리지 않는다 |
 | 앱 주소 설정 | 앱 빌드의 `VITE_API_BASE`·`VITE_RESULT_BASE`(apps/web/.env.app). 배포 주소가 정해지면 `.env.app.local`로 넣는다 |
 | 평문 예외 | 에뮬레이터에서 로컬 Worker를 부르려고 **디버그 빌드에만** 연다. 확인: 릴리스 APK의 `assets/capacitor.config.json`에 `allowMixedContent: false`, 릴리스 병합 매니페스트에 `networkSecurityConfig`·`usesCleartextTraffic` 없음 |

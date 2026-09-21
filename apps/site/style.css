@@ -1,0 +1,102 @@
+/* 소개·정책 페이지. 외부 스크립트·폰트·분석 도구를 쓰지 않는다. */
+:root {
+  --sign: #0e6b47;
+  --bg: #f3f4f2;
+  --card: #ffffff;
+  --ink: #1e2124;
+  --ink-dim: #5c6360;
+  --line: #dfe3e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --card: #101312;
+    --ink: #e7eae8;
+    --ink-dim: #9aa3a0;
+    --line: #222725;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+header a {
+  color: var(--sign);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 24px;
+}
+
+nav a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 15px;
+}
+
+h1 {
+  font-size: 28px;
+  margin: 16px 0 8px;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 32px 0 8px;
+}
+
+section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.dim {
+  color: var(--ink-dim);
+}
+
+footer {
+  margin-top: 40px;
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 8px 4px;
+  text-align: left;
+  vertical-align: top;
+}

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0E6B47" />
+    <title>계산 방법 — 오늘 운전 완료</title>
+    <meta
+      name="description"
+      content="유류비·통행료·운전 수고비·난이도·괘씸모드를 어떻게 계산하는지 설명합니다."
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header><a href="/">오늘 운전 완료</a></header>
+      <nav>
+        <a href="/guide">사용 가이드</a>
+        <a href="/calc">계산 방법</a>
+        <a href="/privacy">개인정보처리방침</a>
+      </nav>
+      <h1>계산 방법</h1>
+      <p>
+        금액은 원 단위로 계산하고, 반올림 차이는 운전자 몫에서 흡수해 차액 합계가 항상 0이 되게
+        합니다.
+      </p>
+
+      <section>
+        <h2>공통비 — 기름값과 통행료</h2>
+        <p>
+          유류비는 <strong>구간 거리 ÷ 연비 × 유가</strong>입니다. 연비는 기본 12km/L이고 고칠 수
+          있습니다. 유가는 출발지 시·도의 평균가(한국석유공사 오피넷)를 쓰고, 주유 기록을 넣으면 그
+          이후 구간은 주유 단가로 계산합니다.
+        </p>
+        <p>
+          통행료는 경로 조회값을 쓰고, 통행료 결제 기록이 있으면 그 금액을 구간 거리 비율로
+          나눕니다.
+        </p>
+        <p>공통비는 그 구간에 탄 사람 수로 나눕니다. 중간에 내린 사람은 내린 구간까지만 냅니다.</p>
+      </section>
+
+      <section>
+        <h2>운전 수고비</h2>
+        <p>
+          <strong>운전 시간 × 기준 시급 × 난이도</strong>를 비운전 탑승자가 나눕니다. 기준 시급은
+          최저시급을 기본값으로 두고 고칠 수 있습니다.
+        </p>
+        <p>
+          택시형으로 바꾸면 (택시 예상요금 − 공통비)의 30%를 수고비로 보되, 시급형의 1.5~2.0배
+          범위로 자릅니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>난이도 (1.0~2.0)</h2>
+        <table>
+          <tr>
+            <th>요소</th>
+            <th>계산</th>
+            <th>범위</th>
+          </tr>
+          <tr>
+            <td>정체</td>
+            <td>실제 시간 ÷ 예상 시간 − 1</td>
+            <td>0 ~ +0.3</td>
+          </tr>
+          <tr>
+            <td>야간</td>
+            <td>22~06시 운전 비율</td>
+            <td>0 ~ +0.3</td>
+          </tr>
+          <tr>
+            <td>연속 운전</td>
+            <td>쉬지 않고 2시간을 넘긴 비율</td>
+            <td>0 ~ +0.2</td>
+          </tr>
+          <tr>
+            <td>도로 유형</td>
+            <td>원활한데 40km/h 미만인 도로 비율</td>
+            <td>0 ~ +0.1</td>
+          </tr>
+          <tr>
+            <td>기상</td>
+            <td>비·눈 체크</td>
+            <td>+0.2</td>
+          </tr>
+          <tr>
+            <td>체감</td>
+            <td>운전자가 고른 3단계</td>
+            <td>−0.1 ~ +0.1</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>괘씸모드 (선택)</h2>
+        <p>
+          조수석 수면 20분당 +1점처럼 항목별 점수를 모아 <strong>배수 = 1 + 0.1 × 점수</strong>로
+          만들고, 그 사람의 수고비 몫에 곱합니다. 점수는 구간·사람당 10점, 배수는 2.0을 넘지
+          않습니다. 끄고 쓸 수 있습니다.
+        </p>
+      </section>
+
+      <section>
+        <h2>정산</h2>
+        <p>
+          사람마다 <strong>낸 돈 − 자기 몫</strong>으로 차액을 구하고, 차액이 큰 사람부터 순서대로
+          묶어 송금 횟수를 줄입니다.
+        </p>
+        <p class="dim">금액은 앱을 쓴 사람이 입력한 값 기준입니다. 송금 전에 서로 확인하세요.</p>
+      </section>
+
+      <footer>
+        <p><a href="/guide">사용 가이드 보기</a></p>
+      </footer>
+    </main>
+  </body>
+</html>
