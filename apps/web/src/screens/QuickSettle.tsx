@@ -1,5 +1,5 @@
-// S3 빠른 정산. 여행 중 앱을 못 켰거나 기록이 귀찮았던 여행을 위한 입구.
-// 기록이 없다는 이유로 정산을 포기하지 않게 한다.
+// S3 지난 여행 입력. 출발할 때 "시작"을 못 누른 여행을 위한 입구다.
+// 시작을 깜빡했거나 남의 차를 탔던 여행도 정산을 포기하지 않게 한다.
 
 import { useState } from 'react';
 
@@ -74,8 +74,8 @@ export function QuickSettle({
 
   return (
     <Screen
-      title="빠른 정산"
-      sub="기록을 안 한 여행도 4개만 넣으면 정산됩니다"
+      title="지난 여행 입력"
+      sub="도착지·인원·시각만 넣으면 정산됩니다"
       onBack={onBack}
       bottom={
         <button type="button" className="btn btn--primary" disabled={!valid} onClick={settle}>

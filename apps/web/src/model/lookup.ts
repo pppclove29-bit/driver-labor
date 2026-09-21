@@ -114,7 +114,7 @@ export function applyFuel(
 }
 
 /**
- * 출발 직후(또는 빠른 정산 직후) 경로 1회·유가 1회 조회.
+ * 도착지를 고른 시점(또는 지난 여행 입력 직후) 경로 1회·유가 1회 조회.
  * 조회는 오래 걸릴 수 있으므로, 그 사이 사용자가 바꾼 최신 여행에 결과만 얹는 함수를 돌려준다.
  */
 export async function fetchTripLookups(

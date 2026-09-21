@@ -213,7 +213,7 @@ describe('S9a 용서하기', () => {
   });
 });
 
-describe('S3 빠른 정산', () => {
+describe('S3 지난 여행 입력', () => {
   it('도착지·인원·시각만으로 차액 합계 0이 나온다', () => {
     const trip = newTrip({
       id: 'q1',
