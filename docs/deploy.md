@@ -60,13 +60,22 @@
    **완료(2026-09-21): `d0f039a55c6a435288f207cea8a2e9ab`.** `wrangler.jsonc`에 반영했다.
 3. 배포에 필요한 secret 두 개를 넣는다(외부 API 키가 아니라 이 앱이 스스로 쓰는 값이다).
 
+   **Node 22가 필요하다.** 셸에서 20이 잡히면 실패하므로 경로를 앞에 붙인다.
+
    ```bash
-   npx wrangler secret put SESSION_SECRET   # 세션 토큰 서명, IP 해시 솔트
-   npx wrangler secret put CACHE_SECRET     # 캐시 키 해시
+   export PATH="$HOME/.nvm/versions/node/v22.22.2/bin:$PATH"
+   cd ~/driver-labor/apps/worker
+   openssl rand -base64 32 | npx wrangler secret put SESSION_SECRET   # 세션 토큰 서명, IP 해시 솔트
+   openssl rand -base64 32 | npx wrangler secret put CACHE_SECRET     # 캐시 키 해시
    ```
 
-   값은 각각 무작위 32바이트 이상. 예: `openssl rand -base64 32`. 비밀번호 관리자에 보관한다.
-   **둘 중 하나라도 없으면 `/api`는 전부 503이다**(정적 페이지는 영향 없음).
+   - 파이프로 넣으면 값이 화면에 남지 않는다. 대신 보관도 안 되므로, 값을 남기려면
+     `openssl rand -base64 32`로 먼저 출력해 복사한 뒤 `npx wrangler secret put <이름>`에 붙여 넣는다.
+   - 두 값은 서로 달라야 한다.
+   - Worker가 아직 없을 때 대화형으로 실행하면 "만들까요?"를 묻는다. 파이프(비대화형)로 넣으면
+     자동으로 만들어진다.
+   - **둘 중 하나라도 없으면 `/api`는 전부 503이다**(정적 페이지는 영향 없음).
+   - secret은 넣는 즉시 반영된다. 다시 배포하지 않아도 된다.
 4. Rate Limiting 바인딩을 무료 플랜에서 쓸 수 있는지 확인한다. 배포가 그 이유로 실패하면 `wrangler.jsonc`의 `ratelimits` 블록을 지우고 다시 배포한다(세션 분당 제한은 Durable Object가 대신 센다).
 
 ### 코드로 준비된 것 (이미 되어 있음)
@@ -92,6 +101,17 @@ pnpm run build     # 정적 자산 모으기 + dry-run 확인
 pnpm run deploy    # 실제 배포 (assets + Worker + DO + Cron)
 ```
 
+저장소 루트에서 부를 때는 **`pnpm --filter @dl/worker run deploy`**로 쓴다. `run`을 빼면
+pnpm 내장 `deploy` 명령과 충돌해 `ERR_PNPM_INVALID_DEPLOY_TARGET`이 난다.
+
+### 2026-09-21 첫 배포 기록
+
+- 주소: `https://driver-labor.pppclove29.workers.dev` (계정 pppclove29@gmail.com)
+- **개인정보처리방침 URL: `https://driver-labor.pppclove29.workers.dev/privacy`** — 스토어에 넣을 주소
+- Cron `0 * * * *` 등록됨
+- `workers.dev` 라우트와 Preview URL이 설정에 없어 기본값으로 켜졌다(경고). 끄려면
+  `wrangler.jsonc`에 `"preview_urls": false`를 넣는다.
+
 `deploy`는 `pnpm run assets`를 먼저 돌리므로 `apps/result` 빌드가 되어 있어야 한다(루트 `pnpm build`가 해준다).
 
 ## 4. 배포 후 확인 절차
@@ -104,6 +124,8 @@ pnpm run deploy    # 실제 배포 (assets + Worker + DO + Cron)
 4. `https://<주소>/r` → 결과 보기 페이지(빈 링크라 "손상된 링크" 안내가 정상)
 5. `curl -i https://<주소>/api/route -X POST -H 'content-type: application/json' -d '{"points":[{"lat":37.5,"lng":127.0}]}'` → **400**(입력 검증이 먼저 걸린다)
 6. `curl -X POST https://<주소>/api/session -H 'content-type: application/json' -d '{"turnstileToken":"x"}'` → **401**(Turnstile secret 없음). SESSION_SECRET·CACHE_SECRET을 안 넣었다면 503이 온다 — 그러면 2·3단계로 돌아간다
+   - secret을 넣은 뒤 다시 확인하는 순서: `npx wrangler secret list`로 두 개 확인 → 5번이 400으로
+     바뀌는지 → 6번이 401로 바뀌는지. 유가(`/api/fuel/avg`)는 오피넷 키를 받기 전까지 503이 정상이다
 7. Cloudflare 대시보드에서 Durable Object 두 개와 Cron 트리거가 만들어졌는지 확인
 8. 앱(에뮬레이터)에서 결과 링크를 만들어 그 주소로 열리는지 확인 — 앱 빌드에 주소를 넣은 뒤에 한다(6장)
 
