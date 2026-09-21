@@ -35,7 +35,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['apps/worker/scripts/**', 'vitest.config.ts', 'eslint.config.js'],
+    files: [
+      'apps/worker/scripts/**',
+      'apps/mobile/scripts/**',
+      'vitest.config.ts',
+      'eslint.config.js',
+    ],
     languageOptions: {
       globals: { ...globals.node },
     },
