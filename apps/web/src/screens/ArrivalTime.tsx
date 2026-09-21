@@ -3,19 +3,8 @@
 
 import { useState } from 'react';
 
-import { checkArrival, LONG_TRIP_MS } from '../model/meter.js';
+import { checkArrival, localParts, LONG_TRIP_MS, partsToIso } from '../model/meter.js';
 import { Card, Screen } from '../ui/parts.jsx';
-
-const localParts = (iso: string): { date: string; time: string } => {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return {
-    date: `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
-    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
-  };
-};
-
-const toIso = (date: string, time: string): string => new Date(`${date}T${time}`).toISOString();
 
 export function ArrivalTime({
   startedAt,
@@ -33,7 +22,7 @@ export function ArrivalTime({
   const [date, setDate] = useState(initial.date);
   const [time, setTime] = useState(initial.time);
 
-  const arriveIso = toIso(date, time);
+  const arriveIso = partsToIso(date, time);
   const check = checkArrival(startedAt, arriveIso);
   const hours = Math.round(LONG_TRIP_MS / 3_600_000);
 

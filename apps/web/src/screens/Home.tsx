@@ -3,7 +3,7 @@
 import type { AppTrip } from '../model/trip.js';
 import { appVersion } from '../config.js';
 import { day, duration } from '../model/format.js';
-import { ASK_ARRIVAL_AFTER_MS, elapsedMinutes } from '../model/meter.js';
+import { homeState } from '../model/meter.js';
 import { STORAGE_LINE } from '../model/notice.js';
 import { Card, Screen } from '../ui/parts.jsx';
 
@@ -23,11 +23,9 @@ export function Home({
   onQuick: () => void;
   onOpen: (trip: AppTrip) => void;
 }) {
-  const active = trips.find((t) => t.status !== 'settled');
   const past = trips.filter((t) => t.status === 'settled');
-  const running = active?.status === 'running' ? active : undefined;
-  const elapsed = running ? elapsedMinutes(running, now) : 0;
-  const late = elapsed * 60_000 >= ASK_ARRIVAL_AFTER_MS;
+  const { mode, trip: active, elapsedMinutes: elapsed, nudge } = homeState(trips, now);
+  const running = mode === 'complete' ? active : undefined;
 
   return (
     <Screen
@@ -68,7 +66,7 @@ export function Home({
           <p className="dim" style={{ margin: 0 }}>
             {day(running.createdAt)} 출발 · 시간을 재고 있어요
           </p>
-          {late ? (
+          {nudge ? (
             <div className="note" style={{ marginTop: 10 }}>
               아직 진행 중이에요. 도착 시각을 넣어 주세요.
             </div>

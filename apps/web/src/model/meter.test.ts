@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { ASK_ARRIVAL_AFTER_MS, checkArrival, elapsedMinutes, needsArrivalTime } from './meter.js';
+import {
+  ASK_ARRIVAL_AFTER_MS,
+  checkArrival,
+  elapsedMinutes,
+  homeState,
+  localParts,
+  needsArrivalTime,
+  partsToIso,
+} from './meter.js';
 import { newTrip } from './trip.js';
 
 const START = '2026-09-21T09:00:00.000Z';
@@ -32,5 +40,40 @@ describe('미터기', () => {
 describe('운전 시간 출처', () => {
   it('시작 버튼으로 만든 여행은 앱이 잰 값', () => {
     expect(trip().timeSource).toBe('app');
+  });
+});
+
+describe('홈 화면 상태', () => {
+  const running = () => trip();
+  const arrived = () => ({ ...trip(), status: 'arrived' as const });
+  const settled = () => ({ ...trip(), status: 'settled' as const });
+
+  it('여행이 없으면 시작', () => {
+    expect(homeState([], at(0))).toMatchObject({ mode: 'start', elapsedMinutes: 0, nudge: false });
+    expect(homeState([settled()], at(0)).mode).toBe('start');
+  });
+
+  it('시간을 재는 중이면 완료와 경과 시간', () => {
+    const state = homeState([running()], at(134 * 60_000));
+    expect(state.mode).toBe('complete');
+    expect(state.elapsedMinutes).toBe(134);
+    expect(state.nudge).toBe(false);
+  });
+
+  it('6시간이 지나면 안내를 켠다', () => {
+    expect(homeState([running()], at(ASK_ARRIVAL_AFTER_MS)).nudge).toBe(true);
+  });
+
+  it('완료를 눌러 입력 중이면 이어서 입력', () => {
+    expect(homeState([arrived()], at(0))).toMatchObject({ mode: 'continue', nudge: false });
+  });
+});
+
+describe('도착 시각 입력칸', () => {
+  it('지역 시각 칸과 ISO를 오간다', () => {
+    const iso = new Date(2026, 8, 21, 14, 5).toISOString();
+    const parts = localParts(iso);
+    expect(parts).toEqual({ date: '2026-09-21', time: '14:05' });
+    expect(partsToIso(parts.date, parts.time)).toBe(iso);
   });
 });

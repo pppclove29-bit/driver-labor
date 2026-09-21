@@ -35,3 +35,44 @@ export function checkArrival(departIso: string, arriveIso: string): ArrivalCheck
   if (arrive - depart > LONG_TRIP_MS) return 'too-long';
   return 'ok';
 }
+
+/** 날짜·시각 입력칸에 넣을 지역 시각 문자열. */
+export function localParts(iso: string): { date: string; time: string } {
+  const d = new Date(iso);
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return {
+    date: `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  };
+}
+
+/** 날짜·시각 입력칸 값을 ISO로. 기기 시간대 기준이다. */
+export const partsToIso = (date: string, time: string): string =>
+  new Date(`${date}T${time}`).toISOString();
+
+export type HomeMode = 'start' | 'complete' | 'continue';
+
+export interface HomeState {
+  mode: HomeMode;
+  /** 진행 중이거나 입력 중인 여행. 없으면 undefined. */
+  trip?: AppTrip;
+  /** 시작한 뒤 지난 시간(분). 진행 중일 때만 0보다 크다. */
+  elapsedMinutes: number;
+  /** 완료를 오래 안 눌렀을 때의 안내. */
+  nudge: boolean;
+}
+
+/** 홈 화면이 무엇을 보여줄지. 여행은 한 번에 하나만 진행한다. */
+export function homeState(trips: AppTrip[], now: Date): HomeState {
+  const active = trips.find((t) => t.status !== 'settled');
+  if (!active) return { mode: 'start', elapsedMinutes: 0, nudge: false };
+  if (active.status !== 'running') {
+    return { mode: 'continue', trip: active, elapsedMinutes: 0, nudge: false };
+  }
+  return {
+    mode: 'complete',
+    trip: active,
+    elapsedMinutes: elapsedMinutes(active, now),
+    nudge: needsArrivalTime(active, now),
+  };
+}
