@@ -23,7 +23,11 @@ import type {
 } from '@dl/calc';
 
 export type Tone = 'mild' | 'spicy' | 'business';
-export type TripStatus = 'driving' | 'arrived' | 'settled';
+/**
+ * running: "시작"을 눌러 시간을 재는 중. arrived: "완료"를 눌러 도착 후 입력 중.
+ * settled: 정산까지 끝남.
+ */
+export type TripStatus = 'running' | 'arrived' | 'settled';
 
 export interface TripSettings {
   hourlyWageWon: number;
@@ -126,14 +130,15 @@ export function newTrip(params: {
   id: string;
   now: string;
   origin: string;
-  destination: string;
+  /** 도착지는 도착 후에 넣는다. 시작 버튼만 누른 여행은 비어 있다. */
+  destination?: string;
   originPlace?: PlaceRef | undefined;
   destinationPlace?: PlaceRef | undefined;
   driverName: string;
-  companionNames: string[];
+  companionNames?: string[];
 }): AppTrip {
   const driver: Member = { id: 'm0', name: params.driverName, isOwner: true, canDrive: true };
-  const companions: Member[] = params.companionNames.map((name, i) => ({
+  const companions: Member[] = (params.companionNames ?? []).map((name, i) => ({
     id: `m${String(i + 1)}`,
     name,
     isOwner: false,
@@ -144,9 +149,9 @@ export function newTrip(params: {
   return {
     id: params.id,
     createdAt: params.now,
-    status: 'driving',
+    status: 'running',
     origin: params.origin,
-    destination: params.destination,
+    destination: params.destination ?? '',
     ...(params.originPlace ? { originPlace: params.originPlace } : {}),
     ...(params.destinationPlace ? { destinationPlace: params.destinationPlace } : {}),
     members,
@@ -187,6 +192,15 @@ export function arrivalAt(trip: AppTrip, now: Date): string {
   if (!depart) return now.toISOString();
   const least = Date.parse(depart) + 60_000;
   return new Date(Math.max(now.getTime(), least)).toISOString();
+}
+
+/**
+ * 저장소에서 읽은 여행을 지금 형식으로 맞춘다.
+ * 옛 상태값 driving(주행 중 기록 화면이 있던 시절)은 running으로 옮긴다.
+ */
+export function migrateTrip(trip: AppTrip): AppTrip {
+  const status = (trip.status as string) === 'driving' ? 'running' : trip.status;
+  return status === trip.status ? trip : { ...trip, status };
 }
 
 export function memberName(trip: AppTrip, id: MemberId): string {

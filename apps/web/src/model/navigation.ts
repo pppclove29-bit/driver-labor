@@ -3,9 +3,9 @@
 
 export type ScreenId =
   | 'home'
-  | 'new'
   | 'quick'
-  | 'record'
+  | 'started'
+  | 'arriveTime'
   | 'payment'
   | 'arrival'
   | 'penalties'
@@ -17,13 +17,13 @@ export type ScreenId =
 
 const BACK: Record<ScreenId, ScreenId | 'exit'> = {
   home: 'exit',
-  new: 'home',
   quick: 'home',
-  // 여행 중 기록에서 뒤로 가면 홈. 여행은 진행 중인 채로 남는다.
-  record: 'home',
-  payment: 'record',
-  etc: 'record',
-  arrival: 'record',
+  // 시작 확인·도착 시각 확인에서 뒤로 가면 홈. 시간은 계속 재고 있다.
+  started: 'home',
+  arriveTime: 'home',
+  payment: 'timeline',
+  etc: 'penalties',
+  arrival: 'home',
   penalties: 'arrival',
   timeline: 'arrival',
   difficulty: 'arrival',

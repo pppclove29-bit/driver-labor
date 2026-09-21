@@ -2,35 +2,82 @@
 
 import type { AppTrip } from '../model/trip.js';
 import { appVersion } from '../config.js';
-import { day } from '../model/format.js';
+import { day, duration } from '../model/format.js';
+import { ASK_ARRIVAL_AFTER_MS, elapsedMinutes } from '../model/meter.js';
 import { STORAGE_LINE } from '../model/notice.js';
 import { Card, Screen } from '../ui/parts.jsx';
 
 export function Home({
   trips,
-  onNew,
+  now,
+  onStart,
+  onComplete,
   onQuick,
   onOpen,
 }: {
   trips: AppTrip[];
-  onNew: () => void;
+  /** 경과 시간 계산 기준. 테스트에서 고정하려고 받는다. */
+  now: Date;
+  onStart: () => void;
+  onComplete: (trip: AppTrip) => void;
   onQuick: () => void;
   onOpen: (trip: AppTrip) => void;
 }) {
   const active = trips.find((t) => t.status !== 'settled');
   const past = trips.filter((t) => t.status === 'settled');
+  const running = active?.status === 'running' ? active : undefined;
+  const elapsed = running ? elapsedMinutes(running, now) : 0;
+  const late = elapsed * 60_000 >= ASK_ARRIVAL_AFTER_MS;
 
   return (
     <Screen
       title="운전 노동 정산기"
       bottom={
-        <button type="button" className="btn btn--primary" onClick={onNew}>
-          새 여행
-        </button>
+        running ? (
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => {
+              onComplete(running);
+            }}
+          >
+            완료
+          </button>
+        ) : active ? (
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => {
+              onOpen(active);
+            }}
+          >
+            이어서 입력
+          </button>
+        ) : (
+          <button type="button" className="btn btn--primary" onClick={onStart}>
+            시작
+          </button>
+        )
       }
     >
-      {active ? (
+      {running ? (
         <Card label="진행 중">
+          <p className="huge" style={{ margin: 0 }}>
+            {duration(elapsed)}
+          </p>
+          <p className="dim" style={{ margin: 0 }}>
+            {day(running.createdAt)} 출발 · 시간을 재고 있어요
+          </p>
+          {late ? (
+            <div className="note" style={{ marginTop: 10 }}>
+              아직 진행 중이에요. 도착 시각을 넣어 주세요.
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {active && !running ? (
+        <Card label="입력 중">
           <button
             type="button"
             className="row"
@@ -39,11 +86,9 @@ export function Home({
             }}
           >
             <span>
-              <span className="big">{active.destination}</span>
+              <span className="big">{active.destination || '도착지 미입력'}</span>
               <br />
-              <span className="dim">
-                {active.origin} 출발 · {day(active.createdAt)}
-              </span>
+              <span className="dim">{day(active.createdAt)}</span>
             </span>
             <span className="dim">›</span>
           </button>
@@ -74,7 +119,7 @@ export function Home({
 
       {!active && past.length === 0 ? (
         <Card>
-          <p>아직 여행이 없어요. 출발지와 도착지만 넣으면 운전자 몫을 계산해 드려요.</p>
+          <p>출발할 때 시작을 누르고 폰을 덮으세요. 도착해서 완료만 누르면 정산해 드려요.</p>
           <p className="screen__sub" style={{ margin: 0 }}>
             {STORAGE_LINE}
           </p>
@@ -83,11 +128,11 @@ export function Home({
 
       <button type="button" className="row" onClick={onQuick}>
         <span>
-          앱을 못 켰나요?
+          시작을 못 눌렀나요?
           <br />
-          <span className="dim">도착지·인원·시각만으로 바로 정산</span>
+          <span className="dim">도착지·인원·시각만 넣으면 정산돼요</span>
         </span>
-        <span className="dim">빠른 정산 ›</span>
+        <span className="dim">지난 여행 입력 ›</span>
       </button>
 
       {appVersion() ? (

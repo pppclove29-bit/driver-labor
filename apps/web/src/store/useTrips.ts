@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PlaceRef } from '../api/client.js';
 import type { AppTrip, TripSettings } from '../model/trip.js';
-import { DEFAULT_SETTINGS } from '../model/trip.js';
+import { DEFAULT_SETTINGS, migrateTrip } from '../model/trip.js';
 
 export interface Preferences {
   settings: TripSettings;
@@ -52,7 +52,11 @@ export function useTrips(storage?: Storage): TripStore {
       const rows = await db.list<AppTrip>('trips');
       const prefs = await db.get<Preferences>('settings', 'preferences');
       if (!alive) return;
-      setTrips(rows.map((r) => r.value).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+      setTrips(
+        rows
+          .map((r) => migrateTrip(r.value))
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      );
       setPreferences(prefs ?? DEFAULT_PREFERENCES);
       setReady(true);
     })();

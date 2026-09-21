@@ -4,9 +4,9 @@ import { backTarget, type ScreenId } from './navigation.js';
 
 const ALL: ScreenId[] = [
   'home',
-  'new',
   'quick',
-  'record',
+  'started',
+  'arriveTime',
   'payment',
   'arrival',
   'penalties',
@@ -19,8 +19,8 @@ const ALL: ScreenId[] = [
 
 describe('뒤로 가기', () => {
   it('선택 화면은 연 화면으로 돌아간다', () => {
-    expect(backTarget('payment')).toBe('record');
-    expect(backTarget('etc')).toBe('record');
+    expect(backTarget('payment')).toBe('timeline');
+    expect(backTarget('etc')).toBe('penalties');
     expect(backTarget('timeline')).toBe('arrival');
     expect(backTarget('penalties')).toBe('arrival');
     expect(backTarget('difficulty')).toBe('arrival');
@@ -28,9 +28,10 @@ describe('뒤로 가기', () => {
   });
 
   it('시작 화면들은 홈으로, 홈에서는 앱을 닫는다', () => {
-    expect(backTarget('new')).toBe('home');
     expect(backTarget('quick')).toBe('home');
-    expect(backTarget('record')).toBe('home');
+    expect(backTarget('started')).toBe('home');
+    expect(backTarget('arriveTime')).toBe('home');
+    expect(backTarget('arrival')).toBe('home');
     expect(backTarget('result')).toBe('home');
     expect(backTarget('home')).toBe('exit');
   });
