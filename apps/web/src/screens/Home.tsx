@@ -2,6 +2,7 @@
 
 import type { AppTrip } from '../model/trip.js';
 import { day } from '../model/format.js';
+import { STORAGE_LINE } from '../model/notice.js';
 import { Card, Screen } from '../ui/parts.jsx';
 
 export function Home({
@@ -73,6 +74,9 @@ export function Home({
       {!active && past.length === 0 ? (
         <Card>
           <p>아직 여행이 없어요. 출발지와 도착지만 넣으면 운전자 몫을 계산해 드려요.</p>
+          <p className="screen__sub" style={{ margin: 0 }}>
+            {STORAGE_LINE}
+          </p>
         </Card>
       ) : null}
 

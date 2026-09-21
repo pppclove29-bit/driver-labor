@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from './api/index.js';
 import { backTarget, type ScreenId } from './model/navigation.js';
 import { needsNotice, NOTICE_VERSION } from './model/notice.js';
+import { keepStorage } from './model/persist.js';
 import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
 import { arrivalAt, newTrip, withEstimatedRoute } from './model/trip.js';
@@ -78,6 +79,11 @@ export function App({ storage }: { storage?: Storage }) {
     },
     [patch],
   );
+
+  // 기록은 폰에만 있으므로 시스템이 저장소를 비우지 않도록 한 번 부탁한다.
+  useEffect(() => {
+    void keepStorage(typeof navigator === 'undefined' ? undefined : navigator.storage);
+  }, []);
 
   // 오프라인이라 미룬 조회(조회 대기)는 앱을 열 때와 연결이 돌아올 때 다시 한다.
   useEffect(() => {
