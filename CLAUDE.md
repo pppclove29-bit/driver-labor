@@ -31,7 +31,7 @@
 - `apps/web` 앱 화면 (Vite + React). Capacitor가 그대로 담는다
 - `apps/mobile` Capacitor 설정과 안드로이드 프로젝트 (앱 ID `kr.driverlabor.app`)
 - `apps/result` 결과 보기 정적 페이지 (Vite, 외부 스크립트 없음)
-- `apps/worker` Cloudflare Worker (/api, Durable Object 예산 카운터, KV, Cron, `/r`과 소개·정책 페이지 서빙)
+- `apps/worker` Cloudflare Worker (/api, Durable Object 예산 카운터, KV, Cron, 정적 자산 서빙: 지금은 `/`에 앱 화면, `/r`에 결과 보기. 입력 웹을 걷어내면 `/`는 소개·정책 페이지)
 
 ## 코딩 규칙
 - 금액은 원 단위 정수. 1원 미만은 반올림, 반올림 차이는 운전자 몫에서 흡수(차액 합계 항상 0)
