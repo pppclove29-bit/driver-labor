@@ -1,11 +1,14 @@
 // S10 정산 결과. 운전자가 받을 돈을 가장 크게 두고, 말투를 고르면 사유 문장이 바로 바뀐다.
 // 금액은 말투와 무관하게 같다.
 
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { settleTrip } from '@dl/calc';
 import { useState } from 'react';
 
 import { resultBase } from '../config.js';
 import { buildResultLink } from '../model/link.js';
+import { shareResult } from '../model/share.js';
 
 import { duration, km, signedWon, won } from '../model/format.js';
 import { LOOKUP_LIMIT_MESSAGE, LOOKUP_WAITING_MESSAGE, routeNotice } from '../model/lookup.js';
@@ -63,12 +66,14 @@ export function Result({
     const text = shareText(trip.tone, trip.destination, penalized.size);
     // 링크 발급 후 값을 고치면 예전 결과가 되므로 발급 시각을 남긴다.
     onChange({ ...trip, sharedAt: new Date().toISOString() });
-    if (navigator.share) {
-      await navigator.share({ text, url });
-      return;
-    }
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    setCopied(true);
+    const outcome = await shareResult(text, url, {
+      nativeShare: Capacitor.isNativePlatform()
+        ? (data) => Share.share({ text: data.text, url: data.url }).then(() => undefined)
+        : undefined,
+      webShare: navigator.share ? (data) => navigator.share(data) : undefined,
+      copy: (value) => navigator.clipboard.writeText(value),
+    });
+    if (outcome === 'copied') setCopied(true);
   };
 
   const note = justification(trip.tone);
