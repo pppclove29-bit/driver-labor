@@ -7,11 +7,15 @@
 | `pnpm --filter @dl/mobile dev` | 에뮬레이터용 빌드(`10.0.2.2:8788`) → 설치. 로컬 `pnpm dev:worker`와 함께 쓴다 |
 | `pnpm --filter @dl/mobile sync` | 릴리스 설정으로 `apps/web` 빌드 → `android/`로 복사 |
 | `pnpm --filter @dl/mobile apk` | 릴리스 설정으로 동기화한 뒤 APK 빌드 |
+| `pnpm --filter @dl/mobile aab` | 스토어에 올릴 AAB 빌드. 업로드 키가 설정돼 있으면 서명된다 |
 | `pnpm --filter @dl/mobile install:emulator` | 이미 빌드한 APK를 켜져 있는 기기에 설치 |
 | `pnpm --filter @dl/mobile open` | Android Studio로 열기 |
 
 - 안드로이드 빌드에는 JDK 21이 필요하다. 스크립트가 `JAVA_HOME`을 Android Studio의 JBR로 잡는다.
 - 에뮬레이터: `~/Library/Android/sdk/emulator/emulator -avd fearless_test`
+- **업로드 서명**: `~/.gradle/gradle.properties`에 `DL_UPLOAD_STORE_FILE`·`DL_UPLOAD_STORE_PASSWORD`·
+  `DL_UPLOAD_KEY_ALIAS`·`DL_UPLOAD_KEY_PASSWORD`를 넣으면 release 빌드가 서명된다. 값이 없으면
+  서명 없이 빌드만 된다. 키스토어 파일과 비밀번호는 저장소에 넣지 않는다(`.gitignore`).
 - **버전은 `version.json` 한 곳에서 관리한다.** Gradle과 화면 표시가 같은 값을 쓴다.
   스토어에 올리는 빌드마다 `versionCode`를 1 올리고, 화면·계산이 바뀌면 `versionName`도 올린다.
 - 앱 타깃 빌드(`--mode app`)는 서비스 워커(PWA)를 빼고 자산만 만든다. 앱은 화면을 내장한다.

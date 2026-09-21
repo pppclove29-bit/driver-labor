@@ -8,6 +8,7 @@
     "sync:dev": "CAP_DEV=1 pnpm --filter @dl/web build:app-dev && CAP_DEV=1 cap sync android",
     "open": "cap open android",
     "apk": "pnpm run sync && JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" android/gradlew -p android assembleDebug",
+    "aab": "pnpm run sync && JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" android/gradlew -p android bundleRelease",
     "apk:dev": "pnpm run sync:dev && JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" android/gradlew -p android assembleDebug",
     "install:emulator": "JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" android/gradlew -p android installDebug",
     "dev": "pnpm run apk:dev && pnpm run install:emulator"

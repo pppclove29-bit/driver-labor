@@ -5,6 +5,10 @@ def appVersion = new JsonSlurper().parse(file("../../version.json"))
 
 apply plugin: 'com.android.application'
 
+// 업로드 서명. 값은 저장소가 아니라 ~/.gradle/gradle.properties에 둔다(docs/store-release.md).
+// 값이 없으면 서명하지 않고 빌드만 된다. 다른 사람이 받아도 빌드가 막히지 않는다.
+def hasUploadKey = project.hasProperty('DL_UPLOAD_STORE_FILE')
+
 android {
     namespace = "kr.driverlabor.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -21,10 +25,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasUploadKey) {
+                storeFile file(DL_UPLOAD_STORE_FILE)
+                storePassword DL_UPLOAD_STORE_PASSWORD
+                keyAlias DL_UPLOAD_KEY_ALIAS
+                keyPassword DL_UPLOAD_KEY_PASSWORD
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasUploadKey) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

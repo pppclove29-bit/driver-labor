@@ -9,3 +9,8 @@ coverage/
 .vscode/
 .idea/
 *.log
+
+# 업로드 키스토어와 서명 비밀번호는 저장소에 넣지 않는다 (docs/store-release.md)
+*.jks
+*.keystore
+keystore.properties
