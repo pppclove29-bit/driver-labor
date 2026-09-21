@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  arrivalFor,
   ASK_ARRIVAL_AFTER_MS,
   checkArrival,
   elapsedMinutes,
@@ -40,6 +41,16 @@ describe('미터기', () => {
 describe('운전 시간 출처', () => {
   it('시작 버튼으로 만든 여행은 앱이 잰 값', () => {
     expect(trip().timeSource).toBe('app');
+  });
+});
+
+describe('완료를 바로 눌렀을 때', () => {
+  it('앱이 잰 값이지만 최소 1분은 준다(구간을 만들 수 있게)', () => {
+    expect(arrivalFor(trip(), at(0))).toBe(new Date(Date.parse(START) + 60_000).toISOString());
+    expect(arrivalFor(trip(), at(30_000))).toBe(new Date(Date.parse(START) + 60_000).toISOString());
+    expect(arrivalFor(trip(), at(95 * 60_000))).toBe(
+      new Date(Date.parse(START) + 95 * 60_000).toISOString(),
+    );
   });
 });
 

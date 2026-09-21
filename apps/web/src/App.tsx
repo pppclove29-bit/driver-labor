@@ -12,7 +12,7 @@ import { needsNotice, NOTICE_VERSION } from './model/notice.js';
 import { keepStorage } from './model/persist.js';
 import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
-import { departAt } from './model/meter.js';
+import { arrivalFor, departAt } from './model/meter.js';
 import { newTrip, setPeopleCount, withEstimatedRoute } from './model/trip.js';
 import { Arrival } from './screens/Arrival.jsx';
 import { Difficulty } from './screens/Difficulty.jsx';
@@ -133,7 +133,7 @@ export function App({ storage }: { storage?: Storage }) {
     update({
       ...t,
       status: 'arrived',
-      events: [...t.events, { type: 'arrive', at: new Date().toISOString() }],
+      events: [...t.events, { type: 'arrive', at: arrivalFor(t, new Date()) }],
     });
     setScreen('arrival');
   };

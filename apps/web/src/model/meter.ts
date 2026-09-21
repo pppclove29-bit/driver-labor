@@ -25,6 +25,17 @@ export function needsArrivalTime(trip: AppTrip, now: Date): boolean {
   return now.getTime() - Date.parse(at) >= ASK_ARRIVAL_AFTER_MS;
 }
 
+/**
+ * 완료를 눌렀을 때 기록할 도착 시각. 앱이 잰 값이라 사람에게 묻지 않지만,
+ * 실수로 바로 눌러 여행 길이가 0이 되면 구간을 만들 수 없어 최소 1분으로 본다.
+ */
+export function arrivalFor(trip: AppTrip, now: Date): string {
+  const at = departAt(trip);
+  if (!at) return now.toISOString();
+  const least = Date.parse(at) + 60_000;
+  return new Date(Math.max(now.getTime(), least)).toISOString();
+}
+
 export type ArrivalCheck = 'ok' | 'before-depart' | 'too-long';
 
 /** 도착 시각 검증. 자동으로 잘라내지 않고 사람에게 묻는다. */
