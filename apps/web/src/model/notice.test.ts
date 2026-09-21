@@ -12,9 +12,10 @@ describe('첫 실행 고지', () => {
     expect(needsNotice(NOTICE_VERSION - 1)).toBe(true);
   });
 
-  it('위치는 폰 안에서만 쓰고 백그라운드를 쓰지 않는다고 적혀 있다', () => {
+  it('폰에만 남는 것과 서버로 가는 값만 알린다. 위치 이야기는 없다', () => {
     const text = NOTICE_LINES.join(' ');
-    expect(text).toContain('서버로 보내지 않아요');
-    expect(text).toContain('백그라운드 위치는 쓰지 않아요');
+    expect(text).toContain('이 폰에만 저장돼요');
+    expect(text).toContain('장소 검색어');
+    expect(text).not.toContain('위치');
   });
 });
