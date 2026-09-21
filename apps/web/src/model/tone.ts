@@ -26,7 +26,7 @@ const REASONS: Record<PenaltyKind, Record<Tone, Phrase>> = {
   },
   eatAlone: {
     mild: () => '간식을 혼자 드셨어요',
-    spicy: (c) => `혼자 먹기 ${String(c)}회. 운전자 입은 장식인가요`,
+    spicy: (_m, c) => `혼자 먹기 ${String(c)}회. 운전자 입은 장식인가요`,
     business: (_m, c) => `단독 취식 ${String(c)}회`,
   },
   smellyFood: {
