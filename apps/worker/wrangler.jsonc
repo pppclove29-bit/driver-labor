@@ -3,6 +3,8 @@
   "name": "driver-labor",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-16",
+  // 배포마다 별도 미리보기 주소가 생기지 않게 한다. 방침 URL이 여러 개로 보이면 안 된다.
+  "preview_urls": false,
   // Wrangler 사용 통계를 Cloudflare로 보내지 않는다.
   "send_metrics": false,
   "observability": {

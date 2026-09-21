@@ -109,8 +109,10 @@ pnpm 내장 `deploy` 명령과 충돌해 `ERR_PNPM_INVALID_DEPLOY_TARGET`이 난
 - 주소: `https://driver-labor.pppclove29.workers.dev` (계정 pppclove29@gmail.com)
 - **개인정보처리방침 URL: `https://driver-labor.pppclove29.workers.dev/privacy`** — 스토어에 넣을 주소
 - Cron `0 * * * *` 등록됨
-- `workers.dev` 라우트와 Preview URL이 설정에 없어 기본값으로 켜졌다(경고). 끄려면
-  `wrangler.jsonc`에 `"preview_urls": false`를 넣는다.
+- `workers.dev` 라우트는 켜 두고, Preview URL은 껐다(`"preview_urls": false`). 배포마다 별도 주소가
+  생기면 방침 URL이 여러 개로 보인다.
+- 2026-09-21 2차 배포(`a4b1147f`)에서 방침 페이지의 이메일 자리표시를 고쳤다. 1차 배포본에
+  `(배포일에 이메일을 채운다)`가 그대로 나갔다 — 커밋에서 치환이 실패했는데 확인하지 않고 넘어갔다.
 
 `deploy`는 `pnpm run assets`를 먼저 돌리므로 `apps/result` 빌드가 되어 있어야 한다(루트 `pnpm build`가 해준다).
 
@@ -126,8 +128,18 @@ pnpm 내장 `deploy` 명령과 충돌해 `ERR_PNPM_INVALID_DEPLOY_TARGET`이 난
 6. `curl -X POST https://<주소>/api/session -H 'content-type: application/json' -d '{"turnstileToken":"x"}'` → **401**(Turnstile secret 없음). SESSION_SECRET·CACHE_SECRET을 안 넣었다면 503이 온다 — 그러면 2·3단계로 돌아간다
    - secret을 넣은 뒤 다시 확인하는 순서: `npx wrangler secret list`로 두 개 확인 → 5번이 400으로
      바뀌는지 → 6번이 401로 바뀌는지. 유가(`/api/fuel/avg`)는 오피넷 키를 받기 전까지 503이 정상이다
-7. Cloudflare 대시보드에서 Durable Object 두 개와 Cron 트리거가 만들어졌는지 확인
-8. 앱(에뮬레이터)에서 결과 링크를 만들어 그 주소로 열리는지 확인 — 앱 빌드에 주소를 넣은 뒤에 한다(6장)
+7. **배포본에 자리표시가 남지 않았는지 직접 확인한다.** 커밋했다고 배포된 것이 아니다.
+
+   ```bash
+   B=https://driver-labor.pppclove29.workers.dev
+   curl -s $B/privacy | grep -o "musikga1116@gmail.com" | head -1   # 문의 이메일
+   curl -s $B/privacy | grep -o "시행일: [^<]*" | head -1            # 시행일
+   curl -s $B/privacy | grep -c "채운다"                              # 0이어야 한다
+   ```
+
+   `apps/worker/test/site-pages.test.ts`가 자리표시·외부 스크립트를 미리 막지만, 배포본은 눈으로 확인한다.
+8. Cloudflare 대시보드에서 Durable Object 두 개와 Cron 트리거가 만들어졌는지 확인
+9. 앱(에뮬레이터)에서 결과 링크를 만들어 그 주소로 열리는지 확인 — 앱 빌드에 주소를 넣은 뒤에 한다(6장)
 
 ## 5. 되돌리기
 
