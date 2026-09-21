@@ -164,7 +164,7 @@
 
 - [x] 소개·사용 가이드·계산 방법·개인정보처리방침 페이지(`apps/site`, 외부 스크립트 없음)
 - [x] Worker `/`를 앱 화면 대신 소개·정책 페이지로 바꾸기(`/`, `/guide`, `/calc`, `/privacy`. `/r`은 그대로)
-- [ ] workers.dev 배포 **(사람 승인 필요)**. 방침 URL과 앱의 API·결과 링크 주소가 여기서 확정된다. secret 없이 배포해도 정적 페이지는 뜨고 `/api`만 503이다
+- [ ] workers.dev 배포 **(사람 승인 필요)**. 절차·확인·되돌리기는 `docs/deploy.md`. 방침 URL과 앱의 API·결과 링크 주소가 여기서 확정된다
 - [ ] secret 등록, 실제 키로 소량 통합 테스트 **(사람 승인 필요)**
 - [ ] 배포 주소가 정해지면 `.env.app.local`의 `VITE_API_BASE`·`VITE_RESULT_BASE`, Worker `ALLOWED_ORIGINS`, Turnstile 위젯 호스트, 개인정보처리방침 URL을 채운다
 - [ ] 개인정보처리방침의 시행일·문의 이메일 채우기

@@ -34,6 +34,7 @@ docs/decisions.md와 충돌하거나 애매한 부분이 있으면 먼저 질문
 | `docs/architecture.md` | 시스템 설계 |
 | `docs/decisions.md` | 결정, 확인 사항, 로드맵 |
 | `docs/store-release.md` | 스토어 출시 준비(키스토어, 등록정보 문구, 데이터 보안, 개인정보처리방침 초안) |
+| `docs/deploy.md` | Worker 배포 절차(사전 작업, 명령, 확인, 되돌리기) |
 | `mockups/final.html` | 전체 기획서·목업 원본 |
 | `fixtures/` | 외부 API 샘플 응답 (카카오·TMAP·오피넷) |
 
