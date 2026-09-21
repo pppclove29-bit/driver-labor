@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:app": "vite build --mode app",
+    "build:app-dev": "vite build --mode app-dev",
     "preview": "vite preview"
   },
   "dependencies": {

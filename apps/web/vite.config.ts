@@ -3,13 +3,15 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // 화면 앱. 출시 형태는 안드로이드 앱(Capacitor)이고, 이 빌드 결과를 앱이 그대로 담는다.
-//   `vite build`           웹 빌드(서비스 워커 포함). 개발·미리보기용
-//   `vite build --mode app` 앱 타깃 빌드. 서비스 워커를 빼고 자산만 만든다.
-//                           앱은 화면을 내장하므로 캐시가 두 겹이 되면 업데이트가 꼬인다.
+//   `vite build`               웹 빌드(서비스 워커 포함). 개발·미리보기용
+//   `vite build --mode app`     릴리스 앱 빌드(.env.app)
+//   `vite build --mode app-dev` 에뮬레이터용 앱 빌드(.env.app-dev)
+// 앱 타깃(app*)은 서비스 워커를 빼고 자산만 만든다. 앱은 화면을 내장하므로
+// 캐시가 두 겹이 되면 업데이트가 꼬인다.
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
-    ...(mode === 'app'
+    ...(mode.startsWith('app')
       ? []
       : [
           VitePWA({

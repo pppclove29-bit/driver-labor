@@ -4,6 +4,7 @@
 import { settleTrip } from '@dl/calc';
 import { useState } from 'react';
 
+import { resultBase } from '../config.js';
 import { buildResultLink } from '../model/link.js';
 
 import { duration, km, signedWon, won } from '../model/format.js';
@@ -58,7 +59,7 @@ export function Result({
   };
 
   const share = async (): Promise<void> => {
-    const url = await buildResultLink(trip, result, new Date().toISOString(), location.origin);
+    const url = await buildResultLink(trip, result, new Date().toISOString(), resultBase());
     const text = shareText(trip.tone, trip.destination, penalized.size);
     // 링크 발급 후 값을 고치면 예전 결과가 되므로 발급 시각을 남긴다.
     onChange({ ...trip, sharedAt: new Date().toISOString() });
