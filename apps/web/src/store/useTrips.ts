@@ -13,6 +13,8 @@ export interface Preferences {
   /** 최근 함께한 사람 이름. 동승자 칩에 쓴다. */
   recentCompanions: string[];
   recentOrigin: string;
+  /** 첫 실행 고지를 본 문구 버전. 없으면 아직 못 봤다. */
+  noticeVersion?: number;
   /** 최근 출발지를 검색해서 골랐으면 그 장소. 폰에만 저장한다. */
   recentOriginPlace?: PlaceRef;
   lastTone: AppTrip['tone'];

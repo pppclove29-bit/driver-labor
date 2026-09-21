@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { api } from './api/index.js';
 import { backTarget, type ScreenId } from './model/navigation.js';
+import { needsNotice, NOTICE_VERSION } from './model/notice.js';
 import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
 import { arrivalAt, newTrip, withEstimatedRoute } from './model/trip.js';
@@ -16,6 +17,7 @@ import { EtcPenalty } from './screens/EtcPenalty.jsx';
 import { Edit } from './screens/Edit.jsx';
 import { Home } from './screens/Home.jsx';
 import { NewTrip, type DepartParams } from './screens/NewTrip.jsx';
+import { Notice } from './screens/Notice.jsx';
 import { PenaltyReview } from './screens/PenaltyReview.jsx';
 import { QuickSettle } from './screens/QuickSettle.jsx';
 import { Timeline } from './screens/Timeline.jsx';
@@ -97,6 +99,17 @@ export function App({ storage }: { storage?: Storage }) {
   };
 
   if (!ready) return <div className="screen">불러오는 중…</div>;
+
+  // 첫 실행(또는 문구가 바뀐 뒤) 고지. 확인해야 홈으로 간다.
+  if (needsNotice(preferences.noticeVersion)) {
+    return (
+      <Notice
+        onConfirm={() => {
+          void savePreferences({ ...preferences, noticeVersion: NOTICE_VERSION });
+        }}
+      />
+    );
+  }
 
   const startTrip = ({
     origin,
