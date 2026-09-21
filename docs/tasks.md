@@ -189,13 +189,24 @@
 
 ## M8 · 앱과 서버 연결
 
-- [ ] API 주소를 빌드 환경 변수(배포 주소)로. 앱에서는 절대 주소로 호출
-- [ ] Worker `/api`에 CORS 허용 목록(`https://localhost`, 개발 주소)과 `OPTIONS` 응답
-- [ ] 결과 링크 주소를 `location.origin` 대신 배포 주소 상수로
-- [ ] Turnstile을 WebView에서 확인(위젯 호스트 등록은 사람 작업), 실패 시 수동 입력 전환이 그대로 도는지
-- [ ] 네이티브 공유 시트(`@capacitor/share`)로 결과 링크 공유, 미지원 시 복사
+- [x] API 주소를 빌드 환경 변수(배포 주소)로. 앱에서는 절대 주소로 호출
+- [x] Worker `/api`에 CORS 허용 목록(`https://localhost`, 개발 주소)과 `OPTIONS` 응답
+- [x] 결과 링크 주소를 `location.origin` 대신 배포 주소 상수로
+- [x] Turnstile을 WebView에서 확인(위젯 호스트 등록은 사람 작업), 실패 시 수동 입력 전환이 그대로 도는지
+- [x] 네이티브 공유 시트(`@capacitor/share`)로 결과 링크 공유, 미지원 시 복사
 
 **완료 기준:** 에뮬레이터에서 장소 검색·경로·유가 조회가 모두 성공하고, 한도(503)일 때 수동 입력으로 넘어간다. 공유 시트에서 카카오톡 등으로 링크가 간다.
+
+> 완료(2026-09-21). 에뮬레이터 + 로컬 Worker(fixtures)로 확인했다.
+> 장소 검색 → 경로·유가 조회 → 결과의 "조회: 카카오 · 유가 1,694원/L (강원 평균)" 표시,
+> 비상 스위치 `auto_route=off`로 만든 503에서 "오늘 자동 조회 한도에 닿았어요" 안내와
+> 거리·통행료 기본값 전환, 안드로이드 공유 시트에 설정한 주소의 결과 링크.
+> Turnstile은 공개 테스트 sitekey로 WebView에서 토큰이 발급됐다. 실제 위젯 등록은 배포(M6) 때.
+>
+> **평문 예외 확인:** 개발 빌드에서만 연다. 릴리스 APK(`app-release-unsigned.apk`)의
+> `assets/capacitor.config.json`은 `allowMixedContent: false`였고, 릴리스 병합 매니페스트에는
+> `networkSecurityConfig`·`usesCleartextTraffic`이 없었다(디버그 매니페스트에만 10.0.2.2용 설정).
+> 확인 명령은 architecture.md "운영 메모"에 적었다.
 
 ## M9 · 앱 관례 맞추기
 

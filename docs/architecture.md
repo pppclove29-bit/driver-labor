@@ -263,6 +263,9 @@ Rate Limiting 바인딩은 Cloudflare 위치별로 대략 세는 방식이라 �
 | Cron | `0 * * * *` 하나. 매시 사용률 알림, KST 0·6·12·18시 유가 갱신 |
 | 로그 | `console.error`로 오류 코드만(`upstream_unavailable` 등). 요청 본문·검색어·좌표·IP는 남기지 않는다(`test/no-log.test.ts`) |
 | 로컬 개발 | `pnpm dev:worker` → `.dev.vars`(UPSTREAM=fixtures)로 fixtures 응답. `/__scheduled?cron=0+*+*+*+*`로 Cron 실행 |
+| CORS | 기본 허용은 앱 WebView(`https://localhost`). 개발 주소는 `ALLOWED_ORIGINS`에 쉼표로 더한다. 사전 요청(OPTIONS)은 예산·세션을 건드리지 않는다 |
+| 앱 주소 설정 | 앱 빌드의 `VITE_API_BASE`·`VITE_RESULT_BASE`(apps/web/.env.app). 배포 주소가 정해지면 `.env.app.local`로 넣는다 |
+| 평문 예외 | 에뮬레이터에서 로컬 Worker를 부르려고 **디버그 빌드에만** 연다. 확인: 릴리스 APK의 `assets/capacitor.config.json`에 `allowMixedContent: false`, 릴리스 병합 매니페스트에 `networkSecurityConfig`·`usesCleartextTraffic` 없음 |
 
 ### 7. 제공자 운영정책 지키기 (T4)
 
