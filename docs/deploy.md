@@ -31,6 +31,22 @@
 
 ## 2. 사전 작업
 
+### 어디서 하나
+
+| 일 | 어떻게 | 누가 |
+|---|---|---|
+| Cloudflare 로그인 | `npx wrangler login` (브라우저 인증) | **사람** |
+| 계정 확인 | `npx wrangler whoami` | 사람 또는 에이전트 |
+| KV 네임스페이스 생성 | `npx wrangler kv namespace create CTRL` | 명령. 로그인 뒤에는 에이전트도 가능 |
+| secret 넣기 | `npx wrangler secret put <이름>` (값은 표준 입력) | **사람**(값을 아는 사람이 직접) |
+| Durable Object 생성·마이그레이션 | 첫 `deploy` 때 자동 | 명령 |
+| Cron 등록 | `deploy` 때 자동 | 명령 |
+| 배포 | `pnpm run deploy` | 명령 |
+| 비상 스위치 값 바꾸기 | `wrangler kv key put` 또는 대시보드 | 둘 다 가능 |
+| 결과 확인(DO·Cron·요청 수) | 대시보드 Workers & Pages | 사람 |
+
+대시보드에서만 할 수 있는 일은 **없다.** 로그인과 secret 값 입력만 사람이 하면 나머지는 명령으로 끝난다.
+
 ### 사람이 하는 일 (Cloudflare 계정 필요)
 
 1. `wrangler login` (브라우저 인증). 계정이 여러 개면 대상 계정을 고른다.
