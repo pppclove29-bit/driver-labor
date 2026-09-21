@@ -69,7 +69,9 @@ button {
   max-width: 520px;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 16px 16px calc(var(--tap) + 40px);
+  /* 앱에서는 상태바·제스처 바 영역을 피한다(viewport-fit=cover). */
+  padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+    calc(var(--tap) + 40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   display: flex;
   flex-direction: column;
   gap: 14px;

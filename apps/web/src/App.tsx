@@ -1,10 +1,12 @@
 // 화면 흐름: S1 홈 → S2 새 여행 → S6 기록 → S9 도착 요약 → S10 정산 결과.
 // 필수 탭은 여행 한 건에 약 5회 (spec-screens.md "입력 최소화").
 
+import { App as CapacitorApp } from '@capacitor/app';
 import type { Storage } from '@dl/storage';
 import { useCallback, useEffect, useState } from 'react';
 
 import { api } from './api/index.js';
+import { backTarget, type ScreenId } from './model/navigation.js';
 import { fetchSegmentRoutes, fetchTripLookups } from './model/lookup.js';
 import type { AppTrip } from './model/trip.js';
 import { newTrip, withEstimatedRoute } from './model/trip.js';
@@ -24,20 +26,6 @@ import { useTrips } from './store/useTrips.js';
 import { Toast, type ToastState } from './ui/Toast.jsx';
 import { useTheme } from './ui/useTheme.js';
 
-type ScreenId =
-  | 'home'
-  | 'new'
-  | 'quick'
-  | 'record'
-  | 'payment'
-  | 'arrival'
-  | 'penalties'
-  | 'timeline'
-  | 'etc'
-  | 'difficulty'
-  | 'result'
-  | 'edit';
-
 export function App({ storage }: { storage?: Storage }) {
   useTheme();
   const { ready, trips, preferences, save, patch, savePreferences } = useTrips(storage);
@@ -46,6 +34,21 @@ export function App({ storage }: { storage?: Storage }) {
   const [toast, setToast] = useState<ToastState>();
 
   const trip = trips.find((t) => t.id === activeId);
+
+  // 안드로이드 뒤로 가기 버튼. 화면의 "‹" 버튼과 같은 곳으로 가고, 홈에서는 앱을 닫는다.
+  // 웹 브라우저에서는 이 이벤트가 오지 않는다.
+  useEffect(() => {
+    const handle = CapacitorApp.addListener('backButton', () => {
+      const target = backTarget(screen);
+      if (target === 'exit') void CapacitorApp.exitApp();
+      else setScreen(target);
+    });
+    return () => {
+      void handle.then((h) => {
+        h.remove();
+      });
+    };
+  }, [screen]);
 
   const notify = useCallback((message: string, undo?: () => void) => {
     setToast({ id: Date.now(), message, ...(undo ? { undo } : {}) });

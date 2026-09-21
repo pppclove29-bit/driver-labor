@@ -5,7 +5,15 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/', '**/dist-assets/', '**/.wrangler/', '**/dev-dist/', 'mockups/'],
+    // 안드로이드 프로젝트에는 빌드로 복사된 웹 번들과 Capacitor 브리지가 들어간다.
+    ignores: [
+      '**/dist/',
+      '**/dist-assets/',
+      '**/.wrangler/',
+      '**/dev-dist/',
+      'apps/mobile/android/',
+      'mockups/',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
