@@ -33,10 +33,13 @@ import { useTheme } from './ui/useTheme.js';
 
 export function App({ storage }: { storage?: Storage }) {
   useTheme();
-  const { ready, trips, preferences, save, patch, savePreferences } = useTrips(storage);
   const [screen, setScreen] = useState<ScreenId>('home');
   const [activeId, setActiveId] = useState<string>();
   const [toast, setToast] = useState<ToastState>();
+  const warn = useCallback((message: string) => {
+    setToast({ id: Date.now(), message });
+  }, []);
+  const { ready, trips, preferences, save, patch, savePreferences } = useTrips(storage, warn);
   const [etcTarget, setEtcTarget] = useState<{ segment: number; member: string }>();
 
   const trip = trips.find((t) => t.id === activeId);

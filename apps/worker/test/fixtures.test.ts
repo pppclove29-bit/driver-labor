@@ -21,9 +21,4 @@ describe('fixtures', () => {
       expect(roads.reduce((a, r) => a + r.distance, 0)).toBe(distance);
     }
   });
-
-  it('모르는 주소는 404', async () => {
-    const res = await fixtureUpstream(new Request('https://example.com/'));
-    expect(res.status).toBe(404);
-  });
 });

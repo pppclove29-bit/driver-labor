@@ -5,6 +5,7 @@ import { createIndexedDbStorage, type Storage } from '@dl/storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PlaceRef } from '../api/client.js';
+import { trySave } from '../model/saving.js';
 import type { AppTrip, TripSettings } from '../model/trip.js';
 import { DEFAULT_SETTINGS, migrateTrip } from '../model/trip.js';
 
@@ -38,7 +39,10 @@ export interface TripStore {
   savePreferences: (next: Preferences) => Promise<void>;
 }
 
-export function useTrips(storage?: Storage): TripStore {
+/**
+ * 여행 저장소. 저장이 실패하면 onSaveFail로 알린다(서버 사본이 없어 조용히 넘기면 안 된다).
+ */
+export function useTrips(storage?: Storage, onSaveFail?: (message: string) => void): TripStore {
   const db = useMemo(() => storage ?? createIndexedDbStorage(), [storage]);
   const [ready, setReady] = useState(false);
   const [trips, setTrips] = useState<AppTrip[]>([]);
@@ -74,9 +78,9 @@ export function useTrips(storage?: Storage): TripStore {
         latest.current = sorted;
         return sorted;
       });
-      await db.put('trips', trip.id, trip);
+      await trySave(() => db.put('trips', trip.id, trip), onSaveFail ?? (() => undefined));
     },
-    [db],
+    [db, onSaveFail],
   );
 
   const patch = useCallback(
@@ -91,17 +95,17 @@ export function useTrips(storage?: Storage): TripStore {
   const remove = useCallback(
     async (id: string) => {
       setTrips((prev) => prev.filter((t) => t.id !== id));
-      await db.remove('trips', id);
+      await trySave(() => db.remove('trips', id), onSaveFail ?? (() => undefined));
     },
-    [db],
+    [db, onSaveFail],
   );
 
   const savePreferences = useCallback(
     async (next: Preferences) => {
       setPreferences(next);
-      await db.put('settings', 'preferences', next);
+      await trySave(() => db.put('settings', 'preferences', next), onSaveFail ?? (() => undefined));
     },
-    [db],
+    [db, onSaveFail],
   );
 
   return { ready, trips, preferences, save, patch, remove, savePreferences };
