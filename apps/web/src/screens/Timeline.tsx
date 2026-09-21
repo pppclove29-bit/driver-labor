@@ -50,14 +50,17 @@ export function Timeline({
   trip,
   onChange,
   onPlacesChange,
+  onOpenPayment,
   onBack,
 }: {
   trip: AppTrip;
   onChange: (next: AppTrip) => void;
   /** 경계 장소나 경계 시각이 바뀌면 구간별 재조회(또는 재조회 값 지우기). */
   onPlacesChange: (next: AppTrip) => void;
+  onOpenPayment: () => void;
   onBack: () => void;
 }) {
+  const [restMinutes, setRestMinutes] = useState(20);
   const [searching, setSearching] = useState<string>();
   const [query, setQuery] = useState('');
   const canRequery = Boolean(trip.originPlace && trip.destinationPlace);
@@ -241,11 +244,26 @@ export function Timeline({
               addEvent({
                 type: 'rest',
                 at: middle,
-                endAt: new Date(Date.parse(middle) + 20 * 60000).toISOString(),
+                endAt: new Date(Date.parse(middle) + restMinutes * 60000).toISOString(),
               });
             }}
           >
-            ☕ 휴식 20분
+            ☕ 휴식 {restMinutes}분 넣기
+          </button>
+          <span className="chips">
+            <input
+              inputMode="numeric"
+              value={String(restMinutes)}
+              style={{ width: 80 }}
+              aria-label="휴식 분"
+              onChange={(e) => {
+                setRestMinutes(Math.max(0, Number(e.target.value.replace(/[^0-9]/g, ''))));
+              }}
+            />
+            <span className="dim">분</span>
+          </span>
+          <button type="button" className="chip" onClick={onOpenPayment}>
+            💳 결제 기록
           </button>
         </div>
       </Card>
@@ -261,6 +279,10 @@ export function Timeline({
             </span>
           </div>
         ))}
+        <p className="screen__sub">
+          휴게소에서 쉰 시간은 운전 시간에서 빠집니다. 기름값·통행료를 누가 냈는지도 여기서
+          넣습니다.
+        </p>
         <p className="screen__sub">
           {!canRequery
             ? '출발지·도착지를 목록에서 고른 여행만 구간 경로를 다시 조회할 수 있어요. 지금은 운전 시간 비율로 거리를 나눕니다.'

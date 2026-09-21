@@ -275,7 +275,7 @@ export function App({ storage }: { storage?: Storage }) {
             setScreen('timeline');
           }}
           onSettle={() => {
-            // "정산하기"가 곧 계산 등록. 광고는 이때 1번만 (M5에서 카드 부착).
+            // "정산하기"가 곧 계산 등록.
             update({
               ...trip,
               status: 'settled',
@@ -309,6 +309,9 @@ export function App({ storage }: { storage?: Storage }) {
           trip={trip}
           onChange={update}
           onPlacesChange={lookUpSegments}
+          onOpenPayment={() => {
+            setScreen('payment');
+          }}
           onBack={() => {
             setScreen('arrival');
           }}

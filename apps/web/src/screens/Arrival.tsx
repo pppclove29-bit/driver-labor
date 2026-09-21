@@ -152,8 +152,10 @@ export function Arrival({
           <span>{segments.length}개 · 타임라인 ›</span>
         </button>
         <button type="button" className="row" onClick={onOpenPenalties}>
-          <span>괘씸 기록</span>
-          <span className={penaltyCount > 0 ? 'penalty' : 'dim'}>{penaltyCount}건 보기 ›</span>
+          <span>괘씸·감면</span>
+          <span className={penaltyCount > 0 ? 'penalty' : 'dim'}>
+            {penaltyCount > 0 ? `${String(penaltyCount)}건 · ` : ''}넣기 ›
+          </span>
         </button>
         <button type="button" className="row" onClick={onOpenDifficulty}>
           <span>난이도</span>
